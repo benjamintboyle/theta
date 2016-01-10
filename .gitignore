@@ -6,6 +6,9 @@ tmp/
 *.bak
 *.swp
 *~.nib
+.settings
+.classpath
+.project
 
 ### Gradle.gitignore
 .gradle

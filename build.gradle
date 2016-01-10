@@ -1,17 +1,19 @@
-// Apply the java plugin to add support for Java
 apply plugin: 'java'
+apply plugin: 'eclipse'
+
+// C:\TWS API\source\JavaClient\build.xml
+ant.importBuild 'C:\\TWS API\\source\\JavaClient\\build.xml'
 
 repositories {
-    // Use 'jcenter' for resolving dependencies.
     jcenter()
 }
 
 dependencies {
     // Production code dependencies
-    compile 'org.slf4j:slf4j-api:1.7.+'
-	compile 'org.slf4j:slf4j-simple:1.7.+'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
 	
     // Test code dependencies
-    testCompile 'junit:junit:4.+'
-    testCompile 'org.mockito:mockito-core:1.+'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.+'
 }
