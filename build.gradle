@@ -1,0 +1,17 @@
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+
+repositories {
+    // Use 'jcenter' for resolving dependencies.
+    jcenter()
+}
+
+dependencies {
+    // Production code dependencies
+    compile 'org.slf4j:slf4j-api:1.7.+'
+	compile 'org.slf4j:slf4j-simple:1.7.+'
+	
+    // Test code dependencies
+    testCompile 'junit:junit:4.+'
+    testCompile 'org.mockito:mockito-core:1.+'
+}
