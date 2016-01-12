@@ -1,4 +1,4 @@
-package quanta_engine.managers;
+package theta.managers;
 
 import com.ib.controller.OrderType;
 import com.ib.controller.Types.Action;
@@ -10,17 +10,17 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.NewOrder;
 
-import quanta_engine.QuantaEngine;
-import quanta_engine.strategies.ExtrinsicCapture;
+import theta.ThetaEngine;
+import theta.strategies.ExtrinsicCapture;
 
 public class ExecutionManager {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
-	private QuantaEngine callback;
+	private ThetaEngine callback;
 
 	// private IbOrderHandler orderHandler = new IbOrderHandler();
 
-	public ExecutionManager(QuantaEngine callback) {
+	public ExecutionManager(ThetaEngine callback) {
 		this.logger.info("Starting subsystem: 'Execution Manager'");
 		this.callback = callback;
 	}

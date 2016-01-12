@@ -1,4 +1,4 @@
-package quanta_engine.managers;
+package theta.managers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,18 +6,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import quanta_engine.QuantaEngine;
-import quanta_engine.managers.api.Monitor;
-import quanta_engine.strategies.ExtrinsicCapture;
+import theta.ThetaEngine;
+import theta.managers.api.Monitor;
+import theta.strategies.ExtrinsicCapture;
 
 public class PriceMonitor implements Monitor {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	QuantaEngine callback;
+	ThetaEngine callback;
 
 	private Map<String, ExtrinsicCapture> monitoredTrades = new HashMap<String, ExtrinsicCapture>();
 
-	public PriceMonitor(QuantaEngine callback) {
+	public PriceMonitor(ThetaEngine callback) {
 		this.logger.info("Starting subsystem: 'Monitor'");
 		this.callback = callback;
 	}

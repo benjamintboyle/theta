@@ -1,11 +1,11 @@
-package quanta_engine.strategies;
+package theta.strategies;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-import quanta_engine.strategies.api.Security;
-import quanta_engine.strategies.api.SecurityType;
+import theta.strategies.api.Security;
+import theta.strategies.api.SecurityType;
 
 public class Option implements Security {
 	private SecurityType type;

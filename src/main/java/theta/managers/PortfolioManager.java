@@ -1,4 +1,4 @@
-package quanta_engine.managers;
+package theta.managers;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,13 +6,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import quanta_engine.managers.api.Monitor;
-import quanta_engine.managers.api.PortfolioReceiver;
-import quanta_engine.managers.api.PortfolioRequester;
-import quanta_engine.strategies.ExtrinsicCapture;
-import quanta_engine.strategies.Option;
-import quanta_engine.strategies.Stock;
-import quanta_engine.strategies.api.Security;
+import theta.managers.api.Monitor;
+import theta.managers.api.PortfolioReceiver;
+import theta.managers.api.PortfolioRequester;
+import theta.strategies.ExtrinsicCapture;
+import theta.strategies.Option;
+import theta.strategies.Stock;
+import theta.strategies.api.Security;
 
 public class PortfolioManager implements PortfolioReceiver {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);

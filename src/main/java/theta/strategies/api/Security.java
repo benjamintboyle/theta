@@ -1,4 +1,4 @@
-package quanta_engine.strategies.api;
+package theta.strategies.api;
 
 public interface Security {
 

@@ -1,4 +1,4 @@
-package quanta_engine.managers.api;
+package theta.managers.api;
 
 public interface PortfolioRequester {
 

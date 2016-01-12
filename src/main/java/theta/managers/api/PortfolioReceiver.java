@@ -1,6 +1,6 @@
-package quanta_engine.managers.api;
+package theta.managers.api;
 
-import quanta_engine.strategies.api.Security;
+import theta.strategies.api.Security;
 
 public interface PortfolioReceiver {
 

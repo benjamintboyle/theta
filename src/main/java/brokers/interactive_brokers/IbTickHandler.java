@@ -12,14 +12,14 @@ import com.ib.controller.ApiController.ITopMktDataHandler;
 import com.ib.controller.NewContract;
 import com.ib.controller.Types.MktDataType;
 
-import quanta_engine.QuantaEngine;
-import quanta_engine.managers.PriceMonitor;
-import quanta_engine.strategies.ExtrinsicCapture;
+import theta.ThetaEngine;
+import theta.managers.PriceMonitor;
+import theta.strategies.ExtrinsicCapture;
 
 public class IbTickHandler implements ITopMktDataHandler {
 	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
 
-	QuantaEngine controller;
+	ThetaEngine controller;
 	PriceMonitor callback;
 
 	String ticker;
@@ -33,7 +33,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 	int volume;
 	boolean isSnapshot;
 
-	public IbTickHandler(QuantaEngine controller, PriceMonitor callback, ExtrinsicCapture trade) {
+	public IbTickHandler(ThetaEngine controller, PriceMonitor callback, ExtrinsicCapture trade) {
 		this.controller = controller;
 		this.callback = callback;
 		this.ticker = trade.getBackingTicker();

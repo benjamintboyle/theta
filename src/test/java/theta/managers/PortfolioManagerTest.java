@@ -1,4 +1,4 @@
-package quanta_engine.managers;
+package theta.managers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,18 +22,20 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.NewContract;
 
-import quanta_engine.QuantaEngine;
-import quanta_engine.strategies.ExtrinsicCapture;
-import quanta_engine.strategies.Option;
-import quanta_engine.strategies.Stock;
-import quanta_engine.strategies.api.SecurityType;
+import theta.ThetaEngine;
+import theta.managers.PortfolioManager;
+import theta.managers.PriceMonitor;
+import theta.strategies.ExtrinsicCapture;
+import theta.strategies.Option;
+import theta.strategies.Stock;
+import theta.strategies.api.SecurityType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortfolioManagerTest {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
 
 	@Mock
-	private QuantaEngine qeMock;
+	private ThetaEngine qeMock;
 	@Mock
 	private PriceMonitor pmMock;
 	@InjectMocks

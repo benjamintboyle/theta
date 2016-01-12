@@ -1,4 +1,4 @@
-package quanta_engine;
+package theta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,17 +10,17 @@ import com.ib.controller.ApiController;
 
 import brokers.interactive_brokers.IbPositionHandler;
 import brokers.interactive_brokers.IbTickHandler;
-import quanta_engine.managers.ConnectionManager;
-import quanta_engine.managers.ExecutionManager;
-import quanta_engine.managers.PortfolioManager;
-import quanta_engine.managers.PriceMonitor;
-import quanta_engine.managers.api.MarketDataRequester;
-import quanta_engine.managers.api.PortfolioRequester;
-import quanta_engine.strategies.ExtrinsicCapture;
+import theta.managers.ConnectionManager;
+import theta.managers.ExecutionManager;
+import theta.managers.PortfolioManager;
+import theta.managers.PriceMonitor;
+import theta.managers.api.MarketDataRequester;
+import theta.managers.api.PortfolioRequester;
+import theta.strategies.ExtrinsicCapture;
 
-public class QuantaEngine implements PortfolioRequester, MarketDataRequester {
-	public final static Logger logger = LoggerFactory.getLogger(QuantaEngine.class);
-	private final static String SYSTEM_NAME = "QuantaEngine";
+public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
+	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
+	private final static String SYSTEM_NAME = "ThetaEngine";
 
 	// Managers
 	private final ConnectionManager connectionManager = new ConnectionManager();
@@ -34,8 +34,8 @@ public class QuantaEngine implements PortfolioRequester, MarketDataRequester {
 
 	// Entry point for application
 	public static void main(String[] args) {
-		QuantaEngine.logger.info("Starting system: '{}'", QuantaEngine.SYSTEM_NAME);
-		new QuantaEngine();
+		ThetaEngine.logger.info("Starting system: '{}'", ThetaEngine.SYSTEM_NAME);
+		new ThetaEngine();
 	}
 
 	public ApiController controller() {
@@ -52,7 +52,7 @@ public class QuantaEngine implements PortfolioRequester, MarketDataRequester {
 
 	public void shutdown() {
 		// Signal main loop to end
-		logger.info("Shutting down '{}' system", QuantaEngine.SYSTEM_NAME);
+		logger.info("Shutting down '{}' system", ThetaEngine.SYSTEM_NAME);
 	}
 
 	public void reverseTrade(ExtrinsicCapture trade) {

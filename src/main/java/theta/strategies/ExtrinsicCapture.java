@@ -1,10 +1,10 @@
-package quanta_engine.strategies;
+package theta.strategies;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import quanta_engine.strategies.api.Security;
-import quanta_engine.strategies.api.SecurityType;
+import theta.strategies.api.Security;
+import theta.strategies.api.SecurityType;
 
 public class ExtrinsicCapture {
 	final Logger logger = LoggerFactory.getLogger(ExtrinsicCapture.class);

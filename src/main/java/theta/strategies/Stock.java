@@ -1,9 +1,9 @@
-package quanta_engine.strategies;
+package theta.strategies;
 
 import com.ib.controller.NewContract;
 
-import quanta_engine.strategies.api.Security;
-import quanta_engine.strategies.api.SecurityType;
+import theta.strategies.api.Security;
+import theta.strategies.api.SecurityType;
 
 public class Stock implements Security {
 	private final SecurityType type = SecurityType.STOCK;

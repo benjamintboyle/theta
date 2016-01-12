@@ -1,6 +1,6 @@
-package quanta_engine.managers.api;
+package theta.managers.api;
 
-import quanta_engine.strategies.ExtrinsicCapture;
+import theta.strategies.ExtrinsicCapture;
 
 public interface MarketDataRequester {
 

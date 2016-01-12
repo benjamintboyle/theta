@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 import com.ib.controller.ApiController.IPositionHandler;
 
-import quanta_engine.managers.api.PortfolioReceiver;
-import quanta_engine.strategies.Option;
-import quanta_engine.strategies.Stock;
-import quanta_engine.strategies.api.SecurityType;
+import theta.managers.api.PortfolioReceiver;
+import theta.strategies.Option;
+import theta.strategies.Stock;
+import theta.strategies.api.SecurityType;
 
 import com.ib.controller.NewContract;
 
