@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import theta.strategies.api.Security;
 import theta.strategies.api.SecurityType;
 
-public class ExtrinsicCapture {
-	final Logger logger = LoggerFactory.getLogger(ExtrinsicCapture.class);
+public class ThetaTrade {
+	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
 	private SecurityType type = SecurityType.DCSS;
 
@@ -15,7 +15,7 @@ public class ExtrinsicCapture {
 	private Option put;
 	private Stock equity;
 
-	public ExtrinsicCapture(Security security) {
+	public ThetaTrade(Security security) {
 		this.add(security);
 	}
 

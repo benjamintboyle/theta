@@ -1,8 +1,8 @@
 package theta.managers.api;
 
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public interface Monitor {
 
-	public void addMonitor(ExtrinsicCapture trade);
+	public void addMonitor(ThetaTrade trade);
 }

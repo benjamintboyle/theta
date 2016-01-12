@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import theta.ThetaEngine;
 import theta.managers.api.Monitor;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public class PriceMonitor implements Monitor {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	ThetaEngine callback;
 
-	private Map<String, ExtrinsicCapture> monitoredTrades = new HashMap<String, ExtrinsicCapture>();
+	private Map<String, ThetaTrade> monitoredTrades = new HashMap<String, ThetaTrade>();
 
 	public PriceMonitor(ThetaEngine callback) {
 		this.logger.info("Starting subsystem: 'Monitor'");
@@ -23,7 +23,7 @@ public class PriceMonitor implements Monitor {
 	}
 
 	@Override
-	public void addMonitor(ExtrinsicCapture trade) {
+	public void addMonitor(ThetaTrade trade) {
 		this.logger.info("Adding Monitor for '{}'", trade.getBackingTicker());
 
 		this.monitoredTrades.put(trade.getBackingTicker(), trade);
@@ -31,13 +31,13 @@ public class PriceMonitor implements Monitor {
 
 	}
 
-	public ExtrinsicCapture deleteMonitor(String ticker) {
+	public ThetaTrade deleteMonitor(String ticker) {
 		return this.monitoredTrades.remove(ticker);
 	}
 
 	// Main monitor method
 	public void notifyPriceChange(String ticker) {
-		ExtrinsicCapture trade = this.monitoredTrades.get(ticker);
+		ThetaTrade trade = this.monitoredTrades.get(ticker);
 		Double lastPrice = this.callback.getLast(ticker);
 		Integer quantity = trade.getEquity().getQuantity();
 		Double strikePrice = trade.getStrikePrice();

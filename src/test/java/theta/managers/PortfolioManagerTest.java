@@ -25,7 +25,7 @@ import com.ib.controller.NewContract;
 import theta.ThetaEngine;
 import theta.managers.PortfolioManager;
 import theta.managers.PriceMonitor;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 import theta.strategies.Option;
 import theta.strategies.Stock;
 import theta.strategies.api.SecurityType;
@@ -86,7 +86,7 @@ public class PortfolioManagerTest {
 			}
 		}
 
-		Mockito.verify(pmMock, Mockito.times(6)).addMonitor(Mockito.any(ExtrinsicCapture.class));
+		Mockito.verify(pmMock, Mockito.times(6)).addMonitor(Mockito.any(ThetaTrade.class));
 
 		/*
 		 * @Captor // private ArgumentCaptor<ExtrinsicCapture> captor;

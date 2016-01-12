@@ -14,7 +14,7 @@ import com.ib.controller.Types.MktDataType;
 
 import theta.ThetaEngine;
 import theta.managers.PriceMonitor;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public class IbTickHandler implements ITopMktDataHandler {
 	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
@@ -33,7 +33,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 	int volume;
 	boolean isSnapshot;
 
-	public IbTickHandler(ThetaEngine controller, PriceMonitor callback, ExtrinsicCapture trade) {
+	public IbTickHandler(ThetaEngine controller, PriceMonitor callback, ThetaTrade trade) {
 		this.controller = controller;
 		this.callback = callback;
 		this.ticker = trade.getBackingTicker();
@@ -149,7 +149,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 		return this.isSnapshot;
 	}
 
-	public void subscribeMarketData(ExtrinsicCapture trade) {
+	public void subscribeMarketData(ThetaTrade trade) {
 		NewContract contract = trade.getEquity().getContract();
 		contract.exchange("SMART");
 		contract.primaryExch("ISLAND");

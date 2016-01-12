@@ -16,7 +16,7 @@ import theta.managers.PortfolioManager;
 import theta.managers.PriceMonitor;
 import theta.managers.api.MarketDataRequester;
 import theta.managers.api.PortfolioRequester;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
@@ -46,7 +46,7 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 		return this.connectionManager.getAccountList();
 	}
 
-	public void addMonitor(ExtrinsicCapture trade) {
+	public void addMonitor(ThetaTrade trade) {
 		this.monitor.addMonitor(trade);
 	}
 
@@ -55,7 +55,7 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 		logger.info("Shutting down '{}' system", ThetaEngine.SYSTEM_NAME);
 	}
 
-	public void reverseTrade(ExtrinsicCapture trade) {
+	public void reverseTrade(ThetaTrade trade) {
 		this.executionManager.reverseTrade(trade);
 	}
 
@@ -70,7 +70,7 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	}
 
 	@Override
-	public void subscribeMarketData(ExtrinsicCapture trade) {
+	public void subscribeMarketData(ThetaTrade trade) {
 		if (!this.tickHandlers.containsKey(trade.getBackingTicker())) {
 			this.tickHandlers.put(trade.getBackingTicker(), new IbTickHandler(this, this.monitor, trade));
 		}

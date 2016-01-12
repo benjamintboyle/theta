@@ -1,10 +1,10 @@
 package theta.managers.api;
 
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public interface MarketDataRequester {
 
-	public void subscribeMarketData(ExtrinsicCapture trade);
+	public void subscribeMarketData(ThetaTrade trade);
 
 	public void unsubscribeMarketData(String ticker);
 

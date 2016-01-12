@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.ib.controller.NewOrder;
 
 import theta.ThetaEngine;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 
 public class ExecutionManager {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
@@ -25,7 +25,7 @@ public class ExecutionManager {
 		this.callback = callback;
 	}
 
-	public void reverseTrade(ExtrinsicCapture trade) {
+	public void reverseTrade(ThetaTrade trade) {
 		NewOrder order = new NewOrder();
 
 		if (trade.getEquity().getQuantity() > 0) {
@@ -44,7 +44,7 @@ public class ExecutionManager {
 	}
 
 	// TODO Structure of this method needs serious improvement
-	private Boolean isValidTrade(ExtrinsicCapture trade, NewOrder order) {
+	private Boolean isValidTrade(ThetaTrade trade, NewOrder order) {
 		Boolean isTradeValid = Boolean.FALSE;
 
 		// TODO Check that amount to trade is equal to equity/call/put positions

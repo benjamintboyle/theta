@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import theta.managers.api.Monitor;
 import theta.managers.api.PortfolioReceiver;
 import theta.managers.api.PortfolioRequester;
-import theta.strategies.ExtrinsicCapture;
+import theta.strategies.ThetaTrade;
 import theta.strategies.Option;
 import theta.strategies.Stock;
 import theta.strategies.api.Security;
@@ -19,7 +19,7 @@ public class PortfolioManager implements PortfolioReceiver {
 
 	private PortfolioRequester request;
 	private Monitor monitor;
-	private Set<ExtrinsicCapture> positions = new HashSet<ExtrinsicCapture>();
+	private Set<ThetaTrade> positions = new HashSet<ThetaTrade>();
 
 	public PortfolioManager(PortfolioRequester request, Monitor monitor) {
 		this.logger.info("Starting subsystem: 'Portfolio Manager'");
@@ -33,7 +33,7 @@ public class PortfolioManager implements PortfolioReceiver {
 	@Override
 	public void ingestPosition(Security security) {
 		this.logger.info("Received Position update: {}", security.toString());
-		for (ExtrinsicCapture position : this.positions) {
+		for (ThetaTrade position : this.positions) {
 			if (position.getBackingTicker().equals(security.getBackingTicker())) {
 				switch (security.getSecurityType()) {
 				case STOCK:
@@ -77,6 +77,6 @@ public class PortfolioManager implements PortfolioReceiver {
 			}
 		}
 
-		this.positions.add(new ExtrinsicCapture(security));
+		this.positions.add(new ThetaTrade(security));
 	}
 }
