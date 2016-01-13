@@ -23,11 +23,9 @@ import org.slf4j.LoggerFactory;
 import com.ib.controller.NewContract;
 
 import theta.ThetaEngine;
-import theta.managers.PortfolioManager;
-import theta.managers.PriceMonitor;
-import theta.strategies.ThetaTrade;
 import theta.strategies.Option;
 import theta.strategies.Stock;
+import theta.strategies.ThetaTrade;
 import theta.strategies.api.SecurityType;
 
 @RunWith(MockitoJUnitRunner.class)
