@@ -1,5 +1,6 @@
 package theta.managers.strategies;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -7,6 +8,7 @@ import theta.strategies.Option;
 import theta.strategies.Stock;
 import theta.strategies.ThetaTrade;
 
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class ThetaTradeTest {
 	public static ThetaTrade buildTestThetaTrade() {

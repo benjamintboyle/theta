@@ -63,6 +63,7 @@ public class Option implements Security {
 	}
 
 	private static LocalDate convertExpiration(int year, int month) {
+		// First of the month
 		LocalDate expiration = LocalDate.of(year, month, 1);
 
 		// Calculate 3rd Friday by finding first Friday then adding two weeks

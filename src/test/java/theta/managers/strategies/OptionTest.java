@@ -2,12 +2,14 @@ package theta.managers.strategies;
 
 import java.time.LocalDate;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import theta.strategies.Option;
 import theta.strategies.api.SecurityType;
 
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class OptionTest {
 
