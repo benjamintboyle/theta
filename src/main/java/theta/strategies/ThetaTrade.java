@@ -3,6 +3,8 @@ package theta.strategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ib.controller.NewContract;
+
 import theta.strategies.api.Security;
 import theta.strategies.api.SecurityType;
 
@@ -17,6 +19,12 @@ public class ThetaTrade {
 
 	public ThetaTrade(Security security) {
 		this.add(security);
+	}
+
+	public ThetaTrade(Security security, Security security2, Security security3) {
+		this.add(security);
+		this.add(security2);
+		this.add(security3);
 	}
 
 	public void add(Security security) {
@@ -117,6 +125,17 @@ public class ThetaTrade {
 		}
 
 		return ticker;
+	}
+
+	public ThetaTrade reverseTrade() {
+		String ticker = this.getBackingTicker();
+		Integer reversedQuantity = -1 * this.getEquity().getQuantity();
+		Double tradePrice = this.getEquity().getAverageTradePrice();
+
+		Stock reversedEquityPosition = new Stock(ticker, reversedQuantity, tradePrice, new NewContract());
+
+		this.logger.info("Reversing trade...");
+		return new ThetaTrade(reversedEquityPosition, this.getCall(), this.getPut());
 	}
 
 	@Override
