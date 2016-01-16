@@ -43,24 +43,25 @@ public class PriceMonitor implements Monitor {
 		Integer quantity = trade.getEquity().getQuantity();
 		Double strikePrice = trade.getStrikePrice();
 
+		this.logger.info("Current tick for '{}': ${}", ticker, lastPrice);
+
 		/*
 		 * If position Long, and last price is less than strike price, else if
 		 * position Short, and last price is greater than strike price
 		 */
 		if ((quantity > 0) && (lastPrice < strikePrice)) {
-			this.logger.info("Reversing Long position in '{}' at price: ${}", ticker, lastPrice);
-			this.callback.reverseTrade(trade);
-			this.monitoredTrades.put(ticker, trade.reverseTrade());
-			tradeReversed = Boolean.TRUE;
+			tradeReversed = this.reversePosition(trade);
 		} else if ((quantity < 0) && (lastPrice > strikePrice)) {
-			this.logger.info("Reversing Short position in '{}' at price: ${}", ticker, lastPrice);
-			this.callback.reverseTrade(trade);
-			this.monitoredTrades.put(ticker, trade.reverseTrade());
-			tradeReversed = Boolean.TRUE;
-		} else {
-			this.logger.info("Current tick for '{}': ${}", ticker, lastPrice);
+			tradeReversed = this.reversePosition(trade);
 		}
 
 		return tradeReversed;
+	}
+
+	private Boolean reversePosition(ThetaTrade trade) {
+		this.logger.info("Reversing position in '{}'}", trade.getBackingTicker());
+		this.callback.reverseTrade(trade);
+		this.monitoredTrades.put(trade.getBackingTicker(), trade.reversePosition());
+		return Boolean.TRUE;
 	}
 }

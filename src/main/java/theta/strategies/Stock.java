@@ -47,6 +47,11 @@ public class Stock implements Security {
 		return this.contract;
 	}
 
+	public Stock reversePosition() {
+		this.quantity *= -1;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		String returnString = "{ Type: " + this.getSecurityType();
