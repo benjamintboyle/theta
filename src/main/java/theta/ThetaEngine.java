@@ -6,10 +6,17 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ib.client.Contract;
 import com.ib.controller.ApiController;
+import com.ib.controller.NewContract;
+import com.ib.controller.NewOrder;
+import com.ib.controller.OrderType;
+import com.ib.controller.Types.Action;
 
+import brokers.interactive_brokers.IbOrderHandler;
 import brokers.interactive_brokers.IbPositionHandler;
 import brokers.interactive_brokers.IbTickHandler;
+import theta.execution.api.Executable;
 import theta.managers.ConnectionManager;
 import theta.managers.ExecutionManager;
 import theta.managers.PortfolioManager;
@@ -17,6 +24,7 @@ import theta.managers.PriceMonitor;
 import theta.managers.api.MarketDataRequester;
 import theta.managers.api.PortfolioRequester;
 import theta.strategies.ThetaTrade;
+import theta.strategies.api.Security;
 
 public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
@@ -48,6 +56,23 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 
 	public void addMonitor(ThetaTrade trade) {
 		this.monitor.addMonitor(trade);
+	}
+
+	public void execute(Security security, Executable order) {
+		NewOrder ibOrder = new NewOrder();
+
+		if (security.getQuantity() > 0) {
+			ibOrder.action(Action.SELL);
+		} else {
+			ibOrder.action(Action.BUY);
+		}
+		ibOrder.totalQuantity(2 * Math.abs(security.getQuantity()));
+		ibOrder.orderType(OrderType.MKT);
+		ibOrder.orderId(0);
+
+		NewContract contract = new NewContract(new Contract());
+
+		this.controller().placeOrModifyOrder(contract, ibOrder, new IbOrderHandler());
 	}
 
 	public void shutdown() {

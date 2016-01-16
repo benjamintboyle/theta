@@ -9,7 +9,7 @@ import theta.strategies.api.SecurityType;
 public class ThetaTrade {
 	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
-	private SecurityType type = SecurityType.DCSS;
+	private SecurityType type = SecurityType.THETA;
 
 	private Option call;
 	private Option put;
