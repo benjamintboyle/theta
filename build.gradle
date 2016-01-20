@@ -1,8 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-// C:\TWS API\source\JavaClient\build.xml
-ant.importBuild 'C:\\TWS API\\source\\JavaClient\\build.xml'
+
+group = group
+version = version
 
 repositories {
     jcenter()
@@ -12,7 +13,10 @@ dependencies {
     // Production code dependencies
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
-    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.+';
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.+'
+
+    // compile subproject dependencies
+    compile project(':tws')
 	
     // Test code dependencies
     testCompile group: 'org.hamcrest', name: 'java-hamcrest', version: '2.+'

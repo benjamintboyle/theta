@@ -1,0 +1,3 @@
+include ':tws'
+
+rootProject.name = name
