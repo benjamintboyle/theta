@@ -13,9 +13,11 @@ import com.ib.controller.NewOrder;
 import com.ib.controller.OrderType;
 import com.ib.controller.Types.Action;
 
+import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.IbOrderHandler;
 import brokers.interactive_brokers.IbPositionHandler;
 import brokers.interactive_brokers.IbTickHandler;
+import brokers.interactive_brokers.loggers.IbStdoutLogger;
 import theta.execution.api.Executable;
 import theta.managers.ConnectionManager;
 import theta.managers.ExecutionManager;
@@ -37,8 +39,12 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	private final ExecutionManager executionManager = new ExecutionManager(this);
 
 	// Handlers
+	private final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
 	private IbPositionHandler ibPositionHander = new IbPositionHandler(this.portfolioManager);
 	private HashMap<String, IbTickHandler> tickHandlers = new HashMap<String, IbTickHandler>();
+
+	private final ApiController ibController = new ApiController(this.ibConnectionHandler, new IbStdoutLogger(),
+			new IbStdoutLogger());
 
 	// Entry point for application
 	public static void main(String[] args) {
