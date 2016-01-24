@@ -130,11 +130,11 @@ public class IbTickHandler implements ITopMktDataHandler {
 	}
 
 	public Integer getBidSize() {
-		return this.getBidSize();
+		return this.bidSize;
 	}
 
 	public Integer getAskSize() {
-		return this.getAskSize();
+		return this.askSize;
 	}
 
 	public Double getClose() {
