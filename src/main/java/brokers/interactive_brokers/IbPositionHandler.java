@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 import com.ib.controller.ApiController.IPositionHandler;
 
-import theta.managers.api.PortfolioReceiver;
-import theta.strategies.Option;
-import theta.strategies.Stock;
-import theta.strategies.api.SecurityType;
+import theta.api.SecurityType;
+import theta.domain.Option;
+import theta.domain.Stock;
+import theta.portfolio.api.PortfolioReceiver;
 
 import com.ib.controller.NewContract;
 

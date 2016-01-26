@@ -1,16 +1,16 @@
-package theta.execution;
+package theta.execution.domain;
 
 import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import theta.api.Security;
+import theta.api.SecurityType;
 import theta.execution.api.Executable;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
-import theta.managers.ExecutionManager;
-import theta.strategies.api.Security;
-import theta.strategies.api.SecurityType;
+import theta.execution.manager.ExecutionManager;
 
 public class EquityOrder implements Executable {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);

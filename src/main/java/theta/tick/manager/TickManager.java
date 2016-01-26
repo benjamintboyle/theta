@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.tick.manager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,18 +6,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.ThetaEngine;
+import theta.domain.ThetaEngine;
+import theta.domain.ThetaTrade;
 import theta.managers.api.Monitor;
-import theta.strategies.ThetaTrade;
 
-public class PriceMonitor implements Monitor {
+public class TickManager implements Monitor {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	ThetaEngine callback;
 
 	private Map<String, ThetaTrade> monitoredTrades = new HashMap<String, ThetaTrade>();
 
-	public PriceMonitor(ThetaEngine callback) {
+	public TickManager(ThetaEngine callback) {
 		this.logger.info("Starting subsystem: 'Monitor'");
 		this.callback = callback;
 	}

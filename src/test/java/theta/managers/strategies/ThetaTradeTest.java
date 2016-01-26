@@ -4,9 +4,9 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import theta.strategies.Option;
-import theta.strategies.Stock;
-import theta.strategies.ThetaTrade;
+import theta.domain.Option;
+import theta.domain.Stock;
+import theta.domain.ThetaTrade;
 
 @Ignore
 @RunWith(MockitoJUnitRunner.class)

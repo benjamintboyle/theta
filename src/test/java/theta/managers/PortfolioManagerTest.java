@@ -22,11 +22,13 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.NewContract;
 
-import theta.ThetaEngine;
-import theta.strategies.Option;
-import theta.strategies.Stock;
-import theta.strategies.ThetaTrade;
-import theta.strategies.api.SecurityType;
+import theta.api.SecurityType;
+import theta.domain.Option;
+import theta.domain.Stock;
+import theta.domain.ThetaEngine;
+import theta.domain.ThetaTrade;
+import theta.portfolio.manager.PortfolioManager;
+import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortfolioManagerTest {
@@ -35,7 +37,7 @@ public class PortfolioManagerTest {
 	@Mock
 	private ThetaEngine qeMock;
 	@Mock
-	private PriceMonitor pmMock;
+	private TickManager pmMock;
 	@InjectMocks
 	private PortfolioManager sut;
 

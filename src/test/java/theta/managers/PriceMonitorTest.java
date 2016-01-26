@@ -20,9 +20,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.ThetaEngine;
+import theta.domain.ThetaEngine;
+import theta.domain.ThetaTrade;
 import theta.managers.strategies.ThetaTradeTest;
-import theta.strategies.ThetaTrade;
+import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PriceMonitorTest {
@@ -35,7 +36,7 @@ public class PriceMonitorTest {
 	private ThetaEngine thetaEngine;
 
 	@InjectMocks
-	private PriceMonitor sut = new PriceMonitor(thetaEngine);
+	private TickManager sut = new TickManager(thetaEngine);
 
 	@Test
 	public void test_add_and_delete_monitor() {

@@ -1,6 +1,6 @@
-package theta.managers.api;
+package theta.portfolio.api;
 
-import theta.strategies.api.Security;
+import theta.api.Security;
 
 public interface PortfolioReceiver {
 

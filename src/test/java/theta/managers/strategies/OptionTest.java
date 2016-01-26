@@ -6,8 +6,8 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import theta.strategies.Option;
-import theta.strategies.api.SecurityType;
+import theta.api.SecurityType;
+import theta.domain.Option;
 
 @Ignore
 @RunWith(MockitoJUnitRunner.class)

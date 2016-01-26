@@ -1,10 +1,10 @@
-package theta.strategies;
+package theta.domain;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.strategies.api.Security;
-import theta.strategies.api.SecurityType;
+import theta.api.Security;
+import theta.api.SecurityType;
 
 public class ThetaTrade {
 	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);

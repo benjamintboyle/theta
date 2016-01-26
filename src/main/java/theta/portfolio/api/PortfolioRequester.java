@@ -1,4 +1,4 @@
-package theta.managers.api;
+package theta.portfolio.api;
 
 public interface PortfolioRequester {
 

@@ -1,4 +1,4 @@
-package theta.strategies.api;
+package theta.api;
 
 public enum SecurityType {
 	// Note, EQUITY and OPTION indicate naked equity/option positions

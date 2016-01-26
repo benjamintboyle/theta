@@ -12,15 +12,15 @@ import com.ib.controller.ApiController.ITopMktDataHandler;
 import com.ib.controller.NewContract;
 import com.ib.controller.Types.MktDataType;
 
-import theta.ThetaEngine;
-import theta.managers.PriceMonitor;
-import theta.strategies.ThetaTrade;
+import theta.domain.ThetaEngine;
+import theta.domain.ThetaTrade;
+import theta.tick.manager.TickManager;
 
 public class IbTickHandler implements ITopMktDataHandler {
 	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
 
 	ThetaEngine controller;
-	PriceMonitor callback;
+	TickManager callback;
 
 	String ticker;
 	double bidPrice;
@@ -33,7 +33,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 	int volume;
 	boolean isSnapshot;
 
-	public IbTickHandler(ThetaEngine controller, PriceMonitor callback, ThetaTrade trade) {
+	public IbTickHandler(ThetaEngine controller, TickManager callback, ThetaTrade trade) {
 		this.controller = controller;
 		this.callback = callback;
 		this.ticker = trade.getBackingTicker();

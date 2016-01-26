@@ -1,9 +1,9 @@
-package theta.strategies;
+package theta.domain;
 
 import com.ib.controller.NewContract;
 
-import theta.strategies.api.Security;
-import theta.strategies.api.SecurityType;
+import theta.api.Security;
+import theta.api.SecurityType;
 
 public class Stock implements Security {
 	private final SecurityType type = SecurityType.STOCK;

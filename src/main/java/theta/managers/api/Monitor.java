@@ -1,6 +1,6 @@
 package theta.managers.api;
 
-import theta.strategies.ThetaTrade;
+import theta.domain.ThetaTrade;
 
 public interface Monitor {
 

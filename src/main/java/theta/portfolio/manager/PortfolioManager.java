@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.portfolio.manager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,13 +6,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import theta.api.Security;
+import theta.domain.Option;
+import theta.domain.Stock;
+import theta.domain.ThetaTrade;
 import theta.managers.api.Monitor;
-import theta.managers.api.PortfolioReceiver;
-import theta.managers.api.PortfolioRequester;
-import theta.strategies.ThetaTrade;
-import theta.strategies.Option;
-import theta.strategies.Stock;
-import theta.strategies.api.Security;
+import theta.portfolio.api.PortfolioReceiver;
+import theta.portfolio.api.PortfolioRequester;
 
 public class PortfolioManager implements PortfolioReceiver {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);

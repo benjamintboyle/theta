@@ -1,4 +1,4 @@
-package theta.strategies.api;
+package theta.api;
 
 public interface Security {
 

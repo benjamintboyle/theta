@@ -1,11 +1,11 @@
-package theta.strategies;
+package theta.domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-import theta.strategies.api.Security;
-import theta.strategies.api.SecurityType;
+import theta.api.Security;
+import theta.api.SecurityType;
 
 public class Option implements Security {
 	private SecurityType type;

@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.properties.manager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,14 +1,14 @@
-package theta.managers;
+package theta.execution.manager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.ThetaEngine;
-import theta.execution.EquityOrder;
+import theta.domain.ThetaEngine;
+import theta.domain.ThetaTrade;
 import theta.execution.api.Executable;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
-import theta.strategies.ThetaTrade;
+import theta.execution.domain.EquityOrder;
 
 public class ExecutionManager {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);

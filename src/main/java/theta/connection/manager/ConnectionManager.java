@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.connection.manager;
 
 import java.util.ArrayList;
 
@@ -9,6 +9,7 @@ import com.ib.controller.ApiController;
 
 import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
+import theta.properties.manager.PropertiesManager;
 
 public class ConnectionManager {
 	private final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);

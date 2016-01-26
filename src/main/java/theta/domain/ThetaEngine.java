@@ -1,4 +1,4 @@
-package theta;
+package theta.domain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,15 +18,14 @@ import brokers.interactive_brokers.IbOrderHandler;
 import brokers.interactive_brokers.IbPositionHandler;
 import brokers.interactive_brokers.IbTickHandler;
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
+import theta.api.Security;
+import theta.connection.manager.ConnectionManager;
 import theta.execution.api.Executable;
-import theta.managers.ConnectionManager;
-import theta.managers.ExecutionManager;
-import theta.managers.PortfolioManager;
-import theta.managers.PriceMonitor;
+import theta.execution.manager.ExecutionManager;
 import theta.managers.api.MarketDataRequester;
-import theta.managers.api.PortfolioRequester;
-import theta.strategies.ThetaTrade;
-import theta.strategies.api.Security;
+import theta.portfolio.api.PortfolioRequester;
+import theta.portfolio.manager.PortfolioManager;
+import theta.tick.manager.TickManager;
 
 public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
@@ -34,7 +33,7 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 
 	// Managers
 	private final ConnectionManager connectionManager = new ConnectionManager();
-	private final PriceMonitor monitor = new PriceMonitor(this);
+	private final TickManager monitor = new TickManager(this);
 	private final PortfolioManager portfolioManager = new PortfolioManager(this, monitor);
 	private final ExecutionManager executionManager = new ExecutionManager(this);
 
