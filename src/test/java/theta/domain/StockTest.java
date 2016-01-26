@@ -12,4 +12,8 @@ public class StockTest {
 	public static Stock buildTestStock() {
 		return new Stock("CHK", 100, 15.0, null);
 	}
+
+	public static Stock buildTestStockShort() {
+		return new Stock("CHK", -100, 15.0, null);
+	}
 }

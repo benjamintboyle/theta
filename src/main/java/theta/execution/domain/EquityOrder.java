@@ -49,7 +49,8 @@ public class EquityOrder implements Executable {
 		isValid.add(this.isValidSecurityType(security.getSecurityType()));
 		isValid.add(this.isAbsoluteQuantityEqualOrLess(security.getQuantity()));
 		isValid.add(this.isValidAction(security.getQuantity()));
-		return isValid.contains(Boolean.FALSE);
+
+		return !isValid.contains(Boolean.FALSE);
 	}
 
 	private Boolean isValidAction(Integer quantity) {
@@ -58,12 +59,14 @@ public class EquityOrder implements Executable {
 		switch (this.action) {
 		case BUY:
 			if (quantity < 0) {
-				isValidAction = Boolean.FALSE;
+				isValidAction = Boolean.TRUE;
 			}
+			break;
 		case SELL:
 			if (quantity > 0) {
 				isValidAction = Boolean.TRUE;
 			}
+			break;
 		default:
 			isValidAction = Boolean.FALSE;
 			this.logger.error("Invalid execution action: {}", this.action);
@@ -73,7 +76,7 @@ public class EquityOrder implements Executable {
 	}
 
 	private Boolean isAbsoluteQuantityEqualOrLess(Integer quantity) {
-		return Math.abs(quantity) <= Math.abs(this.quantity);
+		return Math.abs(quantity) >= Math.abs(this.quantity);
 	}
 
 	private Boolean isValidSecurityType(SecurityType securityType) {
