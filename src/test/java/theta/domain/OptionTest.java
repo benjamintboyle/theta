@@ -1,4 +1,4 @@
-package theta.managers.strategies;
+package theta.domain;
 
 import java.time.LocalDate;
 

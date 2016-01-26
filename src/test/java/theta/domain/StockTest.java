@@ -1,4 +1,4 @@
-package theta.managers.strategies;
+package theta.domain;
 
 import org.junit.Ignore;
 import org.junit.runner.RunWith;

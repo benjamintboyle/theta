@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.tick.manager;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,12 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import theta.domain.ThetaEngine;
 import theta.domain.ThetaTrade;
-import theta.managers.strategies.ThetaTradeTest;
+import theta.domain.ThetaTradeTest;
 import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PriceMonitorTest {
-	private final Logger logger = LoggerFactory.getLogger(PriceMonitorTest.class);
+public class TickManagerTest {
+	private final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
 
 	private static Double aroundPricePlusMinus = 0.05;
 	private static Integer numberOfPriceTicks = 10000;
@@ -58,7 +58,7 @@ public class PriceMonitorTest {
 
 		this.sut.addMonitor(trade);
 
-		ArrayList<Double> priceTicks = this.generatePriceTicksAround(PriceMonitorTest.numberOfPriceTicks,
+		ArrayList<Double> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks,
 				trade.getStrikePrice());
 
 		for (Double tick : priceTicks) {
@@ -74,8 +74,8 @@ public class PriceMonitorTest {
 		ArrayList<Double> priceTicks = new ArrayList<Double>();
 
 		for (Integer i = 0; i < numberOfTicks; i++) {
-			double min = price - PriceMonitorTest.aroundPricePlusMinus;
-			double max = price + PriceMonitorTest.aroundPricePlusMinus;
+			double min = price - TickManagerTest.aroundPricePlusMinus;
+			double max = price + TickManagerTest.aroundPricePlusMinus;
 			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
 			priceTicks.add(Precision.round(randomAroundPrice, 2));
 		}

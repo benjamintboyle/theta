@@ -1,4 +1,4 @@
-package theta.managers;
+package theta.portfolio.manager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
