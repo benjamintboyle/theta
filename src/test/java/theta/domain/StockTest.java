@@ -1,12 +1,14 @@
 package theta.domain;
 
-import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import theta.domain.Stock;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
-@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class StockTest {
 	public static Stock buildTestStock() {
@@ -15,5 +17,33 @@ public class StockTest {
 
 	public static Stock buildTestStockShort() {
 		return new Stock("CHK", -100, 15.0, null);
+	}
+
+	@Test
+	public void quantityTest() {
+		Stock stock = StockTest.buildTestStock();
+
+		assertThat(stock.getQuantity(), is(equalTo(100)));
+	}
+
+	@Test
+	public void quantityShortTest() {
+		Stock stock = StockTest.buildTestStockShort();
+
+		assertThat(stock.getQuantity(), is(equalTo(-100)));
+	}
+
+	@Test
+	public void tradePriceTest() {
+		Stock stock = StockTest.buildTestStockShort();
+
+		assertThat(stock.getAverageTradePrice(), is(equalTo(15.0)));
+	}
+
+	@Test
+	public void tickerTest() {
+		Stock stock = StockTest.buildTestStock();
+
+		assertThat(stock.getBackingTicker(), is(equalTo("CHK")));
 	}
 }
