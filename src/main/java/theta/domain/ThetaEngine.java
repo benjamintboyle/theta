@@ -13,18 +13,16 @@ import com.ib.controller.NewOrder;
 import com.ib.controller.OrderType;
 import com.ib.controller.Types.Action;
 
-import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.IbOrderHandler;
 import brokers.interactive_brokers.IbPositionHandler;
 import brokers.interactive_brokers.IbTickHandler;
-import brokers.interactive_brokers.loggers.IbStdoutLogger;
-import theta.api.Security;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.api.Executable;
 import theta.execution.manager.ExecutionManager;
 import theta.managers.api.MarketDataRequester;
 import theta.portfolio.api.PortfolioRequester;
 import theta.portfolio.manager.PortfolioManager;
+import theta.properties.manager.PropertiesManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
@@ -32,18 +30,18 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	private final static String SYSTEM_NAME = "ThetaEngine";
 
 	// Managers
-	private final ConnectionManager connectionManager = new ConnectionManager();
+	private final PropertiesManager propertiesManager = new PropertiesManager("config.properties");
+	private final ConnectionManager connectionManager = new ConnectionManager(
+			this.propertiesManager.getProperty("GATEWAY_HOST"),
+			Integer.parseInt(this.propertiesManager.getProperty("GATEWAY_PORT")),
+			Integer.parseInt(this.propertiesManager.getProperty("CLIENT_ID")));
 	private final TickManager monitor = new TickManager(this);
 	private final PortfolioManager portfolioManager = new PortfolioManager(this, monitor);
 	private final ExecutionManager executionManager = new ExecutionManager(this);
 
 	// Handlers
-	private final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
 	private IbPositionHandler ibPositionHander = new IbPositionHandler(this.portfolioManager);
 	private HashMap<String, IbTickHandler> tickHandlers = new HashMap<String, IbTickHandler>();
-
-	private final ApiController ibController = new ApiController(this.ibConnectionHandler, new IbStdoutLogger(),
-			new IbStdoutLogger());
 
 	// Entry point for application
 	public static void main(String[] args) {
@@ -63,15 +61,15 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 		this.monitor.addMonitor(trade);
 	}
 
-	public void execute(Security security, Executable order) {
+	public void execute(Executable order) {
 		NewOrder ibOrder = new NewOrder();
 
-		if (security.getQuantity() > 0) {
+		if (order.getQuantity() > 0) {
 			ibOrder.action(Action.SELL);
 		} else {
 			ibOrder.action(Action.BUY);
 		}
-		ibOrder.totalQuantity(2 * Math.abs(security.getQuantity()));
+		ibOrder.totalQuantity(2 * Math.abs(order.getQuantity()));
 		ibOrder.orderType(OrderType.MKT);
 		ibOrder.orderId(0);
 

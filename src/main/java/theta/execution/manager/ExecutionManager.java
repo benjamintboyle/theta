@@ -30,7 +30,7 @@ public class ExecutionManager {
 
 		Executable order = new EquityOrder(trade.getEquity().getQuantity(), action, ExecutionType.MARKET);
 		if (order.validate(trade.getEquity())) {
-			this.callback.execute(trade.getEquity(), order);
+			this.callback.execute(order);
 		}
 	}
 }

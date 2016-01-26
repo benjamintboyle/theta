@@ -63,8 +63,10 @@ public class PropertiesManager implements Runnable {
 		try {
 			watchService = FileSystems.getDefault().newWatchService();
 
-			this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
-			this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+			if (watchService != null) {
+				this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+				this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+			}
 		} catch (IOException e) {
 			this.logger.error("Failed to register directory {} with WatchService", this.configPath.getParent(), e);
 		}

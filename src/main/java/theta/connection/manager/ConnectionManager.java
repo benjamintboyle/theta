@@ -9,23 +9,18 @@ import com.ib.controller.ApiController;
 
 import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
-import theta.properties.manager.PropertiesManager;
 
 public class ConnectionManager {
 	private final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 	private final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
-	private final PropertiesManager propertiesManager = new PropertiesManager("config.properties");
 
 	private final ApiController ibController = new ApiController(this.ibConnectionHandler, new IbStdoutLogger(),
 			new IbStdoutLogger());
 
-	public ConnectionManager() {
-		new Thread(this.propertiesManager).start();
+	public ConnectionManager(String host, Integer port, Integer clientId) {
 		this.logger.info("Starting subsystem: 'Connection Manager'");
 		this.logger.info("Connecting to Broker servers...");
-		this.controller().connect(this.propertiesManager.getProperty("GATEWAY_HOST"),
-				Integer.parseInt(this.propertiesManager.getProperty("GATEWAY_PORT")),
-				Integer.parseInt(this.propertiesManager.getProperty("CLIENT_ID")));
+		this.controller().connect(host, port, clientId);
 	}
 
 	public ApiController controller() {
