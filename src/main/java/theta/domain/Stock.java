@@ -62,4 +62,44 @@ public class Stock implements Security {
 
 		return returnString;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((averageTradePrice == null) ? 0 : averageTradePrice.hashCode());
+		result = prime * result + ((backingTicker == null) ? 0 : backingTicker.hashCode());
+		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Stock other = (Stock) obj;
+		if (averageTradePrice == null) {
+			if (other.averageTradePrice != null)
+				return false;
+		} else if (!averageTradePrice.equals(other.averageTradePrice))
+			return false;
+		if (backingTicker == null) {
+			if (other.backingTicker != null)
+				return false;
+		} else if (!backingTicker.equals(other.backingTicker))
+			return false;
+		if (quantity == null) {
+			if (other.quantity != null)
+				return false;
+		} else if (!quantity.equals(other.quantity))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 }

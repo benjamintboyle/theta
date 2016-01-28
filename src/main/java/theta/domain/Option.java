@@ -86,4 +86,50 @@ public class Option implements Security {
 
 		return returnString;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((backingTicker == null) ? 0 : backingTicker.hashCode());
+		result = prime * result + ((expiration == null) ? 0 : expiration.hashCode());
+		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
+		result = prime * result + ((strikePrice == null) ? 0 : strikePrice.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Option other = (Option) obj;
+		if (backingTicker == null) {
+			if (other.backingTicker != null)
+				return false;
+		} else if (!backingTicker.equals(other.backingTicker))
+			return false;
+		if (expiration == null) {
+			if (other.expiration != null)
+				return false;
+		} else if (!expiration.equals(other.expiration))
+			return false;
+		if (quantity == null) {
+			if (other.quantity != null)
+				return false;
+		} else if (!quantity.equals(other.quantity))
+			return false;
+		if (strikePrice == null) {
+			if (other.strikePrice != null)
+				return false;
+		} else if (!strikePrice.equals(other.strikePrice))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 }

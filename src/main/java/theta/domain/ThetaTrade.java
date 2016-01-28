@@ -147,4 +147,44 @@ public class ThetaTrade {
 
 		return returnString;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((call == null) ? 0 : call.hashCode());
+		result = prime * result + ((equity == null) ? 0 : equity.hashCode());
+		result = prime * result + ((put == null) ? 0 : put.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ThetaTrade other = (ThetaTrade) obj;
+		if (call == null) {
+			if (other.call != null)
+				return false;
+		} else if (!call.equals(other.call))
+			return false;
+		if (equity == null) {
+			if (other.equity != null)
+				return false;
+		} else if (!equity.equals(other.equity))
+			return false;
+		if (put == null) {
+			if (other.put != null)
+				return false;
+		} else if (!put.equals(other.put))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 }
