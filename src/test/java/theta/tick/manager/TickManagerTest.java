@@ -33,7 +33,7 @@ public class TickManagerTest {
 	private static Integer numberOfPriceTicks = 10000;
 
 	@Mock
-	private ThetaEngine thetaEngine;
+	private ThetaEngine thetaEngine = null;
 
 	@InjectMocks
 	private TickManager sut = new TickManager(thetaEngine);

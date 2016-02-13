@@ -26,13 +26,13 @@ public class PropertiesManager implements Runnable {
 	private Properties properties = new Properties();
 
 	public PropertiesManager(String configFilename) {
-		this.getConfigResource(configFilename);
+		this.configPath = this.getConfigResource(configFilename);
 		this.readProperties();
 	}
 
 	@Override
 	public void run() {
-		final WatchService watchService = this.getWatchService();
+		final WatchService watchService = this.getWatchService(this.configPath);
 
 		WatchKey wk = null;
 		while (this.running) {
@@ -50,22 +50,28 @@ public class PropertiesManager implements Runnable {
 		}
 	}
 
-	private void getConfigResource(String configFilename) {
+	private Path getConfigResource(String configFilename) {
+		Path configPath = null;
+
 		try {
-			this.configPath = Paths.get(this.getClass().getResource(configFilename).toURI());
+			configPath = Paths.get(this.getClass().getClassLoader().getResource(configFilename).toURI());
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			logger.error("Couldn't get Resource path from: {}, {}", configFilename, e);
 		}
+
+		return configPath;
 	}
 
-	private WatchService getWatchService() {
+	private WatchService getWatchService(Path watchConfigPath) {
 		WatchService watchService = null;
 		try {
 			watchService = FileSystems.getDefault().newWatchService();
 
 			if (watchService != null) {
-				this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
-				this.configPath.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+				watchConfigPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+				watchConfigPath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+			} else {
+				logger.error("Watch Service initialization failed");
 			}
 		} catch (IOException e) {
 			this.logger.error("Failed to register directory {} with WatchService", this.configPath.getParent(), e);
@@ -79,7 +85,7 @@ public class PropertiesManager implements Runnable {
 			// Cast to Path ok, as only registered ENTRY_CREATE and ENTRY_MODIFY
 			final Path changed = (Path) event.context();
 			if (this.configPath.equals(changed)) {
-				readProperties();
+				this.readProperties();
 			}
 		}
 	}
