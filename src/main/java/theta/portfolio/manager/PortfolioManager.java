@@ -1,14 +1,12 @@
 package theta.portfolio.manager;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import theta.api.Security;
 import theta.domain.Option;
-import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.managers.api.Monitor;
 import theta.portfolio.api.PortfolioReceiver;
@@ -19,7 +17,7 @@ public class PortfolioManager implements PortfolioReceiver {
 
 	private PortfolioRequester request;
 	private Monitor monitor;
-	private Set<ThetaTrade> positions = new HashSet<ThetaTrade>();
+	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
 	public PortfolioManager(PortfolioRequester request, Monitor monitor) {
 		this.logger.info("Starting subsystem: 'Portfolio Manager'");
@@ -38,14 +36,11 @@ public class PortfolioManager implements PortfolioReceiver {
 				switch (security.getSecurityType()) {
 				case STOCK:
 					if (!position.hasEquity()) {
-						Stock stock = (Stock) security;
-						if (Math.round(stock.getAverageTradePrice()) == position.getStrikePrice()) {
-							position.add(security);
-							if (position.isComplete()) {
-								this.monitor.addMonitor(position);
-							}
-							return;
+						position.add(security);
+						if (position.isComplete()) {
+							this.monitor.addMonitor(position);
 						}
+						return;
 					}
 					break;
 				case CALL:
