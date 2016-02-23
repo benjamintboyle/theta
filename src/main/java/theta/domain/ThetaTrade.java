@@ -1,12 +1,14 @@
 package theta.domain;
 
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import theta.api.Security;
 import theta.api.SecurityType;
 
-public class ThetaTrade {
+public class ThetaTrade implements Iterable<Security>, Iterator<Security> {
 	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
 	private SecurityType type = SecurityType.THETA;
@@ -186,5 +188,30 @@ public class ThetaTrade {
 		if (type != other.type)
 			return false;
 		return true;
+	}
+
+	@Override
+	public Iterator<Security> iterator() {
+		return this;
+	}
+
+	@Override
+	public boolean hasNext() {
+		return (this.equity != null) || (this.call != null) || (this.put != null);
+	}
+
+	@Override
+	public Security next() {
+		Security toReturn = null;
+
+		if (this.equity != null) {
+			toReturn = this.equity;
+		} else if (this.call != null) {
+			toReturn = this.call;
+		} else if (this.put != null) {
+			toReturn = this.put;
+		}
+
+		return toReturn;
 	}
 }
