@@ -30,14 +30,11 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	private final static String SYSTEM_NAME = "ThetaEngine";
 
 	// Managers
-	private final PropertiesManager propertiesManager = new PropertiesManager("config.properties");
-	private final ConnectionManager connectionManager = new ConnectionManager(
-			this.propertiesManager.getProperty("GATEWAY_HOST"),
-			Integer.parseInt(this.propertiesManager.getProperty("GATEWAY_PORT")),
-			Integer.parseInt(this.propertiesManager.getProperty("CLIENT_ID")));
-	private final TickManager monitor = new TickManager(this);
-	private final PortfolioManager portfolioManager = new PortfolioManager(this, monitor);
-	private final ExecutionManager executionManager = new ExecutionManager(this);
+	private PropertiesManager propertiesManager = new PropertiesManager("config.properties");
+	private ConnectionManager connectionManager;
+	private TickManager monitor = new TickManager(this);
+	private PortfolioManager portfolioManager = new PortfolioManager(this, monitor);
+	private ExecutionManager executionManager = new ExecutionManager(this);
 
 	// Handlers
 	private IbPositionHandler ibPositionHander = new IbPositionHandler(this.portfolioManager);
@@ -47,6 +44,24 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 	public static void main(String[] args) {
 		ThetaEngine.logger.info("Starting system: '{}'", ThetaEngine.SYSTEM_NAME);
 		new ThetaEngine();
+	}
+
+	public ThetaEngine() {
+		this.connectionManager = new ConnectionManager(this.propertiesManager.getProperty("GATEWAY_HOST"),
+				Integer.parseInt(this.propertiesManager.getProperty("GATEWAY_PORT")),
+				Integer.parseInt(this.propertiesManager.getProperty("CLIENT_ID")));
+	}
+
+	public ThetaEngine(ConnectionManager connManager) {
+		this.connectionManager = connManager;
+	}
+
+	public IbPositionHandler getPositionHandler() {
+		return this.ibPositionHander;
+	}
+
+	public HashMap<String, IbTickHandler> getTickHandlers() {
+		return this.tickHandlers;
 	}
 
 	public ApiController controller() {

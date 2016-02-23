@@ -1,7 +1,9 @@
 package theta.portfolio.manager;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.NewContract;
 
+import theta.api.Security;
 import theta.api.SecurityType;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -32,7 +35,7 @@ import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortfolioManagerTest {
-	private final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
+	private static final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
 
 	@Mock
 	private ThetaEngine qeMock;
@@ -52,9 +55,37 @@ public class PortfolioManagerTest {
 	}
 
 	private void ingest_test(String filename) {
-		List<String> trades = readInputFiles(filename);
+		List<Security> securitiesList = readInputFile(filename);
 
-		for (String trade : trades) {
+		for (Security security : securitiesList) {
+			logger.debug("Trade: {}", security);
+
+			sut.ingestPosition(security);
+		}
+
+		Mockito.verify(pmMock, Mockito.times(6)).addMonitor(Mockito.any(ThetaTrade.class));
+	}
+
+	public static List<Security> readInputFile(String fileName) {
+		List<String> inputList = new ArrayList<String>();
+
+		try {
+			Path inputFile = Paths.get(PortfolioManagerTest.class.getClassLoader().getResource(fileName).toURI());
+
+			Stream<String> stream = Files.lines(inputFile);
+			inputList = stream.collect(Collectors.toList());
+			stream.close();
+		} catch (IOException | URISyntaxException e) {
+			e.printStackTrace();
+		}
+
+		return parseStringToSecurity(inputList);
+	}
+
+	private static List<Security> parseStringToSecurity(List<String> stringListOfSecurities) {
+		List<Security> securityList = new ArrayList<Security>();
+
+		for (String trade : stringListOfSecurities) {
 			logger.debug("Trade: {}", trade);
 
 			String[] security = trade.split("\\s*,\\s*");
@@ -68,51 +99,24 @@ public class PortfolioManagerTest {
 			case "STOCK":
 				Stock stock = new Stock(ticker, quantity, price, new NewContract());
 				logger.debug("Sending Stock: {}", stock);
-				sut.ingestPosition(stock);
+				securityList.add(stock);
 				break;
 			case "CALL":
 				Option call = new Option(SecurityType.CALL, ticker, quantity, price,
 						LocalDate.now().plusDays(Long.valueOf(security[4])));
 				logger.debug("Sending Call: {}", call);
 
-				sut.ingestPosition(call);
+				securityList.add(call);
 				break;
 			case "PUT":
 				Option put = new Option(SecurityType.PUT, ticker, quantity, price,
 						LocalDate.now().plusDays(Long.valueOf(security[4])));
 				logger.debug("Sending Put: {}", put);
-				sut.ingestPosition(put);
+				securityList.add(put);
 				break;
 			}
 		}
 
-		Mockito.verify(pmMock, Mockito.times(6)).addMonitor(Mockito.any(ThetaTrade.class));
-
-		/*
-		 * @Captor // private ArgumentCaptor<ExtrinsicCapture> captor;
-		 * 
-		 * Mockito.verify(pmMock,
-		 * Mockito.times(6)).addMonitor(captor.capture());
-		 * 
-		 * 
-		 * assertEquals(Arrays.asList(new Data("a"), new Data("b"), new
-		 * Data("c")), captor.getAllValues());
-		 */
-	}
-
-	private List<String> readInputFiles(String fileName) {
-		List<String> inputList = new ArrayList<String>();
-
-		try {
-			Path inputFile = Paths.get(getClass().getClassLoader().getResource(fileName).toURI());
-
-			Stream<String> stream = Files.lines(inputFile);
-			inputList = stream.collect(Collectors.toList());
-			stream.close();
-		} catch (IOException | URISyntaxException e) {
-			e.printStackTrace();
-		}
-
-		return inputList;
+		return securityList;
 	}
 }
