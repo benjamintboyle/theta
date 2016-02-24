@@ -20,9 +20,11 @@ import theta.connection.manager.ConnectionManager;
 import theta.execution.api.Executable;
 import theta.execution.manager.ExecutionManager;
 import theta.managers.api.MarketDataRequester;
+import theta.portfolio.api.PortfolioReceiver;
 import theta.portfolio.api.PortfolioRequester;
 import theta.portfolio.manager.PortfolioManager;
 import theta.properties.manager.PropertiesManager;
+import theta.tick.api.TickReceiver;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
@@ -56,12 +58,12 @@ public class ThetaEngine implements PortfolioRequester, MarketDataRequester {
 		this.connectionManager = connManager;
 	}
 
-	public IbPositionHandler getPositionHandler() {
-		return this.ibPositionHander;
+	public PortfolioReceiver getPortfolioReceiver() {
+		return this.portfolioManager;
 	}
 
-	public HashMap<String, IbTickHandler> getTickHandlers() {
-		return this.tickHandlers;
+	public TickReceiver getTickReceiver() {
+		return this.monitor;
 	}
 
 	public ApiController controller() {

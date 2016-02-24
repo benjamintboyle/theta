@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import theta.api.Security;
 import theta.domain.Option;
 import theta.domain.ThetaTrade;
-import theta.managers.api.Monitor;
 import theta.portfolio.api.PortfolioReceiver;
 import theta.portfolio.api.PortfolioRequester;
+import theta.tick.api.Monitor;
 
 public class PortfolioManager implements PortfolioReceiver {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);

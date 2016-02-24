@@ -8,9 +8,10 @@ import org.slf4j.LoggerFactory;
 
 import theta.domain.ThetaEngine;
 import theta.domain.ThetaTrade;
-import theta.managers.api.Monitor;
+import theta.tick.api.Monitor;
+import theta.tick.api.TickReceiver;
 
-public class TickManager implements Monitor {
+public class TickManager implements Monitor, TickReceiver {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	ThetaEngine callback;
@@ -35,7 +36,7 @@ public class TickManager implements Monitor {
 		return this.monitoredTrades.remove(ticker);
 	}
 
-	// Main monitor method
+	@Override
 	public Boolean notifyPriceChange(String ticker) {
 		Boolean tradeReversed = Boolean.FALSE;
 		ThetaTrade trade = this.monitoredTrades.get(ticker);
