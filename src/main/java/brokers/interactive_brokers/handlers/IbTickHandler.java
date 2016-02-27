@@ -156,10 +156,10 @@ public class IbTickHandler implements ITopMktDataHandler {
 		contract.exchange("SMART");
 		contract.primaryExch("ISLAND");
 
-		this.controller.controller().reqTopMktData(contract, "", false, this);
+		this.controller.getController().reqTopMktData(contract, "", false, this);
 	}
 
 	public void unsubscribeMarketData() {
-		this.controller.controller().cancelTopMktData(this);
+		this.controller.getController().cancelTopMktData(this);
 	}
 }

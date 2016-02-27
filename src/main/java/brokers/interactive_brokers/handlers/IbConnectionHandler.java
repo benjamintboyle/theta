@@ -5,12 +5,18 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 
-public class IbConnectionHandler implements IConnectionHandler {
+import brokers.interactive_brokers.loggers.IbStdoutLogger;
+import theta.connection.api.Controller;
+
+public class IbConnectionHandler implements IConnectionHandler, Controller {
 	final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
 	private ArrayList<String> accountList = new ArrayList<String>();
+
+	private final ApiController ibController = new ApiController(this, new IbStdoutLogger(), new IbStdoutLogger());
 
 	public ArrayList<String> getAccountList() {
 		return this.accountList;
@@ -48,5 +54,10 @@ public class IbConnectionHandler implements IConnectionHandler {
 	@Override
 	public void show(String string) {
 		this.logger.info("Show: {}", string);
+	}
+
+	@Override
+	public ApiController getController() {
+		return this.ibController;
 	}
 }

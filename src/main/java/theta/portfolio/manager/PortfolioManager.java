@@ -29,7 +29,7 @@ public class PortfolioManager implements PortfolioReceiver {
 		this.controllor = controllor;
 		this.monitor = monitor;
 
-		this.controllor.controller().reqPositions(this.ibPositionHander);
+		this.controllor.getController().reqPositions(this.ibPositionHander);
 	}
 
 	@Override

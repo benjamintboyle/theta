@@ -57,6 +57,6 @@ public class ExecutionManager implements Executor {
 
 		NewContract contract = new NewContract(new Contract());
 
-		this.controllor.controller().placeOrModifyOrder(contract, ibOrder, new IbOrderHandler());
+		this.controllor.getController().placeOrModifyOrder(contract, ibOrder, new IbOrderHandler());
 	}
 }
