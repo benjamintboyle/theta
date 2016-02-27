@@ -6,21 +6,28 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.domain.ThetaEngine;
+import brokers.interactive_brokers.handlers.IbTickHandler;
+import theta.connection.api.Controllor;
 import theta.domain.ThetaTrade;
+import theta.execution.api.Executor;
 import theta.tick.api.Monitor;
 import theta.tick.api.TickReceiver;
+import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 
 public class TickManager implements Monitor, TickReceiver {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	ThetaEngine callback;
+	Controllor controllor;
+	Executor executor;
 
 	private Map<String, ThetaTrade> monitoredTrades = new HashMap<String, ThetaTrade>();
+	private HashMap<String, IbTickHandler> tickHandlers = new HashMap<String, IbTickHandler>();
 
-	public TickManager(ThetaEngine callback) {
+	public TickManager(Controllor controllor, Executor executor) {
 		this.logger.info("Starting subsystem: 'Monitor'");
-		this.callback = callback;
+		this.controllor = controllor;
+		this.executor = executor;
 	}
 
 	@Override
@@ -28,8 +35,10 @@ public class TickManager implements Monitor, TickReceiver {
 		this.logger.info("Adding Monitor for '{}'", trade.getBackingTicker());
 
 		this.monitoredTrades.put(trade.getBackingTicker(), trade);
-		this.callback.subscribeMarketData(trade);
 
+		if (!this.tickHandlers.containsKey(trade.getBackingTicker())) {
+			this.tickHandlers.put(trade.getBackingTicker(), new IbTickHandler(this.controllor, this, trade));
+		}
 	}
 
 	public ThetaTrade deleteMonitor(String ticker) {
@@ -37,19 +46,21 @@ public class TickManager implements Monitor, TickReceiver {
 	}
 
 	@Override
-	public Boolean notifyPriceChange(String ticker) {
+	public Boolean notifyTick(Tick tick) {
 		Boolean tradeReversed = Boolean.FALSE;
-		ThetaTrade trade = this.monitoredTrades.get(ticker);
-		Double lastPrice = this.callback.getLast(ticker);
+
+		// Only check if it is a "LAST" tick (rather than ASK, BID, etc)
+		if (!TickType.LAST.equals(tick.getTickType())) {
+			return tradeReversed;
+		}
+
+		ThetaTrade trade = this.monitoredTrades.get(tick.getTicker());
+		Double lastPrice = tick.getPrice();
 		Integer quantity = trade.getEquity().getQuantity();
 		Double strikePrice = trade.getStrikePrice();
 
-		this.logger.info("Current tick for '{}': ${}", ticker, lastPrice);
+		this.logger.info("Current tick for '{}': ${}", trade.getBackingTicker(), lastPrice);
 
-		/*
-		 * If position Long, and last price is less than strike price, else if
-		 * position Short, and last price is greater than strike price
-		 */
 		if ((quantity > 0) && (lastPrice < strikePrice)) {
 			tradeReversed = this.reversePosition(trade);
 		} else if ((quantity < 0) && (lastPrice > strikePrice)) {
@@ -61,7 +72,7 @@ public class TickManager implements Monitor, TickReceiver {
 
 	private Boolean reversePosition(ThetaTrade trade) {
 		this.logger.info("Reversing position in '{}'}", trade.getBackingTicker());
-		this.callback.reverseTrade(trade);
+		this.executor.reverseTrade(trade);
 		this.monitoredTrades.put(trade.getBackingTicker(), trade.reversePosition());
 		return Boolean.TRUE;
 	}

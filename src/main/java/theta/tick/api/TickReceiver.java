@@ -1,5 +1,7 @@
 package theta.tick.api;
 
+import theta.tick.domain.Tick;
+
 public interface TickReceiver {
-	public Boolean notifyPriceChange(String ticker);
+	public Boolean notifyTick(Tick tick);
 }

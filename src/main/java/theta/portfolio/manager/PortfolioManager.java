@@ -5,27 +5,31 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import brokers.interactive_brokers.handlers.IbPositionHandler;
 import theta.api.Security;
+import theta.connection.api.Controllor;
 import theta.domain.Option;
 import theta.domain.ThetaTrade;
 import theta.portfolio.api.PortfolioReceiver;
-import theta.portfolio.api.PortfolioRequester;
 import theta.tick.api.Monitor;
 
 public class PortfolioManager implements PortfolioReceiver {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
-	private PortfolioRequester request;
+	private Controllor controllor;
 	private Monitor monitor;
 	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
-	public PortfolioManager(PortfolioRequester request, Monitor monitor) {
+	// Handlers
+	private IbPositionHandler ibPositionHander = new IbPositionHandler(this);
+
+	public PortfolioManager(Controllor controllor, Monitor monitor) {
 		this.logger.info("Starting subsystem: 'Portfolio Manager'");
 
-		this.request = request;
+		this.controllor = controllor;
 		this.monitor = monitor;
 
-		this.request.subscribePortfolio();
+		this.controllor.controller().reqPositions(this.ibPositionHander);
 	}
 
 	@Override

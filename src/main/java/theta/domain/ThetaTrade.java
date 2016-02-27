@@ -1,6 +1,9 @@
 package theta.domain;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +134,10 @@ public class ThetaTrade implements Iterable<Security>, Iterator<Security> {
 		this.getEquity().reversePosition();
 		this.logger.info("Reversing trade...");
 		return this;
+	}
+
+	public List<Security> toSecurityList() {
+		return StreamSupport.stream(this.spliterator(), false).collect(Collectors.toList());
 	}
 
 	@Override

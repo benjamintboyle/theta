@@ -1,9 +1,7 @@
 package theta.portfolio.manager;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +24,7 @@ import com.ib.controller.NewContract;
 
 import theta.api.Security;
 import theta.api.SecurityType;
+import theta.connection.manager.ConnectionManager;
 import theta.domain.Option;
 import theta.domain.Stock;
 import theta.domain.ThetaEngine;
@@ -43,6 +42,10 @@ public class PortfolioManagerTest {
 	private TickManager pmMock;
 	@InjectMocks
 	private PortfolioManager sut;
+
+	public static PortfolioManager buildPortfolioManager(ConnectionManager connectionManager, TickManager tickManager) {
+		return new PortfolioManager(connectionManager, tickManager);
+	}
 
 	@Test
 	public void ingest_trades_in_order() {

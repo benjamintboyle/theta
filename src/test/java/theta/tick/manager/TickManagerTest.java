@@ -6,10 +6,11 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Precision;
 import org.junit.Test;
@@ -20,9 +21,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.domain.ThetaEngine;
+import theta.connection.api.Controllor;
+import theta.connection.manager.ConnectionManager;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
+import theta.execution.api.Executor;
+import theta.execution.manager.ExecutionManager;
+import theta.portfolio.manager.PortfolioManager;
+import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,10 +40,15 @@ public class TickManagerTest {
 	private static Integer numberOfPriceTicks = 10000;
 
 	@Mock
-	private ThetaEngine thetaEngine = null;
-
+	private Controllor controllor;
+	@Mock
+	private Executor executor;
 	@InjectMocks
-	private TickManager sut = new TickManager(thetaEngine);
+	private TickManager sut;
+
+	public static TickManager buildTickManager(ConnectionManager connectionManager, ExecutionManager executionManager) {
+		return new TickManager(connectionManager, executionManager);
+	}
 
 	@Test
 	public void test_add_and_delete_monitor() {
@@ -58,37 +70,37 @@ public class TickManagerTest {
 
 		this.sut.addMonitor(trade);
 
-		ArrayList<Double> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks,
-				trade.getStrikePrice());
+		ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
-		for (Double tick : priceTicks) {
-			when(this.thetaEngine.getLast(trade.getBackingTicker())).thenReturn(tick);
-			this.sut.notifyPriceChange(trade.getBackingTicker());
+		for (Tick tick : priceTicks) {
+			this.sut.notifyTick(tick);
 		}
 
-		verify(this.thetaEngine, times(this.calculatePriceTransitions(trade.getStrikePrice(), priceTicks)))
-				.reverseTrade(any(ThetaTrade.class));
+		verify(this.executor,
+				times(this.calculatePriceTransitions(trade.getStrikePrice(),
+						priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
+								.reverseTrade(any(ThetaTrade.class));
 	}
 
-	private ArrayList<Double> generatePriceTicksAround(Integer numberOfTicks, Double price) {
-		ArrayList<Double> priceTicks = new ArrayList<Double>();
+	private ArrayList<Tick> generatePriceTicksAround(Integer numberOfTicks, ThetaTrade theta) {
+		ArrayList<Tick> priceTicks = new ArrayList<Tick>();
 
 		for (Integer i = 0; i < numberOfTicks; i++) {
-			double min = price - TickManagerTest.aroundPricePlusMinus;
-			double max = price + TickManagerTest.aroundPricePlusMinus;
+			double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
+			double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
 			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-			priceTicks.add(Precision.round(randomAroundPrice, 2));
+			priceTicks.add(new Tick(theta.getBackingTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST));
 		}
 
 		return priceTicks;
 	}
 
-	private Integer calculatePriceTransitions(Double strikePrice, ArrayList<Double> priceTicks) {
+	private Integer calculatePriceTransitions(Double strikePrice, List<Double> list) {
 		Integer priceTransitions = 0;
 		Boolean isPositionLong = Boolean.TRUE;
 
-		for (Integer i = 0; i < priceTicks.size(); i++) {
-			Double currentTick = priceTicks.get(i);
+		for (Integer i = 0; i < list.size(); i++) {
+			Double currentTick = list.get(i);
 
 			if (currentTick > strikePrice && !isPositionLong) {
 				priceTransitions++;

@@ -1,6 +1,6 @@
 package theta.portfolio.api;
 
-public interface PortfolioRequester {
+public interface PortfolioRequestor {
 
 	public void subscribePortfolio();
 	

@@ -7,10 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiController;
 
-import brokers.interactive_brokers.IbConnectionHandler;
+import brokers.interactive_brokers.handlers.IbConnectionHandler;
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
+import theta.connection.api.Controllor;
 
-public class ConnectionManager {
+public class ConnectionManager implements Controllor {
 	private final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 	private final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
 

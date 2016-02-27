@@ -18,14 +18,14 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertiesManager implements Runnable {
-	private final Logger logger = LoggerFactory.getLogger(PropertiesManager.class);
+public class PropertyManager implements Runnable {
+	private final Logger logger = LoggerFactory.getLogger(PropertyManager.class);
 
 	private Boolean running = true;
 	private Path configPath;
 	private Properties properties = new Properties();
 
-	public PropertiesManager(String configFilename) {
+	public PropertyManager(String configFilename) {
 		this.configPath = this.getConfigResource(configFilename);
 		this.readProperties();
 	}
