@@ -10,7 +10,7 @@ import com.ib.controller.OrderType;
 import com.ib.controller.Types.Action;
 
 import brokers.interactive_brokers.handlers.IbOrderHandler;
-import theta.connection.api.Controllor;
+import theta.connection.api.Controller;
 import theta.domain.ThetaTrade;
 import theta.execution.api.Executable;
 import theta.execution.api.ExecutionAction;
@@ -21,9 +21,9 @@ import theta.execution.domain.EquityOrder;
 public class ExecutionManager implements Executor {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
-	private Controllor controllor;
+	private Controller controllor;
 
-	public ExecutionManager(Controllor controllor) {
+	public ExecutionManager(Controller controllor) {
 		this.logger.info("Starting subsystem: 'Execution Manager'");
 		this.controllor = controllor;
 	}

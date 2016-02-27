@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import brokers.interactive_brokers.handlers.IbPositionHandler;
 import theta.api.Security;
-import theta.connection.api.Controllor;
+import theta.connection.api.Controller;
 import theta.domain.Option;
 import theta.domain.ThetaTrade;
 import theta.portfolio.api.PortfolioReceiver;
@@ -16,14 +16,14 @@ import theta.tick.api.Monitor;
 public class PortfolioManager implements PortfolioReceiver {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
-	private Controllor controllor;
+	private Controller controllor;
 	private Monitor monitor;
 	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
 	// Handlers
 	private IbPositionHandler ibPositionHander = new IbPositionHandler(this);
 
-	public PortfolioManager(Controllor controllor, Monitor monitor) {
+	public PortfolioManager(Controller controllor, Monitor monitor) {
 		this.logger.info("Starting subsystem: 'Portfolio Manager'");
 
 		this.controllor = controllor;

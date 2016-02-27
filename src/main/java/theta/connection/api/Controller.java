@@ -2,6 +2,6 @@ package theta.connection.api;
 
 import com.ib.controller.ApiController;
 
-public interface Controllor {
+public interface Controller {
 	public ApiController controller();
 }

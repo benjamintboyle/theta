@@ -21,7 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.connection.api.Controllor;
+import theta.connection.api.Controller;
 import theta.connection.manager.ConnectionManager;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
@@ -40,7 +40,7 @@ public class TickManagerTest {
 	private static Integer numberOfPriceTicks = 10000;
 
 	@Mock
-	private Controllor controllor;
+	private Controller controllor;
 	@Mock
 	private Executor executor;
 	@InjectMocks

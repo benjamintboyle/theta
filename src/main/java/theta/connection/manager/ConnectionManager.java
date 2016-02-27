@@ -9,9 +9,9 @@ import com.ib.controller.ApiController;
 
 import brokers.interactive_brokers.handlers.IbConnectionHandler;
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
-import theta.connection.api.Controllor;
+import theta.connection.api.Controller;
 
-public class ConnectionManager implements Controllor {
+public class ConnectionManager implements Controller {
 	private final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 	private final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
 
