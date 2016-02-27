@@ -1,11 +1,8 @@
 package theta.domain;
 
-import java.util.ArrayList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.connection.manager.ConnectionManager;
 import theta.execution.api.Executor;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.api.PortfolioReceiver;
@@ -18,14 +15,11 @@ public class ThetaEngine {
 	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
 
 	// Managers
-	private ConnectionManager connectionManager;
 	private ExecutionManager executionManager;
 	private TickManager monitor;
 	private PortfolioManager portfolioManager;
 
-	public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
-			ExecutionManager executionManager) {
-		this.connectionManager = connectionManager;
+	public ThetaEngine(PortfolioManager portfolioManager, TickManager tickManager, ExecutionManager executionManager) {
 		this.portfolioManager = portfolioManager;
 		this.monitor = tickManager;
 		this.executionManager = executionManager;
@@ -41,10 +35,6 @@ public class ThetaEngine {
 
 	public Executor getExecutor() {
 		return this.executionManager;
-	}
-
-	public ArrayList<String> getAccountList() {
-		return this.connectionManager.getAccountList();
 	}
 
 	public void addMonitor(ThetaTrade trade) {

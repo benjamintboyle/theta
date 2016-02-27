@@ -1,7 +1,5 @@
 package theta.connection.manager;
 
-import java.util.ArrayList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +20,6 @@ public class ConnectionManager implements Controller {
 
 	public ApiController getController() {
 		return this.ibConnectionHandler.getController();
-	}
-
-	public ArrayList<String> getAccountList() {
-		return this.ibConnectionHandler.getAccountList();
 	}
 
 	public void shutdown() {

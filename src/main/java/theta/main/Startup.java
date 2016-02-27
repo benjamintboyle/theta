@@ -28,6 +28,6 @@ public class Startup {
 		PortfolioManager portfolioManager = new PortfolioManager(connectionManager, tickManager);
 
 		ThetaEngine.logger.info("Starting system...");
-		new ThetaEngine(connectionManager, portfolioManager, tickManager, executionManager);
+		new ThetaEngine(portfolioManager, tickManager, executionManager);
 	}
 }

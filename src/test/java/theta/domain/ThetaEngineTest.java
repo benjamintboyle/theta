@@ -36,7 +36,7 @@ public class ThetaEngineTest {
 	@Spy
 	private PortfolioManager portfolioSpy = PortfolioManagerTest.buildPortfolioManager(connectionMock, tickSpy);
 
-	private ThetaEngine sut = new ThetaEngine(connectionMock, portfolioSpy, tickSpy, executionSpy);
+	private ThetaEngine sut = new ThetaEngine(portfolioSpy, tickSpy, executionSpy);
 
 	@Test
 	public void IntegrationTest_OnePositionOneContract() {
