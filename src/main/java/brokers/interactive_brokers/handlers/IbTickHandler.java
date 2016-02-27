@@ -1,4 +1,4 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.handlers;
 
 import com.ib.controller.NewTickType;
 
@@ -12,28 +12,30 @@ import com.ib.controller.ApiController.ITopMktDataHandler;
 import com.ib.controller.NewContract;
 import com.ib.controller.Types.MktDataType;
 
-import theta.domain.ThetaEngine;
+import theta.connection.api.Controllor;
 import theta.domain.ThetaTrade;
+import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 import theta.tick.manager.TickManager;
 
 public class IbTickHandler implements ITopMktDataHandler {
 	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
 
-	ThetaEngine controller;
-	TickManager callback;
+	private Controllor controller;
+	private TickManager callback;
 
-	String ticker;
-	double bidPrice;
-	double askPrice;
-	double lastPrice;
-	long lastTime;
-	int bidSize;
-	int askSize;
-	double closePrice;
-	int volume;
-	boolean isSnapshot;
+	private String ticker;
+	private Double bidPrice;
+	private Double askPrice;
+	private Double lastPrice;
+	private Long lastTime;
+	private Integer bidSize;
+	private Integer askSize;
+	private Double closePrice;
+	private Integer volume;
+	private Boolean isSnapshot;
 
-	public IbTickHandler(ThetaEngine controller, TickManager callback, ThetaTrade trade) {
+	public IbTickHandler(Controllor controller, TickManager callback, ThetaTrade trade) {
 		this.controller = controller;
 		this.callback = callback;
 		this.ticker = trade.getBackingTicker();
@@ -54,7 +56,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 		case LAST:
 			if (this.lastPrice != price) {
 				this.lastPrice = price;
-				this.callback.notifyPriceChange(this.ticker);
+				this.callback.notifyTick(new Tick(ticker, price, TickType.LAST));
 			}
 			break;
 		case CLOSE:
