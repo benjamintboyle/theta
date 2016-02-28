@@ -9,9 +9,9 @@ import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 
 import brokers.interactive_brokers.loggers.IbStdoutLogger;
-import theta.connection.api.Controller;
+import theta.api.ConnectionHandler;
 
-public class IbConnectionHandler implements IConnectionHandler, Controller {
+public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
 	final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
 	private ArrayList<String> accountList = new ArrayList<String>();
@@ -59,5 +59,19 @@ public class IbConnectionHandler implements IConnectionHandler, Controller {
 	@Override
 	public ApiController getController() {
 		return this.ibController;
+	}
+
+	@Override
+	public Boolean connect() {
+		// Paper Trading port = 7497; Operational Trading port = 7496
+		this.getController().connect("127.0.0.1", 7497, 0);
+
+		return Boolean.TRUE;
+	}
+
+	@Override
+	public Boolean disconnect() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

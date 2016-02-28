@@ -9,20 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiController.ITopMktDataHandler;
-import com.ib.controller.NewContract;
 import com.ib.controller.Types.MktDataType;
 
-import theta.connection.api.Controller;
-import theta.domain.ThetaTrade;
+import theta.api.TickHandler;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
-import theta.tick.manager.TickManager;
 
-public class IbTickHandler implements ITopMktDataHandler {
+public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
-
-	private Controller controller;
-	private TickManager callback;
 
 	private String ticker;
 	private Double bidPrice;
@@ -34,12 +28,6 @@ public class IbTickHandler implements ITopMktDataHandler {
 	private Double closePrice;
 	private Integer volume;
 	private Boolean isSnapshot;
-
-	public IbTickHandler(Controller controller, TickManager callback, ThetaTrade trade) {
-		this.controller = controller;
-		this.callback = callback;
-		this.ticker = trade.getBackingTicker();
-	}
 
 	@Override
 	public void tickPrice(NewTickType tickType, double price, int canAutoExecute) {
@@ -54,10 +42,7 @@ public class IbTickHandler implements ITopMktDataHandler {
 			this.askPrice = price;
 			break;
 		case LAST:
-			if (this.lastPrice != price) {
-				this.lastPrice = price;
-				this.callback.notifyTick(new Tick(ticker, price, TickType.LAST));
-			}
+			this.lastPrice = price;
 			break;
 		case CLOSE:
 			this.closePrice = price;
@@ -111,55 +96,59 @@ public class IbTickHandler implements ITopMktDataHandler {
 		logger.info("Ticker: {}, Tick Snapshot End", this.ticker);
 	}
 
+	@Override
 	public String getTicker() {
 		return this.ticker;
 	}
 
+	@Override
 	public Double getBid() {
 		return this.bidPrice;
 	}
 
+	@Override
 	public Double getAsk() {
 		return this.askPrice;
 	}
 
+	@Override
 	public Double getLast() {
 		return this.lastPrice;
 	}
 
+	@Override
 	public LocalDateTime getLastTime() {
 		return LocalDateTime.ofEpochSecond(this.lastTime, 0, ZoneOffset.UTC);
 	}
 
+	@Override
 	public Integer getBidSize() {
 		return this.bidSize;
 	}
 
+	@Override
 	public Integer getAskSize() {
 		return this.askSize;
 	}
 
+	@Override
 	public Double getClose() {
 		return this.closePrice;
 	}
 
+	@Override
 	public Integer getVolume() {
 		return this.volume;
 	}
 
+	@Override
 	public Boolean isSnapshot() {
 		return this.isSnapshot;
 	}
 
-	public void subscribeMarketData(ThetaTrade trade) {
-		NewContract contract = trade.getEquity().getContract();
-		contract.exchange("SMART");
-		contract.primaryExch("ISLAND");
-
-		this.controller.getController().reqTopMktData(contract, "", false, this);
-	}
-
-	public void unsubscribeMarketData() {
-		this.controller.getController().cancelTopMktData(this);
+	@Override
+	public Tick getTick() {
+		return new Tick(this.ticker, this.lastPrice, TickType.LAST,
+				LocalDateTime.ofEpochSecond(this.lastTime, 0, ZoneOffset.UTC));
 	}
 }

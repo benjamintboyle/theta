@@ -2,7 +2,7 @@ package theta.portfolio.api;
 
 import theta.api.Security;
 
-public interface PortfolioReceiver {
+public interface PortfolioObserver {
 
 	public void ingestPosition(Security security);
 }

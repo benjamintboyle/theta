@@ -3,14 +3,7 @@ package theta.execution.manager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ib.client.Contract;
-import com.ib.controller.NewContract;
-import com.ib.controller.NewOrder;
-import com.ib.controller.OrderType;
-import com.ib.controller.Types.Action;
-
-import brokers.interactive_brokers.handlers.IbOrderHandler;
-import theta.connection.api.Controller;
+import theta.api.ExecutionHandler;
 import theta.domain.ThetaTrade;
 import theta.execution.api.Executable;
 import theta.execution.api.ExecutionAction;
@@ -21,11 +14,11 @@ import theta.execution.domain.EquityOrder;
 public class ExecutionManager implements Executor {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
-	private Controller controllor;
+	private ExecutionHandler executionHandler;
 
-	public ExecutionManager(Controller controllor) {
+	public ExecutionManager(ExecutionHandler executionHandler) {
 		this.logger.info("Starting subsystem: 'Execution Manager'");
-		this.controllor = controllor;
+		this.executionHandler = executionHandler;
 	}
 
 	@Override
@@ -39,24 +32,7 @@ public class ExecutionManager implements Executor {
 
 		Executable order = new EquityOrder(trade.getEquity().getQuantity(), action, ExecutionType.MARKET);
 		if (order.validate(trade.getEquity())) {
-			this.execute(order);
+			this.executionHandler.executeOrder(order);
 		}
-	}
-
-	public void execute(Executable order) {
-		NewOrder ibOrder = new NewOrder();
-
-		if (order.getQuantity() > 0) {
-			ibOrder.action(Action.SELL);
-		} else {
-			ibOrder.action(Action.BUY);
-		}
-		ibOrder.totalQuantity(2 * Math.abs(order.getQuantity()));
-		ibOrder.orderType(OrderType.MKT);
-		ibOrder.orderId(0);
-
-		NewContract contract = new NewContract(new Contract());
-
-		this.controllor.getController().placeOrModifyOrder(contract, ibOrder, new IbOrderHandler());
 	}
 }

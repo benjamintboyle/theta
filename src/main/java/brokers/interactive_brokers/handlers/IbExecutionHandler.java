@@ -3,12 +3,27 @@ package brokers.interactive_brokers.handlers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ib.client.Contract;
+import com.ib.controller.NewContract;
+import com.ib.controller.NewOrder;
 import com.ib.controller.NewOrderState;
 import com.ib.controller.OrderStatus;
-import com.ib.controller.ApiController.IOrderHandler;
+import com.ib.controller.OrderType;
 
-public class IbOrderHandler implements IOrderHandler {
-	final Logger logger = LoggerFactory.getLogger(IbOrderHandler.class);
+import theta.api.ExecutionHandler;
+import theta.execution.api.Executable;
+
+import com.ib.controller.ApiController.IOrderHandler;
+import com.ib.controller.Types.Action;
+
+public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
+	final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
+
+	private IbController ibController;
+
+	public IbExecutionHandler(IbController ibController) {
+		this.ibController = ibController;
+	}
 
 	@Override
 	public void orderState(NewOrderState orderState) {
@@ -28,5 +43,25 @@ public class IbOrderHandler implements IOrderHandler {
 	@Override
 	public void handle(int errorCode, final String errorMsg) {
 		logger.error("Error Code: {}, Error Msg: {}", errorCode, errorMsg);
+	}
+
+	@Override
+	public Boolean executeOrder(Executable order) {
+		NewOrder ibOrder = new NewOrder();
+
+		if (order.getQuantity() > 0) {
+			ibOrder.action(Action.SELL);
+		} else {
+			ibOrder.action(Action.BUY);
+		}
+		ibOrder.totalQuantity(2 * Math.abs(order.getQuantity()));
+		ibOrder.orderType(OrderType.MKT);
+		ibOrder.orderId(0);
+
+		NewContract contract = new NewContract(new Contract());
+
+		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
+
+		return Boolean.TRUE;
 	}
 }

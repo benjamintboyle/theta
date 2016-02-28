@@ -2,6 +2,7 @@ package theta.domain;
 
 import static org.junit.Assert.fail;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import theta.ThetaEngine;
 import theta.api.Security;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.api.Executable;
@@ -36,7 +38,7 @@ public class ThetaEngineTest {
 	@Spy
 	private PortfolioManager portfolioSpy = PortfolioManagerTest.buildPortfolioManager(connectionMock, tickSpy);
 
-	private ThetaEngine sut = new ThetaEngine(portfolioSpy, tickSpy, executionSpy);
+	private ThetaEngine sut = new ThetaEngine();
 
 	@Test
 	public void IntegrationTest_OnePositionOneContract() {
@@ -108,23 +110,23 @@ public class ThetaEngineTest {
 			String ticker = tick.getTicker();
 			Double strike = tick.getPrice();
 
-			tickList.add(new Tick(ticker, strike, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike, tickType));
-			tickList.add(new Tick(ticker, strike, tickType));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType));
-			tickList.add(new Tick(ticker, strike, tickType));
-			tickList.add(new Tick(ticker, strike, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType));
+			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
 		}
 
 		return tickList;
@@ -134,7 +136,8 @@ public class ThetaEngineTest {
 		List<Tick> zeroTickList = new ArrayList<Tick>();
 
 		for (ThetaTrade theta : thetaList) {
-			zeroTickList.add(new Tick(theta.getBackingTicker(), theta.getStrikePrice(), TickType.LAST));
+			zeroTickList.add(
+					new Tick(theta.getBackingTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
 		}
 		return zeroTickList;
 	}

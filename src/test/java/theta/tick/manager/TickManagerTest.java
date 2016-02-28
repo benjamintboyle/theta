@@ -3,12 +3,14 @@ package theta.tick.manager;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -17,20 +19,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.connection.api.Controller;
-import theta.connection.manager.ConnectionManager;
+import theta.api.TickHandler;
+import theta.api.TickSubscriber;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
-import theta.execution.manager.ExecutionManager;
-import theta.portfolio.manager.PortfolioManager;
+import theta.portfolio.api.PositionProvider;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
-import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TickManagerTest {
@@ -40,27 +41,31 @@ public class TickManagerTest {
 	private static Integer numberOfPriceTicks = 10000;
 
 	@Mock
-	private Controller controllor;
+	private TickSubscriber tickSubscriber;
+	@Mock
+	PositionProvider positonProvider;
 	@Mock
 	private Executor executor;
 	@InjectMocks
 	private TickManager sut;
 
-	public static TickManager buildTickManager(ConnectionManager connectionManager, ExecutionManager executionManager) {
-		return new TickManager(connectionManager, executionManager);
-	}
+	@Mock
+	TickHandler handler;
 
 	@Test
 	public void test_add_and_delete_monitor() {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
 		this.logger.debug("Trade to Monitor: {}", trade);
 
+		Mockito.when(handler.getTicker()).thenReturn(trade.getBackingTicker());
+		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getBackingTicker())).thenReturn(handler);
+
 		this.sut.addMonitor(trade);
 
-		ThetaTrade removedTrade = this.sut.deleteMonitor(trade.getBackingTicker());
-		this.logger.debug("Trade removed from Monitor: {}", trade);
+		TickHandler removedTickHandler = this.sut.deleteMonitor(trade.getBackingTicker());
+		this.logger.debug("Handler removed from Tick Monitor: {}", removedTickHandler);
 
-		assertThat(removedTrade, is(equalTo(trade)));
+		assertThat(removedTickHandler.getTicker(), is(equalTo(trade.getBackingTicker())));
 	}
 
 	@Test
@@ -73,7 +78,7 @@ public class TickManagerTest {
 		ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
 		for (Tick tick : priceTicks) {
-			this.sut.notifyTick(tick);
+			this.sut.checkTick(Optional.of(trade), tick);
 		}
 
 		verify(this.executor,
@@ -89,7 +94,8 @@ public class TickManagerTest {
 			double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
 			double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
 			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-			priceTicks.add(new Tick(theta.getBackingTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST));
+			priceTicks.add(new Tick(theta.getBackingTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST,
+					LocalDateTime.now()));
 		}
 
 		return priceTicks;

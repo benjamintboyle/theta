@@ -22,12 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.NewContract;
 
+import theta.api.PositionHandler;
 import theta.api.Security;
 import theta.api.SecurityType;
-import theta.connection.manager.ConnectionManager;
 import theta.domain.Option;
 import theta.domain.Stock;
-import theta.domain.ThetaEngine;
 import theta.domain.ThetaTrade;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
@@ -37,15 +36,11 @@ public class PortfolioManagerTest {
 	private static final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
 
 	@Mock
-	private ThetaEngine qeMock;
+	private PositionHandler positionHandlerMock;
 	@Mock
 	private TickManager pmMock;
 	@InjectMocks
 	private PortfolioManager sut;
-
-	public static PortfolioManager buildPortfolioManager(ConnectionManager connectionManager, TickManager tickManager) {
-		return new PortfolioManager(connectionManager, tickManager);
-	}
 
 	@Test
 	public void ingest_trades_in_order() {

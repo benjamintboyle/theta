@@ -1,35 +1,37 @@
 package theta.portfolio.manager;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import brokers.interactive_brokers.handlers.IbPositionHandler;
+import theta.api.PositionHandler;
 import theta.api.Security;
-import theta.connection.api.Controller;
 import theta.domain.Option;
 import theta.domain.ThetaTrade;
-import theta.portfolio.api.PortfolioReceiver;
+import theta.portfolio.api.PortfolioObserver;
+import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
 
-public class PortfolioManager implements PortfolioReceiver {
+public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
-	private Controller controllor;
+	private PositionHandler positionHandler;
 	private Monitor monitor;
 	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
-	// Handlers
-	private IbPositionHandler ibPositionHander = new IbPositionHandler(this);
-
-	public PortfolioManager(Controller controllor, Monitor monitor) {
+	public PortfolioManager(PositionHandler positionHandler) {
 		this.logger.info("Starting subsystem: 'Portfolio Manager'");
+		this.positionHandler = positionHandler;
+		this.positionHandler.subscribePositions(this);
+	}
 
-		this.controllor = controllor;
+	public PortfolioManager(PositionHandler positionHandler, Monitor monitor) {
+		this(positionHandler);
 		this.monitor = monitor;
-
-		this.controllor.getController().reqPositions(this.ibPositionHander);
 	}
 
 	@Override
@@ -77,5 +79,14 @@ public class PortfolioManager implements PortfolioReceiver {
 		}
 
 		this.positions.add(new ThetaTrade(security));
+	}
+
+	public List<ThetaTrade> providePositions(Set<String> tickers) {
+		return this.positions.parallelStream().filter(position -> tickers.contains(position.getBackingTicker()))
+				.filter(position -> position.isComplete()).collect(Collectors.toList());
+	}
+
+	public void registerMonitor(Monitor monitor) {
+		this.monitor = monitor;
 	}
 }
