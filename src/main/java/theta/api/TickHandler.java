@@ -2,7 +2,7 @@ package theta.api;
 
 import java.time.LocalDateTime;
 
-import theta.tick.domain.Tick;
+import theta.tick.api.PriceLevel;
 
 public interface TickHandler {
 	public String getTicker();
@@ -25,5 +25,7 @@ public interface TickHandler {
 
 	public Boolean isSnapshot();
 
-	public Tick getTick();
+	public void addPriceLevel(PriceLevel priceLevel);
+
+	public void removePriceLevel(PriceLevel priceLevel);
 }

@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -73,12 +73,15 @@ public class TickManagerTest {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
 		this.logger.debug("Trade initialized: {}", trade);
 
+		List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
+		Mockito.when(this.positonProvider.providePositions(trade.getBackingTicker())).thenReturn(tradeToReturn);
+
 		this.sut.addMonitor(trade);
 
 		ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
 		for (Tick tick : priceTicks) {
-			this.sut.checkTick(Optional.of(trade), tick);
+			this.sut.notifyTick(tick);
 		}
 
 		verify(this.executor,

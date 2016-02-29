@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import theta.api.Security;
 import theta.api.SecurityType;
+import theta.tick.api.PriceLevel;
+import theta.tick.api.PriceLevelDirection;
 
-public class ThetaTrade implements Iterable<Security>, Iterator<Security> {
+public class ThetaTrade implements Iterable<Security>, Iterator<Security>, PriceLevel {
 	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
 	private SecurityType type = SecurityType.THETA;
@@ -220,5 +222,19 @@ public class ThetaTrade implements Iterable<Security>, Iterator<Security> {
 		}
 
 		return toReturn;
+	}
+
+	@Override
+	public PriceLevelDirection tradeIf() {
+		PriceLevelDirection priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
+
+		if (this.getEquity().getQuantity() > 0) {
+			priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
+		}
+		if (this.getEquity().getQuantity() < 0) {
+			priceLevelDirection = PriceLevelDirection.RISES_ABOVE;
+		}
+
+		return priceLevelDirection;
 	}
 }

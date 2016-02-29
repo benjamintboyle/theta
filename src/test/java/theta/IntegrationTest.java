@@ -1,4 +1,4 @@
-package theta.domain;
+package theta;
 
 import static org.junit.Assert.fail;
 
@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -13,32 +14,46 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import theta.ThetaEngine;
+import theta.api.ExecutionHandler;
+import theta.api.PositionHandler;
 import theta.api.Security;
-import theta.connection.manager.ConnectionManager;
+import theta.api.TickSubscriber;
+import theta.domain.ThetaTrade;
+import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executable;
 import theta.execution.manager.ExecutionManager;
-import theta.execution.manager.ExecutionManagerTest;
 import theta.portfolio.manager.PortfolioManager;
-import theta.portfolio.manager.PortfolioManagerTest;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 import theta.tick.manager.TickManager;
-import theta.tick.manager.TickManagerTest;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThetaEngineTest {
+public class IntegrationTest {
 
 	@Mock
-	private ConnectionManager connectionMock;
-	@Spy
-	private ExecutionManager executionSpy = ExecutionManagerTest.buildExecutionManager(connectionMock);
-	@Spy
-	private TickManager tickSpy = TickManagerTest.buildTickManager(connectionMock, executionSpy);
-	@Spy
-	private PortfolioManager portfolioSpy = PortfolioManagerTest.buildPortfolioManager(connectionMock, tickSpy);
+	private PositionHandler mockPositionHandler;
+	@Mock
+	private TickSubscriber mockTickSubscriber;
+	@Mock
+	private ExecutionHandler mockExecutionHandler;
 
-	private ThetaEngine sut = new ThetaEngine();
+	@Spy
+	private PortfolioManager spyPortfolioManager;
+	@Spy
+	private TickManager spyTickManager;
+	@Spy
+	private ExecutionManager spyExecutionManager;
+
+	@Before
+	public void setUp() {
+		this.spyExecutionManager = new ExecutionManager(mockExecutionHandler);
+		this.spyTickManager = new TickManager(mockTickSubscriber);
+		this.spyPortfolioManager = new PortfolioManager(mockPositionHandler);
+
+		this.spyPortfolioManager.registerMonitor(spyTickManager);
+		this.spyTickManager.registerExecutor(spyExecutionManager);
+		this.spyTickManager.registerPositionProvider(spyPortfolioManager);
+	}
 
 	@Test
 	public void IntegrationTest_OnePositionOneContract() {
@@ -56,7 +71,7 @@ public class ThetaEngineTest {
 
 		this.sendTickListForIngestion(tickList);
 
-		Mockito.verify(this.executionSpy, Mockito.times(6)).execute(Mockito.any(Executable.class));
+		Mockito.verify(this.mockExecutionHandler, Mockito.times(6)).executeOrder(Mockito.any(Executable.class));
 	}
 
 	@Test
@@ -84,12 +99,11 @@ public class ThetaEngineTest {
 	}
 
 	private void sendPositionListForIngestion(List<Security> positions) {
-		positions.forEach(security -> this.sut.getPortfolioReceiver().ingestPosition(security));
-
+		positions.forEach(this.spyPortfolioManager::ingestPosition);
 	}
 
 	private void sendTickListForIngestion(List<Tick> tickList) {
-		tickList.stream().forEach(tick -> this.sut.getTickReceiver().notifyTick(tick));
+		tickList.stream().forEach(tick -> this.spyTickManager.notifyTick(tick));
 	}
 
 	private List<Tick> generateTickList(List<ThetaTrade> thetaList) {

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +14,11 @@ import theta.domain.ThetaTrade;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
+import theta.tick.api.PriceLevelDirection;
+import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
 
-public class TickManager implements Monitor, Runnable {
+public class TickManager implements Monitor, TickObserver {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private TickSubscriber tickSubscriber;
@@ -55,52 +55,6 @@ public class TickManager implements Monitor, Runnable {
 		return this.tickHandlers.remove(ticker);
 	}
 
-	@Override
-	public void run() {
-		// TODO: Validate that each loop is < 100ms, and number of
-		// positions/monitors
-		// which causes it to exceed 100ms
-		// TODO: Implement way to cleanly exit loop / shutdown
-		while (true) {
-			// Convert all updated TickHandlers to Ticks
-			List<Tick> updatedTicks = this.tickHandlers.values().parallelStream()
-					.filter(handler -> handler.getLastTime().isAfter(this.lastChecked))
-					.map(handler -> handler.getTick()).collect(Collectors.toList());
-			// Update lastChecked time
-			updatedTicks.parallelStream().map(tick -> tick.getTimestamp()).max(LocalDateTime::compareTo)
-					.ifPresent(maxTime -> this.lastChecked = maxTime);
-			// For updated Ticks get current positions
-			List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(
-					updatedTicks.parallelStream().map(handlers -> handlers.getTicker()).collect(Collectors.toSet()));
-			// For each tick, check current position
-			updatedTicks.parallelStream()
-					.forEach(tick -> this.checkTick(
-							tradesToCheck.parallelStream()
-									.filter(trades -> trades.getBackingTicker().equals(tick.getTicker())).findAny(),
-							tick));
-		}
-	}
-
-	public void checkTick(Optional<ThetaTrade> optionalTheta, Tick tick) {
-		if (!optionalTheta.isPresent()) {
-			return;
-		}
-
-		ThetaTrade theta = optionalTheta.get();
-
-		Double lastPrice = tick.getPrice();
-		Integer quantity = theta.getEquity().getQuantity();
-		Double strikePrice = theta.getStrikePrice();
-
-		this.logger.info("Current tick for '{}': ${}", tick.getTicker(), lastPrice);
-
-		if ((quantity > 0) && (lastPrice < strikePrice)) {
-			this.reversePosition(theta);
-		} else if ((quantity < 0) && (lastPrice > strikePrice)) {
-			this.reversePosition(theta);
-		}
-	}
-
 	private void reversePosition(ThetaTrade theta) {
 		this.logger.info("Reversing position for '{}'}", theta);
 		this.executor.reverseTrade(theta);
@@ -112,5 +66,26 @@ public class TickManager implements Monitor, Runnable {
 
 	public void registerPositionProvider(PositionProvider positionProvider) {
 		this.positionProvider = positionProvider;
+	}
+
+	@Override
+	public void notifyTick(Tick tick) {
+		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
+
+		for (ThetaTrade theta : tradesToCheck) {
+			if (theta.getBackingTicker().equals(tick.getTicker())) {
+				if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
+					if (tick.getPrice() < theta.getStrikePrice()) {
+						this.reversePosition(theta);
+					}
+				}
+
+				if (theta.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
+					if (tick.getPrice() > theta.getStrikePrice()) {
+						this.reversePosition(theta);
+					}
+				}
+			}
+		}
 	}
 }

@@ -2,7 +2,6 @@ package theta.portfolio.manager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -81,8 +80,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 		this.positions.add(new ThetaTrade(security));
 	}
 
-	public List<ThetaTrade> providePositions(Set<String> tickers) {
-		return this.positions.parallelStream().filter(position -> tickers.contains(position.getBackingTicker()))
+	@Override
+	public List<ThetaTrade> providePositions(String ticker) {
+		return this.positions.parallelStream().filter(position -> position.getBackingTicker().equals(ticker))
 				.filter(position -> position.isComplete()).collect(Collectors.toList());
 	}
 

@@ -48,9 +48,6 @@ public class ThetaEngine {
 
 		// Register managers with one another as needed
 		thetaEngine.registerManagerInterfaces();
-
-		// Start manager threads
-		thetaEngine.startManagerThreads();
 	}
 
 	// Entry point for application
@@ -60,18 +57,6 @@ public class ThetaEngine {
 
 		// Start ThetaEngine
 		thetaEngine.connect();
-	}
-
-	private void startManagerThreads() {
-		// Thread connectionThread = new Thread(this.connectionManager);
-		// Thread portfolioThread = new Thread(this.portfolioManager);
-		Thread tickThread = new Thread(this.tickManager);
-		// Thread executionThread = new Thread(this.executionManager);
-
-		// connectionThread.start();
-		// portfolioThread.start();
-		tickThread.start();
-		// executionThread.start();
 	}
 
 	private void connect() {
