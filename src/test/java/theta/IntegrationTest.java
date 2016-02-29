@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import theta.api.ExecutionHandler;
@@ -37,18 +36,15 @@ public class IntegrationTest {
 	@Mock
 	private ExecutionHandler mockExecutionHandler;
 
-	@Spy
 	private PortfolioManager spyPortfolioManager;
-	@Spy
 	private TickManager spyTickManager;
-	@Spy
 	private ExecutionManager spyExecutionManager;
 
 	@Before
 	public void setUp() {
-		this.spyExecutionManager = new ExecutionManager(mockExecutionHandler);
-		this.spyTickManager = new TickManager(mockTickSubscriber);
-		this.spyPortfolioManager = new PortfolioManager(mockPositionHandler);
+		this.spyExecutionManager = Mockito.spy(new ExecutionManager(mockExecutionHandler));
+		this.spyTickManager = Mockito.spy(new TickManager(mockTickSubscriber));
+		this.spyPortfolioManager = Mockito.spy(new PortfolioManager(mockPositionHandler));
 
 		this.spyPortfolioManager.registerMonitor(spyTickManager);
 		this.spyTickManager.registerExecutor(spyExecutionManager);
