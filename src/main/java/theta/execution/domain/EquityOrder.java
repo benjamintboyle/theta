@@ -16,14 +16,21 @@ public class EquityOrder implements Executable {
 	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
 	private SecurityType securityType = SecurityType.STOCK;
+	private String ticker;
 	private Integer quantity;
 	private ExecutionAction action;
 	private ExecutionType executionType;
 
-	public EquityOrder(Integer quantity, ExecutionAction action, ExecutionType executionType) {
+	public EquityOrder(String ticker, Integer quantity, ExecutionAction action, ExecutionType executionType) {
+		this.ticker = ticker;
 		this.quantity = quantity;
 		this.action = action;
 		this.executionType = executionType;
+	}
+
+	@Override
+	public String getTicker() {
+		return this.ticker;
 	}
 
 	public SecurityType getSecurityType() {

@@ -46,7 +46,7 @@ public class IntegrationTest {
 		this.spyTickManager = Mockito.spy(new TickManager(mockTickSubscriber));
 		this.spyPortfolioManager = Mockito.spy(new PortfolioManager(mockPositionHandler));
 
-		this.spyPortfolioManager.registerMonitor(spyTickManager);
+		this.spyPortfolioManager.registerTickMonitor(spyTickManager);
 		this.spyTickManager.registerExecutor(spyExecutionManager);
 		this.spyTickManager.registerPositionProvider(spyPortfolioManager);
 	}

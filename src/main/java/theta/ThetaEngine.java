@@ -83,7 +83,8 @@ public class ThetaEngine {
 	}
 
 	private void registerManagerInterfaces() {
-		this.portfolioManager.registerMonitor(tickManager);
+		this.portfolioManager.registerTickMonitor(tickManager);
+		this.portfolioManager.registerExecutionMonitor(executionManager);
 		this.tickManager.registerExecutor(executionManager);
 		this.tickManager.registerPositionProvider(portfolioManager);
 	}

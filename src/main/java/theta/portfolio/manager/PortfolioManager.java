@@ -11,6 +11,7 @@ import theta.api.PositionHandler;
 import theta.api.Security;
 import theta.domain.Option;
 import theta.domain.ThetaTrade;
+import theta.execution.api.ExecutionMonitor;
 import theta.portfolio.api.PortfolioObserver;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
@@ -20,6 +21,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 	private PositionHandler positionHandler;
 	private Monitor monitor;
+	private ExecutionMonitor executionMonitor;
 	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
 	public PortfolioManager(PositionHandler positionHandler) {
@@ -36,6 +38,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	@Override
 	public void ingestPosition(Security security) {
 		this.logger.info("Received Position update: {}", security.toString());
+
+		this.executionMonitor.portfolioChange(security);
+		
 		for (ThetaTrade position : this.positions) {
 			if (position.getBackingTicker().equals(security.getBackingTicker())) {
 				switch (security.getSecurityType()) {
@@ -46,6 +51,10 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 							this.monitor.addMonitor(position);
 						}
 						return;
+					} else {
+						if (position.getEquity().getQuantity() == -1 * security.getQuantity()) {
+							position.reversePosition();
+						}
 					}
 					break;
 				case CALL:
@@ -86,7 +95,11 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 				.filter(position -> position.isComplete()).collect(Collectors.toList());
 	}
 
-	public void registerMonitor(Monitor monitor) {
+	public void registerTickMonitor(Monitor monitor) {
 		this.monitor = monitor;
+	}
+
+	public void registerExecutionMonitor(ExecutionMonitor executionMonitor) {
+		this.executionMonitor = executionMonitor;
 	}
 }
