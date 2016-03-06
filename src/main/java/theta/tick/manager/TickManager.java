@@ -41,13 +41,15 @@ public class TickManager implements Monitor, TickObserver {
 	}
 
 	@Override
-	public void addMonitor(ThetaTrade trade) {
-		this.logger.info("Adding Monitor for '{}'", trade.getBackingTicker());
+	public void addMonitor(ThetaTrade theta) {
+		this.logger.info("Adding Monitor for '{}'", theta.getBackingTicker());
 
-		if (!this.tickHandlers.containsKey(trade.getBackingTicker())) {
-			this.tickHandlers.put(trade.getBackingTicker(),
-					this.tickSubscriber.subscribeEquity(trade.getBackingTicker()));
+		if (!this.tickHandlers.containsKey(theta.getBackingTicker())) {
+			this.tickHandlers.put(theta.getBackingTicker(),
+					this.tickSubscriber.subscribeEquity(theta.getBackingTicker()));
 		}
+
+		this.tickHandlers.get(theta.getBackingTicker()).addPriceLevel(theta);
 	}
 
 	public TickHandler deleteMonitor(String ticker) {
@@ -57,6 +59,7 @@ public class TickManager implements Monitor, TickObserver {
 
 	private void reversePosition(ThetaTrade theta) {
 		this.logger.info("Reversing position for '{}'}", theta);
+		this.tickHandlers.get(theta.getBackingTicker()).removePriceLevel(theta);
 		this.executor.reverseTrade(theta);
 	}
 

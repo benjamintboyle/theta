@@ -127,16 +127,21 @@ public class IntegrationTest {
 			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
 			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
 			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			/*
+			 * tickList.add(new Tick(ticker, strike, tickType,
+			 * LocalDateTime.now())); tickList.add(new Tick(ticker, strike,
+			 * tickType, LocalDateTime.now())); tickList.add(new Tick(ticker,
+			 * strike + 0.01, tickType, LocalDateTime.now())); tickList.add(new
+			 * Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			 * tickList.add(new Tick(ticker, strike - 0.01, tickType,
+			 * LocalDateTime.now())); tickList.add(new Tick(ticker, strike -
+			 * 0.01, tickType, LocalDateTime.now())); tickList.add(new
+			 * Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			 * tickList.add(new Tick(ticker, strike + 0.01, tickType,
+			 * LocalDateTime.now())); tickList.add(new Tick(ticker, strike -
+			 * 0.01, tickType, LocalDateTime.now())); tickList.add(new
+			 * Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
+			 */
 		}
 
 		return tickList;
