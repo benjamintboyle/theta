@@ -24,6 +24,18 @@ public class ThetaTradeTest {
 		return trade;
 	}
 
+	public static ThetaTrade buildTestShortThetaTrade() {
+		Stock stock = StockTest.buildTestStockShort();
+		Option call = OptionTest.buildTestShortCallOption();
+		Option put = OptionTest.buildTestShortPutOption();
+
+		ThetaTrade trade = new ThetaTrade(stock);
+		trade.add(call);
+		trade.add(put);
+
+		return trade;
+	}
+
 	@Test
 	public void equityThetaTradeTest() {
 		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();

@@ -4,10 +4,15 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import theta.api.Security;
 import theta.api.SecurityType;
 
 public class Option implements Security {
+	private final Logger logger = LoggerFactory.getLogger(Option.class);
+
 	private SecurityType type;
 	private String backingTicker = "";
 	private Integer quantity;
@@ -20,6 +25,7 @@ public class Option implements Security {
 		this.quantity = quantity;
 		this.strikePrice = strikePrice;
 		this.expiration = expiration;
+		logger.info("Built Option: {}", this.toString());
 	}
 
 	@Override

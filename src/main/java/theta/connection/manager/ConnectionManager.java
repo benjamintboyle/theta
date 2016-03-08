@@ -10,11 +10,11 @@ public class ConnectionManager {
 	private final ConnectionHandler connectionHandler;
 
 	public ConnectionManager(ConnectionHandler connectionHandler) {
+		logger.info("Starting Connection Manager");
 		this.connectionHandler = connectionHandler;
 	}
 
 	public void connect() {
-		this.logger.info("Starting subsystem: 'Connection Manager'");
 		this.logger.info("Connecting to Broker servers...");
 		this.connectionHandler.connect();
 

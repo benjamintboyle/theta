@@ -4,8 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -75,6 +73,7 @@ public class TickManagerTest {
 
 		List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
 		Mockito.when(this.positonProvider.providePositions(trade.getBackingTicker())).thenReturn(tradeToReturn);
+		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getBackingTicker())).thenReturn(handler);
 
 		this.sut.addMonitor(trade);
 
@@ -84,10 +83,10 @@ public class TickManagerTest {
 			this.sut.notifyTick(tick);
 		}
 
-		verify(this.executor,
-				times(this.calculatePriceTransitions(trade.getStrikePrice(),
+		Mockito.verify(this.executor,
+				Mockito.times(this.calculatePriceTransitions(trade.getStrikePrice(),
 						priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
-								.reverseTrade(any(ThetaTrade.class));
+				.reverseTrade(any(ThetaTrade.class));
 	}
 
 	private ArrayList<Tick> generatePriceTicksAround(Integer numberOfTicks, ThetaTrade theta) {

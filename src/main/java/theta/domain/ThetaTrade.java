@@ -31,7 +31,7 @@ public class ThetaTrade implements PriceLevel {
 	}
 
 	public void add(Security security) {
-		logger.info("Adding Security: {} to TimeValueCapture: {}", security.toString(), this.toString());
+		logger.info("Adding Security: {} to ThetaTrade: {}", security.toString(), this.toString());
 
 		switch (security.getSecurityType()) {
 		case STOCK:

@@ -15,9 +15,9 @@ import theta.execution.api.ExecutionType;
 
 public class EquityOrderTest {
 
-	private final EquityOrder sutLong = new EquityOrder(100, ExecutionAction.BUY, ExecutionType.MARKET);
-	private final EquityOrder sutShort = new EquityOrder(100, ExecutionAction.SELL, ExecutionType.MARKET);
-	private final EquityOrder sutQuantity = new EquityOrder(101, ExecutionAction.BUY, ExecutionType.MARKET);
+	private final EquityOrder sutLong = new EquityOrder("CHK", 100, ExecutionAction.BUY, ExecutionType.MARKET);
+	private final EquityOrder sutShort = new EquityOrder("CHK", 100, ExecutionAction.SELL, ExecutionType.MARKET);
+	private final EquityOrder sutQuantity = new EquityOrder("CHK", 101, ExecutionAction.BUY, ExecutionType.MARKET);
 
 	@Test
 	public void validateLongToShortTest() {

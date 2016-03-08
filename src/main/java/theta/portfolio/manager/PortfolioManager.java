@@ -25,7 +25,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	private ArrayList<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 
 	public PortfolioManager(PositionHandler positionHandler) {
-		this.logger.info("Starting subsystem: 'Portfolio Manager'");
+		logger.info("Starting Portfolio Manager");
 		this.positionHandler = positionHandler;
 		this.positionHandler.subscribePositions(this);
 	}
@@ -37,10 +37,10 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 	@Override
 	public void ingestPosition(Security security) {
-		this.logger.info("Received Position update: {}", security.toString());
+		logger.info("Received Position update: {}", security.toString());
 
 		this.executionMonitor.portfolioChange(security);
-		
+
 		for (ThetaTrade position : this.positions) {
 			if (position.getBackingTicker().equals(security.getBackingTicker())) {
 				switch (security.getSecurityType()) {
@@ -91,15 +91,18 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 	@Override
 	public List<ThetaTrade> providePositions(String ticker) {
+		logger.info("Providing Positions for: {}", ticker);
 		return this.positions.parallelStream().filter(position -> position.getBackingTicker().equals(ticker))
 				.filter(position -> position.isComplete()).collect(Collectors.toList());
 	}
 
 	public void registerTickMonitor(Monitor monitor) {
+		logger.info("Registering Tick Monitor with Portfolio Monitor");
 		this.monitor = monitor;
 	}
 
 	public void registerExecutionMonitor(ExecutionMonitor executionMonitor) {
+		logger.info("Registering Execution Monitor with Portfolio Manager");
 		this.executionMonitor = executionMonitor;
 	}
 }

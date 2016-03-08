@@ -2,7 +2,14 @@ package theta.tick.domain;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import theta.portfolio.manager.PortfolioManager;
+
 public class Tick {
+	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
+
 	private String ticker;
 	private Double price;
 	private TickType type;
@@ -13,6 +20,7 @@ public class Tick {
 		this.price = price;
 		this.type = type;
 		this.timestamp = timestamp;
+		logger.info("Built Tick: {}", this.toString());
 	}
 
 	public String getTicker() {

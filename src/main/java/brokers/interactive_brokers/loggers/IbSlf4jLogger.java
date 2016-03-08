@@ -9,6 +9,7 @@ import brokers.interactive_brokers.handlers.IbConnectionHandler;
 
 public class IbSlf4jLogger implements ILogger {
 	private final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
+	
 	private String loggerType = "";
 
 	public IbSlf4jLogger() {

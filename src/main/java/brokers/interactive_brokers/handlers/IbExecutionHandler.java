@@ -17,11 +17,12 @@ import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.Types.Action;
 
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
-	final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
 
 	private IbController ibController;
 
 	public IbExecutionHandler(IbController ibController) {
+		logger.info("Starting Interactive Brokers Execution Handler");
 		this.ibController = ibController;
 	}
 
@@ -47,6 +48,7 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 
 	@Override
 	public Boolean executeOrder(Executable order) {
+		logger.info("Executing order: {}", order.toString());
 		NewOrder ibOrder = new NewOrder();
 
 		if (order.getQuantity() > 0) {
@@ -60,6 +62,9 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 
 		NewContract contract = new NewContract(new Contract());
 
+		logger.info("Built Interactive Brokers New Contract: {}", contract);
+		logger.info("Built Interactive Brokers Order: {}", ibOrder);
+		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
 
 		return Boolean.TRUE;

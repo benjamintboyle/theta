@@ -26,12 +26,13 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 	private List<Executable> activeOrders = new ArrayList<Executable>();
 
 	public ExecutionManager(ExecutionHandler executionHandler) {
-		this.logger.info("Starting subsystem: 'Execution Manager'");
+		this.logger.info("Starting Execution Manager");
 		this.executionHandler = executionHandler;
 	}
 
 	@Override
 	public void reverseTrade(ThetaTrade trade) {
+		logger.info("Reversing Trade: {}", trade.toString());
 		ExecutionAction action = null;
 		if (trade.getEquity().getQuantity() > 0) {
 			action = ExecutionAction.SELL;
@@ -45,7 +46,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 	}
 
 	private void execute(Security security, Executable order) {
-
+		logger.info("Executing trade of Security: {}, using Order: {}", security.toString(), order.toString());
 		if (order.validate(security)) {
 			if (this.addActiveTrade(order)) {
 				this.executionHandler.executeOrder(order);
@@ -54,6 +55,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 	}
 
 	private Boolean addActiveTrade(Executable order) {
+		logger.info("Adding Active Trade: {} to Execution Monitor", order.toString());
 		Boolean isTradeUnique = Boolean.FALSE;
 
 		List<Executable> matchingActiveTrades = this.activeOrders.stream()
@@ -73,6 +75,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
 	@Override
 	public Boolean portfolioChange(Security security) {
+		logger.info("Execution Monitor was notified that Portfolio changed: {}", security.toString());
 		Boolean activeTradeRemoved = Boolean.FALSE;
 
 		for (Iterator<Executable> i = this.activeOrders.iterator(); i.hasNext();) {
@@ -81,12 +84,14 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 			if (active.getTicker().equals(security.getBackingTicker())) {
 				if (active.getExecutionAction().equals(ExecutionAction.BUY) && security.getQuantity() > 0) {
 					if (active.getQuantity().equals(security.getQuantity())) {
+						logger.info("Removing Security: {} from Execution Monitor", active.toString());
 						i.remove();
 					} else {
 						logger.error("Active Order: {} doesn't match portfolio update: {}", active, security);
 					}
 				} else if (active.getExecutionAction().equals(ExecutionAction.SELL) && security.getQuantity() < 0) {
 					if (active.getQuantity().equals(security.getQuantity())) {
+						logger.info("Removing Security: {} from Execution Monitor", active.toString());
 						i.remove();
 					} else {
 						logger.error("Active Order: {} doesn't match portfolio update: {}", active, security);

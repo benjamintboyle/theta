@@ -19,7 +19,7 @@ import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
 
 public class TickManager implements Monitor, TickObserver {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(TickManager.class);
 
 	private TickSubscriber tickSubscriber;
 	private PositionProvider positionProvider;
@@ -30,7 +30,7 @@ public class TickManager implements Monitor, TickObserver {
 	private Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
 
 	public TickManager(TickSubscriber tickSubscriber) {
-		this.logger.info("Starting subsystem: 'Monitor'");
+		this.logger.info("Starting Tick Manager");
 		this.tickSubscriber = tickSubscriber;
 	}
 
@@ -53,6 +53,7 @@ public class TickManager implements Monitor, TickObserver {
 	}
 
 	public TickHandler deleteMonitor(String ticker) {
+		logger.info("Deleting Tick Monitor for: {}", ticker);
 		this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(ticker));
 		return this.tickHandlers.remove(ticker);
 	}
@@ -64,18 +65,25 @@ public class TickManager implements Monitor, TickObserver {
 	}
 
 	public void registerExecutor(Executor executor) {
+		logger.info("Registering Executor with Tick Manager");
 		this.executor = executor;
 	}
 
 	public void registerPositionProvider(PositionProvider positionProvider) {
+		logger.info("Registering Position Provider with Tick Manager");
 		this.positionProvider = positionProvider;
 	}
 
 	@Override
 	public void notifyTick(Tick tick) {
+		logger.info("Received Tick from Handler: {}", tick);
 		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
 
+		logger.info("Received {} Positions from Position Provider", tradesToCheck.size());
+
 		for (ThetaTrade theta : tradesToCheck) {
+			logger.info("Checking Tick against position: {}", theta.toString());
+
 			if (theta.getBackingTicker().equals(tick.getTicker())) {
 				if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
 					if (tick.getPrice() < theta.getStrikePrice()) {

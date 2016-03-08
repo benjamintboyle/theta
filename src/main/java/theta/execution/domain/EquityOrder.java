@@ -26,6 +26,7 @@ public class EquityOrder implements Executable {
 		this.quantity = quantity;
 		this.action = action;
 		this.executionType = executionType;
+		logger.info("Built Equity Order: {}", this.toString());
 	}
 
 	@Override
@@ -51,6 +52,7 @@ public class EquityOrder implements Executable {
 
 	@Override
 	public Boolean validate(Security security) {
+		logger.info("Validating Equity Order: {}", this.toString());
 		HashSet<Boolean> isValid = new HashSet<Boolean>();
 
 		isValid.add(this.isValidSecurityType(security.getSecurityType()));

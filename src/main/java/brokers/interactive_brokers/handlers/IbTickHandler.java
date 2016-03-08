@@ -33,10 +33,16 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Set<Double> fallsBelow = new HashSet<Double>();
 	private Set<Double> risesAbove = new HashSet<Double>();
 
+	public IbTickHandler(String ticker) {
+		this.ticker = ticker;
+		logger.info("Built Interactive Brokers Tick Handler for: {}", ticker);
+	}
+
 	@Override
 	public void tickPrice(NewTickType tickType, double price, int canAutoExecute) {
-		logger.info("Ticker: {}, Tick Type: {}, Price: {}, CanAutoExecute: {}", this.ticker, tickType, price,
-				canAutoExecute);
+		logger.info(
+				"Received new Tick from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Price: {}, CanAutoExecute: {}",
+				this.ticker, tickType, price, canAutoExecute);
 
 		switch (tickType) {
 		case BID:
@@ -58,7 +64,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void tickSize(NewTickType tickType, int size) {
-		logger.info("Ticker: {}, Tick Type: {}, Size: {}", this.ticker, tickType, size);
+		logger.info("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
+				this.ticker, tickType, size);
 
 		switch (tickType) {
 		case BID_SIZE:
@@ -77,7 +84,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void tickString(NewTickType tickType, String value) {
-		logger.info("Ticker: {}, Tick Type: {}, Value: {}", this.ticker, tickType, value);
+		logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+				this.ticker, tickType, value);
 
 		switch (tickType) {
 		case LAST_TIMESTAMP:
@@ -90,7 +98,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void marketDataType(MktDataType marketDataType) {
-		logger.info("Ticker: {}, Market Date Type: {}", this.ticker, marketDataType);
+		logger.info("Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}",
+				this.ticker, marketDataType);
 
 		this.isSnapshot = marketDataType == MktDataType.Frozen;
 	}
@@ -152,6 +161,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void addPriceLevel(PriceLevel priceLevel) {
+		logger.info("Adding Price Level {} to Tick Handler: {}", priceLevel, this.ticker);
 		if (!priceLevel.getBackingTicker().equals(this.ticker)) {
 			logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getBackingTicker(),
 					this.ticker);
@@ -159,9 +169,11 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 		switch (priceLevel.tradeIf()) {
 		case FALLS_BELOW:
+			logger.info("Adding FALLS_BELOW price level: {}", priceLevel);
 			this.fallsBelow.add(priceLevel.getStrikePrice());
 			break;
 		case RISES_ABOVE:
+			logger.info("Adding RISES_ABOVE price level: {}", priceLevel);
 			this.risesAbove.add(priceLevel.getStrikePrice());
 			break;
 		default:
@@ -171,6 +183,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void removePriceLevel(PriceLevel priceLevel) {
+		logger.info("Removing Price Level {} from Tick Handler: {}", priceLevel, this.ticker);
 		if (!priceLevel.getBackingTicker().equals(this.ticker)) {
 			logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor", priceLevel.getBackingTicker(),
 					this.ticker);
@@ -178,9 +191,11 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 		switch (priceLevel.tradeIf()) {
 		case FALLS_BELOW:
+			logger.info("Removing FALLS_BELOW price level: {}", priceLevel);
 			this.fallsBelow.remove(priceLevel.getStrikePrice());
 			break;
 		case RISES_ABOVE:
+			logger.info("Removing RISES_ABOVE price level: {}", priceLevel);
 			this.risesAbove.remove(priceLevel.getStrikePrice());
 			break;
 		default:

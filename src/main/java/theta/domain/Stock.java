@@ -1,11 +1,16 @@
 package theta.domain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.ib.controller.NewContract;
 
 import theta.api.Security;
 import theta.api.SecurityType;
 
 public class Stock implements Security {
+	private final Logger logger = LoggerFactory.getLogger(Stock.class);
+
 	private final SecurityType type = SecurityType.STOCK;
 	private String backingTicker = "";
 	private Integer quantity;
@@ -21,6 +26,7 @@ public class Stock implements Security {
 		this.quantity = quantity;
 		this.averageTradePrice = averageTradePrice;
 		this.contract = contract;
+		logger.info("Built Stock: {}", this.toString());
 	}
 
 	@Override
@@ -48,8 +54,8 @@ public class Stock implements Security {
 	}
 
 	public Stock reversePosition() {
-		this.quantity *= -1;
-		return this;
+		logger.info("Building Reverse of Stock: {}", this.toString());
+		return new Stock(this.backingTicker, -1 * this.quantity, this.averageTradePrice, this.contract);
 	}
 
 	@Override

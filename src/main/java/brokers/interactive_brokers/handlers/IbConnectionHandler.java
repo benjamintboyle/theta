@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 
-import brokers.interactive_brokers.loggers.IbStdoutLogger;
+import brokers.interactive_brokers.loggers.IbSlf4jLogger;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
@@ -16,7 +16,12 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	private ArrayList<String> accountList = new ArrayList<String>();
 
-	private final ApiController ibController = new ApiController(this, new IbStdoutLogger(), new IbStdoutLogger());
+	private final ApiController ibController = new ApiController(this, new IbSlf4jLogger("Input Logger"),
+			new IbSlf4jLogger("Output Logger"));
+
+	public IbConnectionHandler() {
+		logger.info("Starting Interactive Brokers Connection Handler");
+	}
 
 	public ArrayList<String> getAccountList() {
 		return this.accountList;
@@ -29,7 +34,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void disconnected() {
-		this.logger.info("Disconnected...");
+		logger.info("Disconnected...");
 	}
 
 	@Override
@@ -43,12 +48,12 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void error(Exception e) {
-		this.logger.error("Error: ", e);
+		logger.error("Error: ", e);
 	}
 
 	@Override
 	public void message(int id, int errorCode, String errorMsg) {
-		this.logger.info("Message: '{}' '{}' '{}'", id, errorCode, errorMsg);
+		logger.info("Message: '{}' '{}' '{}'", id, errorCode, errorMsg);
 	}
 
 	@Override
@@ -63,6 +68,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public Boolean connect() {
+		logger.info("Connecting to Interactive Brokers Gateway at IP: 127.0.0.1:7497 as Client 0");
+
 		// Paper Trading port = 7497; Operational Trading port = 7496
 		this.getController().connect("127.0.0.1", 7497, 0);
 
