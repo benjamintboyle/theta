@@ -78,7 +78,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public Boolean disconnect() {
-		// TODO Auto-generated method stub
-		return null;
+		logger.info("Disconnecting...");
+		this.getController().disconnect();
+		return Boolean.TRUE;
 	}
 }

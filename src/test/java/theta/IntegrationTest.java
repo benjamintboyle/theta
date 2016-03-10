@@ -152,7 +152,7 @@ public class IntegrationTest {
 
 		for (ThetaTrade theta : thetaList) {
 			zeroTickList.add(
-					new Tick(theta.getBackingTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
+					new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
 		}
 		return zeroTickList;
 	}

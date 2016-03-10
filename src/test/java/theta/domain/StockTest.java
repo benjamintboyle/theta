@@ -44,6 +44,6 @@ public class StockTest {
 	public void tickerTest() {
 		Stock stock = StockTest.buildTestStock();
 
-		assertThat(stock.getBackingTicker(), is(equalTo("CHK")));
+		assertThat(stock.getTicker(), is(equalTo("CHK")));
 	}
 }

@@ -35,7 +35,7 @@ public class Stock implements Security {
 	}
 
 	@Override
-	public String getBackingTicker() {
+	public String getTicker() {
 		return this.backingTicker;
 	}
 
@@ -46,6 +46,11 @@ public class Stock implements Security {
 
 	public Double getAverageTradePrice() {
 		return this.averageTradePrice;
+	}
+
+	@Override
+	public Double getPrice() {
+		return this.getAverageTradePrice();
 	}
 
 	// TODO Replace with non-implementation specific (i.e. not IB)
@@ -61,7 +66,7 @@ public class Stock implements Security {
 	@Override
 	public String toString() {
 		String returnString = "{ Type: " + this.getSecurityType();
-		returnString += ", Ticker: " + this.getBackingTicker();
+		returnString += ", Ticker: " + this.getTicker();
 		returnString += ", Quantity: " + this.getQuantity();
 		returnString += ", Avg Price: " + this.getAverageTradePrice();
 		returnString += " }";

@@ -40,7 +40,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 			action = ExecutionAction.BUY;
 		}
 
-		Executable order = new EquityOrder(trade.getBackingTicker(), trade.getEquity().getQuantity(), action,
+		Executable order = new EquityOrder(trade.getTicker(), trade.getEquity().getQuantity(), action,
 				ExecutionType.MARKET);
 		this.execute(trade.getEquity(), order);
 	}
@@ -81,7 +81,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 		for (Iterator<Executable> i = this.activeOrders.iterator(); i.hasNext();) {
 			Executable active = i.next();
 
-			if (active.getTicker().equals(security.getBackingTicker())) {
+			if (active.getTicker().equals(security.getTicker())) {
 				if (active.getExecutionAction().equals(ExecutionAction.BUY) && security.getQuantity() > 0) {
 					if (active.getQuantity().equals(security.getQuantity())) {
 						logger.info("Removing Security: {} from Execution Monitor", active.toString());

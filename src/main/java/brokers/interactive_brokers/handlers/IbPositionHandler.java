@@ -67,6 +67,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 		this.portfolioObserver = observer;
 	}
 
+	@Override
 	public void requestPositionsFromBrokerage() {
 		logger.info("Requesting Positions from Interactive Brokers");
 		this.controller.getController().reqPositions(this);

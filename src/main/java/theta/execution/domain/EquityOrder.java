@@ -38,14 +38,17 @@ public class EquityOrder implements Executable {
 		return this.securityType;
 	}
 
+	@Override
 	public Integer getQuantity() {
 		return this.quantity;
 	}
 
+	@Override
 	public ExecutionAction getExecutionAction() {
 		return this.action;
 	}
 
+	@Override
 	public ExecutionType getExecutionType() {
 		return this.executionType;
 	}

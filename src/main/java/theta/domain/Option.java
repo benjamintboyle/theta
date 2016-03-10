@@ -34,7 +34,7 @@ public class Option implements Security {
 	}
 
 	@Override
-	public String getBackingTicker() {
+	public String getTicker() {
 		return this.backingTicker;
 	}
 
@@ -45,6 +45,11 @@ public class Option implements Security {
 
 	public Double getStrikePrice() {
 		return this.strikePrice;
+	}
+
+	@Override
+	public Double getPrice() {
+		return this.getStrikePrice();
 	}
 
 	public LocalDate getExpiration() {
@@ -84,7 +89,7 @@ public class Option implements Security {
 	@Override
 	public String toString() {
 		String returnString = "{ Type: " + this.getSecurityType();
-		returnString += ", Ticker: " + this.getBackingTicker();
+		returnString += ", Ticker: " + this.getTicker();
 		returnString += ", Quantity: " + this.getQuantity();
 		returnString += ", Strike: " + this.getStrikePrice();
 		returnString += ", Expiration: " + this.getExpiration().toString();

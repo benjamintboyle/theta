@@ -55,15 +55,15 @@ public class TickManagerTest {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
 		this.logger.debug("Trade to Monitor: {}", trade);
 
-		Mockito.when(handler.getTicker()).thenReturn(trade.getBackingTicker());
-		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getBackingTicker())).thenReturn(handler);
+		Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
+		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getTicker())).thenReturn(handler);
 
 		this.sut.addMonitor(trade);
 
-		TickHandler removedTickHandler = this.sut.deleteMonitor(trade.getBackingTicker());
+		TickHandler removedTickHandler = this.sut.deleteMonitor(trade.getTicker());
 		this.logger.debug("Handler removed from Tick Monitor: {}", removedTickHandler);
 
-		assertThat(removedTickHandler.getTicker(), is(equalTo(trade.getBackingTicker())));
+		assertThat(removedTickHandler.getTicker(), is(equalTo(trade.getTicker())));
 	}
 
 	@Test
@@ -72,8 +72,8 @@ public class TickManagerTest {
 		this.logger.debug("Trade initialized: {}", trade);
 
 		List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
-		Mockito.when(this.positonProvider.providePositions(trade.getBackingTicker())).thenReturn(tradeToReturn);
-		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getBackingTicker())).thenReturn(handler);
+		Mockito.when(this.positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
+		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getTicker())).thenReturn(handler);
 
 		this.sut.addMonitor(trade);
 
@@ -96,7 +96,7 @@ public class TickManagerTest {
 			double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
 			double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
 			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-			priceTicks.add(new Tick(theta.getBackingTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST,
+			priceTicks.add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST,
 					LocalDateTime.now()));
 		}
 

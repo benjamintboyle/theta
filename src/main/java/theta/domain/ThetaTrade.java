@@ -2,6 +2,7 @@ package theta.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,40 +13,96 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
 public class ThetaTrade implements PriceLevel {
-	final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
+	private final static Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
 	private SecurityType type = SecurityType.THETA;
 
 	private Option call;
 	private Option put;
 	private Stock equity;
+	private Integer quantity = 0;
 
-	public ThetaTrade(Security security) {
-		this.add(security);
+	private ThetaTrade(Stock stock, Option call, Option put) {
+		this.add(call);
+		this.add(put);
+		this.add(stock);
 	}
 
-	public ThetaTrade(Security security, Security security2, Security security3) {
-		this.add(security);
-		this.add(security2);
-		this.add(security3);
+	public static Optional<ThetaTrade> of(Stock stock, Option call, Option put) {
+		ThetaTrade theta = null;
+
+		// All same ticker
+		if ((stock.getTicker().equals(call.getTicker())) && (call.getTicker().equals(put.getTicker()))) {
+			// Options have same strike
+			if (call.getStrikePrice().equals(put.getStrikePrice())) {
+				// Options have same expiration
+				if (call.getExpiration().equals(put.getExpiration())) {
+					// If quantities match
+					if ((call.getQuantity().equals(put.getQuantity()))
+							&& (put.getQuantity().equals(stock.getQuantity() / 100))) {
+						// Options are opposite types
+						if (call.getSecurityType().equals(SecurityType.CALL)
+								&& put.getSecurityType().equals(SecurityType.PUT)) {
+							theta = new ThetaTrade(stock, call, put);
+						} else {
+							logger.error("Options aren't a call: {} and a put: {}", call, put);
+						}
+					} else {
+						logger.error("Quantities do not match: {}, {}, {}", stock, call, put);
+					}
+				} else {
+					logger.error("Option expirations do not match: {}, {}", call, put);
+				}
+			} else {
+				logger.error("Option strike prices do not match: {}, {}", call, put);
+			}
+		} else {
+			logger.error("Tickers do not match: {}, {}, {}", stock, call, put);
+		}
+
+		return Optional.of(theta);
 	}
 
-	public void add(Security security) {
+	private void add(Security security) {
 		logger.info("Adding Security: {} to ThetaTrade: {}", security.toString(), this.toString());
 
-		switch (security.getSecurityType()) {
-		case STOCK:
-			this.equity = (Stock) security;
-			break;
-		case CALL:
-			this.call = (Option) security;
-			break;
-		case PUT:
-			this.put = (Option) security;
-			break;
-		default:
-			this.logger.error("Invalid Security Type: {}", security.toString());
+		if (!this.isComplete() && security.getTicker().equals(this.getTicker())) {
+			switch (security.getSecurityType()) {
+			case STOCK:
+				this.equity = (Stock) security;
+				break;
+			case CALL:
+				this.call = (Option) security;
+				break;
+			case PUT:
+				this.put = (Option) security;
+				break;
+			default:
+				logger.error("Invalid Security Type: {}", security.toString());
+			}
+
+			if (this.isComplete()) {
+				this.quantity++;
+			}
+		} else {
+			logger.error("Trying to add Security: {} to invalid Theta: {}", security, this);
 		}
+	}
+
+	public void add(ThetaTrade theta) {
+		if (this.getTicker().equals(theta.getTicker())) {
+			if (theta.getStrikePrice().equals(this.getStrikePrice()) || this.quantity == 0) {
+				this.quantity += theta.getQuantity();
+			} else {
+				logger.error("Tried adding incompatible strike prices: {} to this {}", theta, this);
+			}
+		} else {
+			logger.error("Tried combine different tickers: {} to this {}", theta, this);
+		}
+	}
+
+	public Integer getQuantity() {
+		return this.quantity;
 	}
 
 	public Stock getEquity() {
@@ -60,6 +117,7 @@ public class ThetaTrade implements PriceLevel {
 		return this.put;
 	}
 
+	@Override
 	public Double getStrikePrice() {
 		Double strikePrice = 0.0;
 
@@ -70,7 +128,7 @@ public class ThetaTrade implements PriceLevel {
 		} else if (this.hasEquity()) {
 			strikePrice = this.equity.getAverageTradePrice();
 		} else {
-			this.logger.error("Can not determine strike price: {}", this.toString());
+			logger.error("Can not determine strike price: {}", this.toString());
 		}
 
 		return strikePrice;
@@ -115,16 +173,17 @@ public class ThetaTrade implements PriceLevel {
 		return this.type;
 	}
 
-	public String getBackingTicker() {
+	@Override
+	public String getTicker() {
 		String ticker = null;
 		if (this.hasEquity()) {
-			ticker = this.equity.getBackingTicker();
+			ticker = this.equity.getTicker();
 		} else if (this.hasCall()) {
-			ticker = this.call.getBackingTicker();
+			ticker = this.call.getTicker();
 		} else if (this.hasPut()) {
-			ticker = this.put.getBackingTicker();
+			ticker = this.put.getTicker();
 		} else {
-			this.logger.error("Tried to get backing ticker but not found: {}", this.toString());
+			logger.error("Tried to get backing ticker but not found: {}", this.toString());
 		}
 
 		return ticker;
@@ -132,7 +191,7 @@ public class ThetaTrade implements PriceLevel {
 
 	public ThetaTrade reversePosition() {
 		this.getEquity().reversePosition();
-		this.logger.info("Reversing trade...");
+		logger.info("Reversing trade...");
 		return this;
 	}
 

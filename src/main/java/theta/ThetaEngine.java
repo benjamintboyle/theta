@@ -55,7 +55,20 @@ public class ThetaEngine {
 	// Entry point for application
 	public static void main(String[] args) {
 		// Create Theta Engine
-		new ThetaEngine();
+		ThetaEngine thetaEngine = new ThetaEngine();
+		thetaEngine.run();
+	}
+
+	public void run() {
+		this.brokerPositionHandler.requestPositionsFromBrokerage();
+		while (true) {
+			this.portfolioManager.logPositions();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				logger.error("Thread interupted: {}", e);
+			}
+		}
 	}
 
 	private void connect() {

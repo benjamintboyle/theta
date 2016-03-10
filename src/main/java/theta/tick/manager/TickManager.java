@@ -42,14 +42,14 @@ public class TickManager implements Monitor, TickObserver {
 
 	@Override
 	public void addMonitor(ThetaTrade theta) {
-		this.logger.info("Adding Monitor for '{}'", theta.getBackingTicker());
+		this.logger.info("Adding Monitor for '{}'", theta.getTicker());
 
-		if (!this.tickHandlers.containsKey(theta.getBackingTicker())) {
-			this.tickHandlers.put(theta.getBackingTicker(),
-					this.tickSubscriber.subscribeEquity(theta.getBackingTicker()));
+		if (!this.tickHandlers.containsKey(theta.getTicker())) {
+			this.tickHandlers.put(theta.getTicker(),
+					this.tickSubscriber.subscribeEquity(theta.getTicker()));
 		}
 
-		this.tickHandlers.get(theta.getBackingTicker()).addPriceLevel(theta);
+		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
 	}
 
 	public TickHandler deleteMonitor(String ticker) {
@@ -60,7 +60,7 @@ public class TickManager implements Monitor, TickObserver {
 
 	private void reversePosition(ThetaTrade theta) {
 		this.logger.info("Reversing position for '{}'}", theta);
-		this.tickHandlers.get(theta.getBackingTicker()).removePriceLevel(theta);
+		this.tickHandlers.get(theta.getTicker()).removePriceLevel(theta);
 		this.executor.reverseTrade(theta);
 	}
 
@@ -84,7 +84,7 @@ public class TickManager implements Monitor, TickObserver {
 		for (ThetaTrade theta : tradesToCheck) {
 			logger.info("Checking Tick against position: {}", theta.toString());
 
-			if (theta.getBackingTicker().equals(tick.getTicker())) {
+			if (theta.getTicker().equals(tick.getTicker())) {
 				if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
 					if (tick.getPrice() < theta.getStrikePrice()) {
 						this.reversePosition(theta);

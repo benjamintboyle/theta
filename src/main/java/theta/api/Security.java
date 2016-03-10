@@ -4,9 +4,12 @@ public interface Security {
 
 	public SecurityType getSecurityType();
 
-	public String getBackingTicker();
+	public String getTicker();
 
 	public Integer getQuantity();
 
+	@Override
 	public String toString();
+
+	public Double getPrice();
 }

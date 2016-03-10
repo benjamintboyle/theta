@@ -17,9 +17,7 @@ public class ThetaTradeTest {
 		Option call = OptionTest.buildTestShortCallOption();
 		Option put = OptionTest.buildTestShortPutOption();
 
-		ThetaTrade trade = new ThetaTrade(stock);
-		trade.add(call);
-		trade.add(put);
+		ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
 
 		return trade;
 	}
@@ -29,9 +27,7 @@ public class ThetaTradeTest {
 		Option call = OptionTest.buildTestShortCallOption();
 		Option put = OptionTest.buildTestShortPutOption();
 
-		ThetaTrade trade = new ThetaTrade(stock);
-		trade.add(call);
-		trade.add(put);
+		ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
 
 		return trade;
 	}
