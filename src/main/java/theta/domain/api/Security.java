@@ -1,4 +1,4 @@
-package theta.api;
+package theta.domain.api;
 
 public interface Security {
 

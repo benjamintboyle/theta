@@ -9,9 +9,9 @@ import com.ib.controller.ApiController.IPositionHandler;
 import com.ib.controller.NewContract;
 
 import theta.api.PositionHandler;
-import theta.api.SecurityType;
 import theta.domain.Option;
 import theta.domain.Stock;
+import theta.domain.api.SecurityType;
 import theta.portfolio.api.PortfolioObserver;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {

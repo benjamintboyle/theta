@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import theta.api.SecurityType;
 import theta.domain.Option;
+import theta.domain.api.SecurityType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OptionTest {

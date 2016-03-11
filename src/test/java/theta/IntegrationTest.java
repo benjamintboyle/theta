@@ -15,10 +15,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import theta.api.ExecutionHandler;
 import theta.api.PositionHandler;
-import theta.api.Security;
 import theta.api.TickSubscriber;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
+import theta.domain.api.Security;
 import theta.execution.api.Executable;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;

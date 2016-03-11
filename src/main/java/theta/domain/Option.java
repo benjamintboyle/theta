@@ -7,8 +7,8 @@ import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.api.Security;
-import theta.api.SecurityType;
+import theta.domain.api.Security;
+import theta.domain.api.SecurityType;
 
 public class Option implements Security {
 	private final Logger logger = LoggerFactory.getLogger(Option.class);

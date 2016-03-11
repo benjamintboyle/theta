@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import theta.api.PositionHandler;
-import theta.api.Security;
 import theta.domain.ThetaTrade;
+import theta.domain.api.Security;
 import theta.execution.api.ExecutionMonitor;
 import theta.portfolio.api.PortfolioObserver;
 import theta.portfolio.api.PositionProvider;

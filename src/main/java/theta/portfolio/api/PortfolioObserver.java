@@ -1,6 +1,6 @@
 package theta.portfolio.api;
 
-import theta.api.Security;
+import theta.domain.api.Security;
 
 public interface PortfolioObserver {
 

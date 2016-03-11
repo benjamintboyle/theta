@@ -7,8 +7,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import theta.api.Security;
-import theta.api.SecurityType;
+import theta.domain.api.Security;
+import theta.domain.api.SecurityType;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
