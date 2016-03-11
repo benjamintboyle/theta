@@ -62,8 +62,12 @@ public class UnprocessedPositionManager {
 
 	private void logUnprocessedList() {
 		logger.info("Logging Unprocessed List");
-		for (Security security : this.unprocessedSecurities) {
-			logger.info("Unprocessed Security: {}", security);
+		if (this.unprocessedSecurities.size() > 0) {
+			for (Security security : this.unprocessedSecurities) {
+				logger.info("Unprocessed Security: {}", security);
+			}
+		} else {
+			logger.info("Unprocessed List is empty");
 		}
 		logger.info("Completed Logging Unprocessed List");
 	}

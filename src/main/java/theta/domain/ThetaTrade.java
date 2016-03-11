@@ -23,6 +23,7 @@ public class ThetaTrade implements PriceLevel {
 	private Integer quantity = 0;
 
 	private ThetaTrade(Stock stock, Option call, Option put) {
+		logger.info("Building Theta: {}, {}, {}", stock, call, put);
 		this.add(call);
 		this.add(put);
 		this.add(stock);
@@ -39,7 +40,7 @@ public class ThetaTrade implements PriceLevel {
 				if (call.getExpiration().equals(put.getExpiration())) {
 					// If quantities match
 					if ((call.getQuantity().equals(put.getQuantity()))
-							&& (put.getQuantity().equals(stock.getQuantity() / 100))) {
+							&& (put.getQuantity().equals(stock.getQuantity() / -100))) {
 						// Options are opposite types
 						if (call.getSecurityType().equals(SecurityType.CALL)
 								&& put.getSecurityType().equals(SecurityType.PUT)) {
@@ -60,13 +61,14 @@ public class ThetaTrade implements PriceLevel {
 			logger.error("Tickers do not match: {}, {}, {}", stock, call, put);
 		}
 
-		return Optional.of(theta);
+		return Optional.ofNullable(theta);
 	}
 
 	private void add(Security security) {
 		logger.info("Adding Security: {} to ThetaTrade: {}", security.toString(), this.toString());
 
-		if (!this.isComplete() && security.getTicker().equals(this.getTicker())) {
+		if ((!this.hasEquity() && !this.hasOption())
+				|| (!this.isComplete() && security.getTicker().equals(this.getTicker()))) {
 			switch (security.getSecurityType()) {
 			case STOCK:
 				this.equity = (Stock) security;

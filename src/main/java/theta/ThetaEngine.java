@@ -59,6 +59,12 @@ public class ThetaEngine {
 	}
 
 	public void run() {
+		try {
+			logger.info("Waiting for setup to complete");
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			logger.error("Thread interupted: {}", e);
+		}
 		this.brokerPositionHandler.requestPositionsFromBrokerage();
 		while (true) {
 			this.portfolioManager.logPositions();
