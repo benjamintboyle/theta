@@ -73,31 +73,6 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 			this.monitor.addMonitor(theta);
 			this.processPosition(theta);
 		}
-
-		/*
-		 * for (ThetaTrade position : this.positions) { if
-		 * (position.getBackingTicker().equals(security.getBackingTicker())) {
-		 * switch (security.getSecurityType()) { case STOCK: if
-		 * (!position.hasEquity()) { position.add(security); if
-		 * (position.isComplete()) { this.monitor.addMonitor(position); }
-		 * return; } else { if (position.getEquity().getQuantity() == -1 *
-		 * security.getQuantity()) { position.reversePosition(); } } break; case
-		 * CALL: case PUT: if (!position.hasOption(security)) { Option option =
-		 * (Option) security;
-		 * 
-		 * if (position.getStrikePrice().equals(option.getStrikePrice())) {
-		 * position.add(option); if (position.isComplete()) {
-		 * this.monitor.addMonitor(position); } return; } else if
-		 * (!position.hasOption()) { if (Math.round(option.getStrikePrice()) ==
-		 * Math.round(position.getStrikePrice())) { position.add(option); if
-		 * (position.isComplete()) { this.monitor.addMonitor(position); }
-		 * return; } } } break; default: this.logger.error(
-		 * "Unknown Security Type: {}", security.toString()); }
-		 * 
-		 * } }
-		 * 
-		 * this.positions.add(new ThetaTrade(security));
-		 */
 	}
 
 	@Override
