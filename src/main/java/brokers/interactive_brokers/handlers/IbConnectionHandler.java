@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 
-import brokers.interactive_brokers.loggers.IbSlf4jLogger;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
@@ -16,8 +15,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	private ArrayList<String> accountList = new ArrayList<String>();
 
-	private final ApiController ibController = new ApiController(this, new IbSlf4jLogger("Input Logger"),
-			new IbSlf4jLogger("Output Logger"));
+	private final ApiController ibController = new ApiController(this, new IbSlf4jLogger("Inbound Message Logger"),
+			new IbSlf4jLogger("Outbound Message Logger"));
 
 	public IbConnectionHandler() {
 		logger.info("Starting Interactive Brokers Connection Handler");
@@ -39,7 +38,6 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void accountList(ArrayList<String> list) {
-		// TODO Store Account List in meaningful location
 		this.logger.info("Received account list: {}", list);
 
 		this.accountList.clear();
@@ -53,7 +51,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void message(int id, int errorCode, String errorMsg) {
-		logger.info("Message: '{}' '{}' '{}'", id, errorCode, errorMsg);
+		logger.info("Interactive Brokers Message - Id: '{}', Error Code: '{}', Error Message: '{}'", id, errorCode,
+				errorMsg);
 	}
 
 	@Override

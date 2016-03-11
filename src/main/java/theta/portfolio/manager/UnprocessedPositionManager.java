@@ -23,6 +23,7 @@ public class UnprocessedPositionManager {
 	public Optional<ThetaTrade> add(Security security) {
 		logger.info("Adding unprocessed security: {}", security);
 		this.unprocessedSecurities.add(security);
+		this.logUnprocessedList();
 		return this.processSecurities(security.getTicker());
 	}
 
@@ -45,9 +46,25 @@ public class UnprocessedPositionManager {
 
 				theta = ThetaTrade.of(stock, callOption, putOption);
 				logger.info("Created Theta from unprocessed securities: {}", theta);
+
+				this.unprocessedSecurities.remove(stock);
+				this.unprocessedSecurities.remove(callOption);
+				this.unprocessedSecurities.remove(putOption);
+
+				this.logUnprocessedList();
 			}
+		} else {
+			logger.info("Not enough securities to form trade: {}", bySecurityType);
 		}
 
 		return theta;
+	}
+
+	private void logUnprocessedList() {
+		logger.info("Logging Unprocessed List");
+		for (Security security : this.unprocessedSecurities) {
+			logger.info("Unprocessed Security: {}", security);
+		}
+		logger.info("Completed Logging Unprocessed List");
 	}
 }
