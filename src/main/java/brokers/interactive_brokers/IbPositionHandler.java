@@ -1,4 +1,4 @@
-package brokers.interactive_brokers.handlers;
+package brokers.interactive_brokers;
 
 import java.time.LocalDate;
 

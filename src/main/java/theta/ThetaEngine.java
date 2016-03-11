@@ -3,12 +3,11 @@ package theta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import brokers.interactive_brokers.handlers.IbConnectionHandler;
-import brokers.interactive_brokers.handlers.IbController;
-import brokers.interactive_brokers.handlers.IbExecutionHandler;
-import brokers.interactive_brokers.handlers.IbPositionHandler;
-import brokers.interactive_brokers.handlers.IbTickSubscriber;
-
+import brokers.interactive_brokers.IbConnectionHandler;
+import brokers.interactive_brokers.IbController;
+import brokers.interactive_brokers.IbExecutionHandler;
+import brokers.interactive_brokers.IbPositionHandler;
+import brokers.interactive_brokers.IbTickSubscriber;
 import theta.api.ConnectionHandler;
 import theta.api.ExecutionHandler;
 import theta.api.PositionHandler;
