@@ -20,15 +20,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ib.controller.NewContract;
-
 import theta.api.PositionHandler;
 import theta.api.Security;
 import theta.api.SecurityType;
 import theta.domain.Option;
 import theta.domain.Stock;
 import theta.domain.ThetaTrade;
-import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -95,7 +92,7 @@ public class PortfolioManagerTest {
 
 			switch (securityType) {
 			case "STOCK":
-				Stock stock = new Stock(ticker, quantity, price, new NewContract());
+				Stock stock = new Stock(ticker, quantity, price);
 				logger.debug("Sending Stock: {}", stock);
 				securityList.add(stock);
 				break;

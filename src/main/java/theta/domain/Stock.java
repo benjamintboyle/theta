@@ -3,8 +3,6 @@ package theta.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ib.controller.NewContract;
-
 import theta.api.Security;
 import theta.api.SecurityType;
 
@@ -16,16 +14,10 @@ public class Stock implements Security {
 	private Integer quantity;
 	private Double averageTradePrice;
 
-	// TODO this needs to be removed and replaced with non-implementation
-	// specific data structure
-	private NewContract contract;
-
-	// TODO Remove NewContract
-	public Stock(String backingTicker, Integer quantity, Double averageTradePrice, NewContract contract) {
+	public Stock(String backingTicker, Integer quantity, Double averageTradePrice) {
 		this.backingTicker = backingTicker;
 		this.quantity = quantity;
 		this.averageTradePrice = averageTradePrice;
-		this.contract = contract;
 		logger.info("Built Stock: {}", this.toString());
 	}
 
@@ -53,14 +45,9 @@ public class Stock implements Security {
 		return this.getAverageTradePrice();
 	}
 
-	// TODO Replace with non-implementation specific (i.e. not IB)
-	public NewContract getContract() {
-		return this.contract;
-	}
-
 	public Stock reversePosition() {
 		logger.info("Building Reverse of Stock: {}", this.toString());
-		return new Stock(this.backingTicker, -1 * this.quantity, this.averageTradePrice, this.contract);
+		return new Stock(this.backingTicker, -1 * this.quantity, this.averageTradePrice);
 	}
 
 	@Override

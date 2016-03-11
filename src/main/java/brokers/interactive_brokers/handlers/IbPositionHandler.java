@@ -32,7 +32,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 				account, contract, position, avgCost);
 		switch (contract.secType()) {
 		case STK:
-			this.portfolioObserver.ingestPosition(new Stock(contract.symbol(), position, avgCost, contract));
+			this.portfolioObserver.ingestPosition(new Stock(contract.symbol(), position, avgCost));
 			break;
 		case OPT:
 			LocalDate expiration = Option.convertExpiration(contract.expiry());
