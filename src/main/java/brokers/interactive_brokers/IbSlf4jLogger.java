@@ -7,7 +7,7 @@ import com.ib.controller.ApiConnection.ILogger;
 
 public class IbSlf4jLogger implements ILogger {
 	private final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
-	
+
 	private String loggerType = "";
 
 	public IbSlf4jLogger() {
@@ -19,6 +19,6 @@ public class IbSlf4jLogger implements ILogger {
 
 	@Override
 	public void log(String valueOf) {
-		logger.info("{} {}", this.loggerType, valueOf);
+		// logger.info("{} {}", this.loggerType, valueOf);
 	}
 }

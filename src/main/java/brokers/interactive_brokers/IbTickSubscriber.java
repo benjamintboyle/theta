@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiController.ITopMktDataHandler;
 import com.ib.controller.NewContract;
+import com.ib.controller.Types.SecType;
 
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
@@ -24,6 +25,7 @@ public class IbTickSubscriber implements TickSubscriber {
 		logger.info("Subscribing to Equity: {}", ticker);
 		NewContract contract = new NewContract();
 		contract.symbol(ticker);
+		contract.secType(SecType.STK);
 		contract.exchange("SMART");
 		contract.primaryExch("ISLAND");
 
