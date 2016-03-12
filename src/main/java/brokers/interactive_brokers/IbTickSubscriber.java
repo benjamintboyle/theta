@@ -11,7 +11,7 @@ import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 
 public class IbTickSubscriber implements TickSubscriber {
-	private final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
+	private static final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
 
 	private IbController ibController;
 

@@ -15,7 +15,7 @@ import theta.domain.api.SecurityType;
 import theta.portfolio.api.PortfolioObserver;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
-	private final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
 
 	private IbController controller;
 	private PortfolioObserver portfolioObserver;

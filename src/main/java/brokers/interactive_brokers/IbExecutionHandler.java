@@ -17,7 +17,7 @@ import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.Types.Action;
 
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
-	private final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
 
 	private IbController ibController;
 

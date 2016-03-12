@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="info" strict="true" name="XMLConfigTest"
-	packages="org.apache.logging.log4j.test">
-	<Properties>
-		<Property name="filename">logs/ThetaEngine.log</Property>
-	</Properties>
-	<Filter type="ThresholdFilter" level="trace" />
+<Configuration status="info" strict="true" name="ThetaEngine"
+	packages="">
 
 	<Appenders>
-		<Appender type="File" name="File" fileName="${filename}">
+		<Appender type="File" name="File" fileName="logs/ThetaEngine.log">
 			<Layout type="PatternLayout">
 				<Pattern>%d %p [%t] %C - %m%n</Pattern>
 			</Layout>

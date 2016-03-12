@@ -13,9 +13,9 @@ import theta.execution.api.ExecutionType;
 import theta.execution.manager.ExecutionManager;
 
 public class EquityOrder implements Executable {
-	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
-	private SecurityType securityType = SecurityType.STOCK;
+	private final SecurityType securityType = SecurityType.STOCK;
 	private String ticker;
 	private Integer quantity;
 	private ExecutionAction action;
@@ -81,7 +81,7 @@ public class EquityOrder implements Executable {
 			break;
 		default:
 			isValidAction = Boolean.FALSE;
-			this.logger.error("Invalid execution action: {}", this.action);
+			logger.error("Invalid execution action: {}", this.action);
 		}
 
 		return isValidAction;

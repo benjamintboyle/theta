@@ -33,7 +33,7 @@ import theta.tick.domain.TickType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TickManagerTest {
-	private final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
+	private static final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
 
 	private static Double aroundPricePlusMinus = 0.05;
 	private static Integer numberOfPriceTicks = 10000;
@@ -53,7 +53,7 @@ public class TickManagerTest {
 	@Test
 	public void test_add_and_delete_monitor() {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
-		this.logger.debug("Trade to Monitor: {}", trade);
+		logger.debug("Trade to Monitor: {}", trade);
 
 		Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
 		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getTicker())).thenReturn(handler);
@@ -61,7 +61,7 @@ public class TickManagerTest {
 		this.sut.addMonitor(trade);
 
 		TickHandler removedTickHandler = this.sut.deleteMonitor(trade.getTicker());
-		this.logger.debug("Handler removed from Tick Monitor: {}", removedTickHandler);
+		logger.debug("Handler removed from Tick Monitor: {}", removedTickHandler);
 
 		assertThat(removedTickHandler.getTicker(), is(equalTo(trade.getTicker())));
 	}
@@ -69,7 +69,7 @@ public class TickManagerTest {
 	@Test
 	public void test_ticks_around_strike_price() {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
-		this.logger.debug("Trade initialized: {}", trade);
+		logger.debug("Trade initialized: {}", trade);
 
 		List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
 		Mockito.when(this.positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
@@ -117,7 +117,7 @@ public class TickManagerTest {
 				priceTransitions++;
 				isPositionLong = !isPositionLong;
 			} else {
-				this.logger.error("Possible miscalculated tick");
+				logger.error("Possible miscalculated tick");
 			}
 		}
 

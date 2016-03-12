@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import theta.portfolio.manager.PortfolioManager;
 
 public class Tick {
-	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
 	private String ticker;
 	private Double price;

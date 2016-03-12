@@ -17,7 +17,7 @@ import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
 
 public class PortfolioManager implements PortfolioObserver, PositionProvider {
-	private final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
 	private PositionHandler positionHandler;
 	private Monitor monitor;

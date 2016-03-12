@@ -19,7 +19,7 @@ import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
 
 public class TickManager implements Monitor, TickObserver {
-	private final Logger logger = LoggerFactory.getLogger(TickManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(TickManager.class);
 
 	private TickSubscriber tickSubscriber;
 	private PositionProvider positionProvider;
@@ -30,7 +30,7 @@ public class TickManager implements Monitor, TickObserver {
 	private Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
 
 	public TickManager(TickSubscriber tickSubscriber) {
-		this.logger.info("Starting Tick Manager");
+		logger.info("Starting Tick Manager");
 		this.tickSubscriber = tickSubscriber;
 	}
 
@@ -42,11 +42,10 @@ public class TickManager implements Monitor, TickObserver {
 
 	@Override
 	public void addMonitor(ThetaTrade theta) {
-		this.logger.info("Adding Monitor for '{}'", theta.getTicker());
+		logger.info("Adding Monitor for '{}'", theta.getTicker());
 
 		if (!this.tickHandlers.containsKey(theta.getTicker())) {
-			this.tickHandlers.put(theta.getTicker(),
-					this.tickSubscriber.subscribeEquity(theta.getTicker()));
+			this.tickHandlers.put(theta.getTicker(), this.tickSubscriber.subscribeEquity(theta.getTicker()));
 		}
 
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
@@ -59,7 +58,7 @@ public class TickManager implements Monitor, TickObserver {
 	}
 
 	private void reversePosition(ThetaTrade theta) {
-		this.logger.info("Reversing position for '{}'}", theta);
+		logger.info("Reversing position for '{}'}", theta);
 		this.tickHandlers.get(theta.getTicker()).removePriceLevel(theta);
 		this.executor.reverseTrade(theta);
 	}

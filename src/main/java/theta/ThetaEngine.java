@@ -18,7 +18,7 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine {
-	public final static Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
+	private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
 
 	// Brokerage handlers
 	private ConnectionHandler brokerConnectionHandler;

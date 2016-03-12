@@ -11,12 +11,12 @@ import com.ib.controller.ApiController.IConnectionHandler;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
-	final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
 	private ArrayList<String> accountList = new ArrayList<String>();
 
-	private final ApiController ibController = new ApiController(this, new IbSlf4jLogger("Inbound Message Logger"),
-			new IbSlf4jLogger("Outbound Message Logger"));
+	private final ApiController ibController = new ApiController(this, new IbSlf4jLogger("Inbound Raw"),
+			new IbSlf4jLogger("Outbound Raw"));
 
 	public IbConnectionHandler() {
 		logger.info("Starting Interactive Brokers Connection Handler");
@@ -28,7 +28,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void connected() {
-		this.logger.info("Connection established...");
+		logger.info("Connection established...");
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void accountList(ArrayList<String> list) {
-		this.logger.info("Received account list: {}", list);
+		logger.info("Received account list: {}", list);
 
 		this.accountList.clear();
 		this.accountList.addAll(list);
@@ -57,7 +57,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void show(String string) {
-		this.logger.info("Show: {}", string);
+		logger.info("Show: {}", string);
 	}
 
 	@Override

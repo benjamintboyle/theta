@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import theta.api.ConnectionHandler;
 
 public class ConnectionManager {
-	private final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 	private final ConnectionHandler connectionHandler;
 
 	public ConnectionManager(ConnectionHandler connectionHandler) {
@@ -15,13 +15,13 @@ public class ConnectionManager {
 	}
 
 	public void connect() {
-		this.logger.info("Connecting to Broker servers...");
+		logger.info("Connecting to Broker servers...");
 		this.connectionHandler.connect();
 
 	}
 
 	public void shutdown() {
-		this.logger.info("Shutting down 'Connection Manager' subsystem");
+		logger.info("Shutting down 'Connection Manager' subsystem");
 		this.connectionHandler.disconnect();
 	}
 }

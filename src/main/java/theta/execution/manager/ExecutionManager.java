@@ -19,14 +19,14 @@ import theta.execution.api.Executor;
 import theta.execution.domain.EquityOrder;
 
 public class ExecutionManager implements Executor, ExecutionMonitor {
-	private final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
 	private ExecutionHandler executionHandler;
 
 	private List<Executable> activeOrders = new ArrayList<Executable>();
 
 	public ExecutionManager(ExecutionHandler executionHandler) {
-		this.logger.info("Starting Execution Manager");
+		logger.info("Starting Execution Manager");
 		this.executionHandler = executionHandler;
 	}
 

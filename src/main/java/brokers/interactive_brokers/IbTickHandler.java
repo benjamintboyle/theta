@@ -17,7 +17,7 @@ import theta.api.TickHandler;
 import theta.tick.api.PriceLevel;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
-	private final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
 
 	private String ticker;
 	private Double bidPrice;
@@ -163,8 +163,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	public void addPriceLevel(PriceLevel priceLevel) {
 		logger.info("Adding Price Level {} to Tick Handler: {}", priceLevel, this.ticker);
 		if (!priceLevel.getTicker().equals(this.ticker)) {
-			logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(),
-					this.ticker);
+			logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), this.ticker);
 		}
 
 		switch (priceLevel.tradeIf()) {

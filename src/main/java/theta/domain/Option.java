@@ -11,7 +11,7 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Option implements Security {
-	private final Logger logger = LoggerFactory.getLogger(Option.class);
+	private static final Logger logger = LoggerFactory.getLogger(Option.class);
 
 	private SecurityType type;
 	private String backingTicker = "";

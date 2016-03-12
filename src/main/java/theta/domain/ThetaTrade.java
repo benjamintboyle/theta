@@ -13,9 +13,9 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
 public class ThetaTrade implements PriceLevel {
-	private final static Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
+	private static final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
-	private SecurityType type = SecurityType.THETA;
+	private final SecurityType type = SecurityType.THETA;
 
 	private Option call;
 	private Option put;

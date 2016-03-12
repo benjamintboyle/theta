@@ -16,7 +16,7 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class UnprocessedPositionManager {
-	private final Logger logger = LoggerFactory.getLogger(UnprocessedPositionManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(UnprocessedPositionManager.class);
 
 	private List<Security> unprocessedSecurities = new ArrayList<Security>();
 
