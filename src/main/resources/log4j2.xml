@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="info" strict="true" name="XMLConfigTest"
+	packages="org.apache.logging.log4j.test">
+	<Properties>
+		<Property name="filename">logs/ThetaEngine.log</Property>
+	</Properties>
+	<Filter type="ThresholdFilter" level="trace" />
+
 	<Appenders>
-		<Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
-		</Console>
+		<Appender type="File" name="File" fileName="${filename}">
+			<Layout type="PatternLayout">
+				<Pattern>%d %p [%t] %C - %m%n</Pattern>
+			</Layout>
+		</Appender>
 	</Appenders>
+
 	<Loggers>
-		<Root level="error">
-			<AppenderRef ref="Console" />
+		<Logger name="org.apache.logging.log4j.test2" level="trace"
+			additivity="false">
+			<AppenderRef ref="File" />
+		</Logger>
+
+		<Root level="trace">
+			<AppenderRef ref="File" />
 		</Root>
 	</Loggers>
+
 </Configuration>
