@@ -3,20 +3,35 @@
 	packages="">
 
 	<Appenders>
-		<Appender type="File" name="MainLogFile" fileName="logs/ThetaEngine.log">
+		<Appender type="RollingFile" name="MainLogFile" fileName="logs/ThetaEngine.log"
+			filePattern="logs/ThetaEngine_%d{yyyy-MM-dd}_%i.log">
 			<Layout type="PatternLayout">
 				<Pattern>%d %p [%t] %C - %m%n</Pattern>
 			</Layout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
 		</Appender>
-		<Appender type="File" name="BrokerLogFile" fileName="logs/RawBroker.log">
+		<Appender type="RollingFile" name="BrokerLogFile" fileName="logs/RawBroker.log"
+			filePattern="logs/RawBroker_%d{yyyy-MM-dd}_%i.log">
 			<Layout type="PatternLayout">
 				<Pattern>%d %p [%t] %C - %m%n</Pattern>
 			</Layout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
 		</Appender>
-		<Appender type="File" name="TickLogFile" fileName="logs/Tick.log">
+		<Appender type="RollingFile" name="TickLogFile" fileName="logs/Tick.log"
+			filePattern="logs/Tick_%d{yyyy-MM-dd}_%i.log">
 			<Layout type="PatternLayout">
 				<Pattern>%d %p [%t] %C - %m%n</Pattern>
 			</Layout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
 		</Appender>
 	</Appenders>
 

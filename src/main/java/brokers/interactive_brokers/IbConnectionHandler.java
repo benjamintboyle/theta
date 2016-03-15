@@ -15,8 +15,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	private ArrayList<String> accountList = new ArrayList<String>();
 
-	private final ApiController ibController = new ApiController(this, new IbLogger("Inbound Raw"),
-			new IbLogger("Outbound Raw"));
+	private final ApiController ibController = new ApiController(this, new IbLogger("Inbound"),
+			new IbLogger("Outbound"));
 
 	public IbConnectionHandler() {
 		logger.info("Starting Interactive Brokers Connection Handler");
