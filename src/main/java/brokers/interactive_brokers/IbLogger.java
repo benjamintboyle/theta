@@ -5,15 +5,15 @@ import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiConnection.ILogger;
 
-public class IbSlf4jLogger implements ILogger {
-	private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
+public class IbLogger implements ILogger {
+	private static final Logger logger = LoggerFactory.getLogger(IbLogger.class);
 
 	private String loggerType = "";
 
-	public IbSlf4jLogger() {
+	public IbLogger() {
 	}
 
-	public IbSlf4jLogger(String loggerType) {
+	public IbLogger(String loggerType) {
 		this.loggerType = loggerType;
 	}
 
