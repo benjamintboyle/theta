@@ -156,12 +156,16 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 		}
 
 		stringBuilder.append(" }, Under Comp: { ");
-		stringBuilder.append("Contract Id: ");
-		stringBuilder.append(contract.m_underComp.m_conId);
-		stringBuilder.append(", Delta: ");
-		stringBuilder.append(contract.m_underComp.m_delta);
-		stringBuilder.append(", Price: ");
-		stringBuilder.append(contract.m_underComp.m_price);
+
+		if (contract.m_underComp != null) {
+			stringBuilder.append("Contract Id: ");
+			stringBuilder.append(contract.m_underComp.m_conId);
+			stringBuilder.append(", Delta: ");
+			stringBuilder.append(contract.m_underComp.m_delta);
+			stringBuilder.append(", Price: ");
+			stringBuilder.append(contract.m_underComp.m_price);
+		}
+
 		stringBuilder.append(" }");
 
 		return stringBuilder.toString();
