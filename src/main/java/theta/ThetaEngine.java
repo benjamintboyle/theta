@@ -67,9 +67,9 @@ public class ThetaEngine {
 		}
 		this.brokerPositionHandler.requestPositionsFromBrokerage();
 		while (true) {
-			this.portfolioManager.logPositions();
+			logger.info("Heartbeat...");
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(60000);
 			} catch (InterruptedException e) {
 				logger.error("Thread interupted: {}", e);
 			}
