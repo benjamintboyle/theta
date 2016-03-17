@@ -2,7 +2,9 @@ package brokers.interactive_brokers;
 
 import com.ib.controller.NewTickType;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,9 +17,14 @@ import com.ib.controller.Types.MktDataType;
 
 import theta.api.TickHandler;
 import theta.tick.api.PriceLevel;
+import theta.tick.api.TickObserver;
+import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
+
+	private TickObserver tickObserver;
 
 	private String ticker;
 	private Double bidPrice;
@@ -33,8 +40,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Set<Double> fallsBelow = new HashSet<Double>();
 	private Set<Double> risesAbove = new HashSet<Double>();
 
-	public IbTickHandler(String ticker) {
+	public IbTickHandler(String ticker, TickObserver tickObserver) {
 		this.ticker = ticker;
+		this.tickObserver = tickObserver;
 		logger.info("Built Interactive Brokers Tick Handler for: {}", ticker);
 	}
 
@@ -53,6 +61,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			break;
 		case LAST:
 			this.lastPrice = price;
+			this.tickObserver.notifyTick(new Tick(this.ticker, this.lastPrice, TickType.LAST,
+					LocalDateTime.ofInstant(Instant.ofEpochMilli(this.lastTime), ZoneId.systemDefault())));
 			break;
 		case CLOSE:
 			this.closePrice = price;

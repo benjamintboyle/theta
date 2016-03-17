@@ -42,7 +42,7 @@ public class TickManager implements Monitor, TickObserver {
 		logger.info("Adding Monitor for '{}'", theta.getTicker());
 
 		if (!this.tickHandlers.containsKey(theta.getTicker())) {
-			this.tickHandlers.put(theta.getTicker(), this.tickSubscriber.subscribeEquity(theta.getTicker()));
+			this.tickHandlers.put(theta.getTicker(), this.tickSubscriber.subscribeEquity(theta.getTicker(), this));
 		}
 
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
@@ -71,7 +71,7 @@ public class TickManager implements Monitor, TickObserver {
 	}
 
 	@Override
-	public void notifyTick(Tick tick) {
+	public synchronized void notifyTick(Tick tick) {
 		logger.info("Received Tick from Handler: {}", tick);
 		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
 

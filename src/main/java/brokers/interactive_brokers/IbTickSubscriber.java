@@ -9,6 +9,7 @@ import com.ib.controller.Types.SecType;
 
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.tick.api.TickObserver;
 
 public class IbTickSubscriber implements TickSubscriber {
 	private static final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
@@ -21,7 +22,7 @@ public class IbTickSubscriber implements TickSubscriber {
 	}
 
 	@Override
-	public TickHandler subscribeEquity(String ticker) {
+	public TickHandler subscribeEquity(String ticker, TickObserver tickObserver) {
 		logger.info("Subscribing to Equity: {}", ticker);
 		NewContract contract = new NewContract();
 		contract.symbol(ticker);
@@ -29,7 +30,7 @@ public class IbTickSubscriber implements TickSubscriber {
 		contract.exchange("SMART");
 		contract.primaryExch("ISLAND");
 
-		IbTickHandler ibTickHandler = new IbTickHandler(ticker);
+		IbTickHandler ibTickHandler = new IbTickHandler(ticker, tickObserver);
 		logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}", contract);
 		this.ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
