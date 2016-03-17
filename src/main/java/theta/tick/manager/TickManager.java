@@ -1,6 +1,5 @@
 package theta.tick.manager;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +23,6 @@ public class TickManager implements Monitor, TickObserver {
 	private TickSubscriber tickSubscriber;
 	private PositionProvider positionProvider;
 	private Executor executor;
-
-	LocalDateTime lastChecked = LocalDateTime.MIN;
 
 	private Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
 
