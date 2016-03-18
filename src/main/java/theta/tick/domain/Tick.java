@@ -38,4 +38,9 @@ public class Tick {
 	public LocalDateTime getTimestamp() {
 		return this.timestamp;
 	}
+
+	@Override
+	public String toString() {
+		return "Tick [ticker=" + ticker + ", price=" + price + ", type=" + type + ", timestamp=" + timestamp + "]";
+	}
 }

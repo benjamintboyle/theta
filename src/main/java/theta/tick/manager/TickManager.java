@@ -75,7 +75,7 @@ public class TickManager implements Monitor, TickObserver {
 		logger.info("Received Tick from Handler: {}", tick);
 		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
 
-		logger.info("Received {} Positions from Position Provider", tradesToCheck.size());
+		logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
 		for (ThetaTrade theta : tradesToCheck) {
 			logger.info("Checking Tick against position: {}", theta.toString());
@@ -84,13 +84,19 @@ public class TickManager implements Monitor, TickObserver {
 				if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
 					if (tick.getPrice() < theta.getStrikePrice()) {
 						this.reversePosition(theta);
+					} else {
+						logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}",
+								PriceLevelDirection.FALLS_BELOW, tick, theta);
 					}
-				}
-
-				if (theta.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
+				} else if (theta.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
 					if (tick.getPrice() > theta.getStrikePrice()) {
 						this.reversePosition(theta);
+					} else {
+						logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}",
+								PriceLevelDirection.RISES_ABOVE, tick, theta);
 					}
+				} else {
+					logger.error("Invalid Price Level: {}", theta.tradeIf());
 				}
 			}
 		}

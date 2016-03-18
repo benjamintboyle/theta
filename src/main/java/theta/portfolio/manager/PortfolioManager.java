@@ -61,9 +61,15 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	public void ingestPosition(Security security) {
 		logger.info("Received Position update: {}", security.toString());
 
+		// get delta of position versus current trades
+		// send delta to unprocessed
+		// unprocessed checks delta
+		// unprocessed processes as necessary
+		// remaining unprocessed get checked against current trades
+
 		this.executionMonitor.portfolioChange(security);
 
-		Optional<ThetaTrade> optionalTheta = this.unprocessedPositionManager.add(security);
+		Optional<ThetaTrade> optionalTheta = this.unprocessedPositionManager.processSecurity(security);
 
 		if (optionalTheta.isPresent()) {
 			ThetaTrade theta = optionalTheta.get();

@@ -49,7 +49,8 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 		logger.info("Executing trade of Security: {}, using Order: {}", security.toString(), order.toString());
 		if (order.validate(security)) {
 			if (this.addActiveTrade(order)) {
-				this.executionHandler.executeOrder(order);
+				logger.warn("Execution temporarily disabled... Would have executed");
+				// this.executionHandler.executeOrder(order);
 			}
 		}
 	}

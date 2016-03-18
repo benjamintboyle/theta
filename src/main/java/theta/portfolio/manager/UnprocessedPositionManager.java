@@ -20,19 +20,17 @@ public class UnprocessedPositionManager {
 
 	private List<Security> unprocessedSecurities = new ArrayList<Security>();
 
-	public Optional<ThetaTrade> add(Security security) {
+	public Optional<ThetaTrade> processSecurity(Security security) {
 		logger.info("Adding unprocessed security: {}", security);
 		this.unprocessedSecurities.add(security);
-		this.logUnprocessedList();
-		return this.processSecurities(security.getTicker());
-	}
 
-	private Optional<ThetaTrade> processSecurities(String ticker) {
+		this.logUnprocessedList();
+
 		Optional<ThetaTrade> theta = Optional.empty();
 
 		// Filter by ticker, then group by security type
 		Map<SecurityType, List<Security>> bySecurityType = this.unprocessedSecurities.stream()
-				.filter(unprocessed -> unprocessed.getTicker().equals(ticker))
+				.filter(unprocessed -> unprocessed.getTicker().equals(security.getTicker()))
 				.collect(Collectors.groupingBy(Security::getSecurityType));
 		// if there are 3 security types (Stock, Call, Put)
 		if (bySecurityType.size() == 3) {
@@ -61,14 +59,19 @@ public class UnprocessedPositionManager {
 	}
 
 	private void logUnprocessedList() {
-		logger.info("Logging Unprocessed List");
 		if (this.unprocessedSecurities.size() > 0) {
+			logger.info("Logging Unprocessed List");
 			for (Security security : this.unprocessedSecurities) {
 				logger.info("Unprocessed Security: {}", security);
 			}
+			logger.info("Completed Logging Unprocessed List");
 		} else {
 			logger.info("Unprocessed List is empty");
 		}
-		logger.info("Completed Logging Unprocessed List");
+	}
+
+	public List<Security> getUnprocessedSecurities(String ticker) {
+		return this.unprocessedSecurities.stream().filter(security -> security.getTicker().equals(ticker))
+				.collect(Collectors.toList());
 	}
 }
