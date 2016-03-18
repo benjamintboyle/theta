@@ -209,15 +209,16 @@ public class ThetaTrade implements PriceLevel {
 	@Override
 	public String toString() {
 		String returnString = "{ Type: " + this.getStrategyType();
+		if (this.hasEquity()) {
+			returnString += ", " + this.equity.getSecurityType() + ": " + this.equity.toString();
+		}
 		if (this.hasCall()) {
 			returnString += ", " + this.call.getSecurityType() + ": " + this.call.toString();
 		}
 		if (this.hasPut()) {
 			returnString += ", " + this.put.getSecurityType() + ": " + this.put.toString();
 		}
-		if (this.hasEquity()) {
-			returnString += ", " + this.equity.getSecurityType() + ": " + this.equity.toString();
-		}
+
 		returnString += " }";
 
 		return returnString;
