@@ -3,6 +3,8 @@ package theta.tick.manager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,14 +18,18 @@ import theta.tick.api.Monitor;
 import theta.tick.api.PriceLevelDirection;
 import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 
-public class TickManager implements Monitor, TickObserver {
+public class TickManager implements Monitor, TickObserver, Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(TickManager.class);
 
 	private TickSubscriber tickSubscriber;
 	private PositionProvider positionProvider;
 	private Executor executor;
 
+	private Boolean running = true;
+
+	private BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
 	private Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
 
 	public TickManager(TickSubscriber tickSubscriber) {
@@ -35,6 +41,29 @@ public class TickManager implements Monitor, TickObserver {
 		this(tickSubscriber);
 		this.positionProvider = positionProvider;
 		this.executor = executor;
+	}
+
+	@Override
+	public void run() {
+		while (this.running) {
+			try {
+				// Blocks until tick available
+				Tick tick = this.getNextTick();
+
+				this.processTicks(tick);
+
+			} catch (InterruptedException e) {
+				logger.error("Interupted while waiting for tick", e);
+			}
+		}
+	}
+
+	@Override
+	public void notifyTick(String ticker) {
+		logger.info("Received Tick from Handler: {}", ticker);
+		if (!this.tickQueue.contains(ticker)) {
+			this.tickQueue.offer(ticker);
+		}
 	}
 
 	@Override
@@ -70,9 +99,7 @@ public class TickManager implements Monitor, TickObserver {
 		this.positionProvider = positionProvider;
 	}
 
-	@Override
-	public synchronized void notifyTick(Tick tick) {
-		logger.info("Received Tick from Handler: {}", tick);
+	private void processTicks(Tick tick) {
 		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
 
 		logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
@@ -100,5 +127,13 @@ public class TickManager implements Monitor, TickObserver {
 				}
 			}
 		}
+	}
+
+	private Tick getNextTick() throws InterruptedException {
+		String ticker = this.tickQueue.take();
+
+		TickHandler tickHandler = this.tickHandlers.get(ticker);
+
+		return new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime());
 	}
 }

@@ -1,10 +1,7 @@
 package brokers.interactive_brokers;
 
-import com.ib.controller.NewTickType;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,20 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiController.ITopMktDataHandler;
+import com.ib.controller.NewTickType;
 import com.ib.controller.Types.MktDataType;
 
 import theta.api.TickHandler;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.TickObserver;
-import theta.tick.domain.Tick;
-import theta.tick.domain.TickType;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
 
 	private TickObserver tickObserver;
 
-	private String ticker = "";
+	private String ticker;
 	private Double bidPrice = Double.MIN_VALUE;
 	private Double askPrice = Double.MIN_VALUE;
 	private Double lastPrice = Double.MIN_VALUE;
@@ -36,8 +32,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Double closePrice = Double.MIN_VALUE;
 	private Integer volume = Integer.MIN_VALUE;
 	private Boolean isSnapshot;
-
-	private Boolean hasLastPriceChanged = Boolean.FALSE;
 
 	private Set<Double> fallsBelow = new HashSet<Double>();
 	private Set<Double> risesAbove = new HashSet<Double>();
@@ -62,17 +56,13 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			this.askPrice = price;
 			break;
 		case LAST:
-			if (price != this.lastPrice) {
-				this.hasLastPriceChanged = Boolean.TRUE;
-				this.lastPrice = price;
-			}
+			this.lastPrice = price;
+
+			this.priceTrigger(this.lastPrice);
+
 			break;
 		case CLOSE:
 			this.closePrice = price;
-			if (this.priceTrigger(this.closePrice)) {
-				this.tickObserver.notifyTick(new Tick(this.ticker, this.closePrice, TickType.LAST,
-						LocalDateTime.ofInstant(this.lastTime, ZoneId.systemDefault())));
-			}
 			break;
 		default:
 			logger.error("Tick not logged for: {}", tickType);
@@ -109,13 +99,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		switch (tickType) {
 		case LAST_TIMESTAMP:
 			this.lastTime = Instant.ofEpochSecond(Long.parseLong(value));
-			if (this.hasLastPriceChanged) {
-				// this.tickObserver.notifyTick(new Tick(this.ticker,
-				// this.lastPrice, TickType.LAST,
-				// LocalDateTime.ofInstant(this.lastTime,
-				// ZoneId.systemDefault())));
-				this.hasLastPriceChanged = Boolean.FALSE;
-			}
 			break;
 		default:
 			logger.error("Tick String not logged for: {}", tickType);
@@ -136,21 +119,17 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		logger.info("Ticker: {}, Tick Snapshot End", this.ticker);
 	}
 
-	private Boolean priceTrigger(Double price) {
-		Boolean trigger = Boolean.FALSE;
-
+	private void priceTrigger(Double price) {
 		for (Double priceToFallBelow : this.fallsBelow) {
 			if (price < priceToFallBelow) {
-				trigger = Boolean.TRUE;
+				this.tickObserver.notifyTick(this.ticker);
 			}
 		}
 		for (Double priceToRiseAbove : this.risesAbove) {
 			if (price > priceToRiseAbove) {
-				trigger = Boolean.TRUE;
+				this.tickObserver.notifyTick(this.ticker);
 			}
 		}
-
-		return trigger;
 	}
 
 	@Override
