@@ -62,10 +62,10 @@ public class TickManagerTest {
 
 		this.sut.addMonitor(trade);
 
-		TickHandler removedTickHandler = this.sut.deleteMonitor(trade.getTicker());
-		logger.debug("Handler removed from Tick Monitor: {}", removedTickHandler);
+		Integer remainingPriceLevels = this.sut.deleteMonitor(trade);
+		logger.debug("Monitor removed from Tick Manager for Theta: {}", trade);
 
-		assertThat(removedTickHandler.getTicker(), is(equalTo(trade.getTicker())));
+		assertThat(remainingPriceLevels, is(equalTo(0)));
 	}
 
 	@Test

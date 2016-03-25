@@ -85,7 +85,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 		// remove positions
 		this.positions.removeAll(matchingPositions);
-		this.monitor.deleteMonitor(security.getTicker());
+		for (ThetaTrade theta : matchingPositions) {
+			this.monitor.deleteMonitor(theta);
+		}
 
 		// get securities to re-process
 		List<Security> unprocessedSecurities = new ArrayList<Security>();

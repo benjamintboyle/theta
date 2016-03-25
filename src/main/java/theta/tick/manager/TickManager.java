@@ -72,20 +72,33 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 
 	@Override
 	public void addMonitor(ThetaTrade theta) {
-		logger.info("Adding Monitor for '{}'", theta.getTicker());
+		logger.info("Adding Monitor for '{}'", theta);
 
 		if (!this.tickHandlers.containsKey(theta.getTicker())) {
-			this.tickHandlers.put(theta.getTicker(), this.tickSubscriber.subscribeEquity(theta.getTicker(), this));
+			TickHandler tickHandler = this.tickSubscriber.subscribeEquity(theta.getTicker(), this);
+			this.tickHandlers.put(theta.getTicker(), tickHandler);
 		}
 
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
 	}
 
 	@Override
-	public TickHandler deleteMonitor(String ticker) {
-		logger.info("Deleting Tick Monitor for: {}", ticker);
-		this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(ticker));
-		return this.tickHandlers.remove(ticker);
+	public Integer deleteMonitor(ThetaTrade theta) {
+		logger.info("Deleting Tick Monitor for: {}", theta);
+
+		Integer priceLevelsMonitored = 0;
+
+		if (this.tickHandlers.containsKey(theta.getTicker())) {
+			TickHandler tickHandler = this.tickHandlers.get(theta.getTicker());
+
+			priceLevelsMonitored = tickHandler.removePriceLevel(theta);
+
+			if (priceLevelsMonitored == 0) {
+				this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(theta.getTicker()));
+			}
+		}
+
+		return priceLevelsMonitored;
 	}
 
 	private void reversePosition(ThetaTrade theta) {

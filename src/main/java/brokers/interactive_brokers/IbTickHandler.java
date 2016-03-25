@@ -183,7 +183,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	}
 
 	@Override
-	public void addPriceLevel(PriceLevel priceLevel) {
+	public Integer addPriceLevel(PriceLevel priceLevel) {
 		logger.info("Adding Price Level {} to Tick Handler: {}", priceLevel, this.ticker);
 		if (!priceLevel.getTicker().equals(this.ticker)) {
 			logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), this.ticker);
@@ -201,10 +201,12 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		default:
 			logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
 		}
+
+		return this.fallsBelow.size() + this.risesAbove.size();
 	}
 
 	@Override
-	public void removePriceLevel(PriceLevel priceLevel) {
+	public Integer removePriceLevel(PriceLevel priceLevel) {
 		logger.info("Removing Price Level {} from Tick Handler: {}", priceLevel, this.ticker);
 		if (!priceLevel.getTicker().equals(this.ticker)) {
 			logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor", priceLevel.getTicker(),
@@ -223,5 +225,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		default:
 			logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
 		}
+
+		return this.fallsBelow.size() + this.risesAbove.size();
 	}
 }

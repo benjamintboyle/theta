@@ -25,7 +25,7 @@ public interface TickHandler {
 
 	public Boolean isSnapshot();
 
-	public void addPriceLevel(PriceLevel priceLevel);
+	public Integer addPriceLevel(PriceLevel priceLevel);
 
-	public void removePriceLevel(PriceLevel priceLevel);
+	public Integer removePriceLevel(PriceLevel priceLevel);
 }

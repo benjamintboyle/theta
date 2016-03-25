@@ -1,11 +1,10 @@
 package theta.tick.api;
 
-import theta.api.TickHandler;
 import theta.domain.ThetaTrade;
 
 public interface Monitor {
 
-	public void addMonitor(ThetaTrade trade);
+	public void addMonitor(ThetaTrade theta);
 
-	public TickHandler deleteMonitor(String ticker);
+	public Integer deleteMonitor(ThetaTrade theta);
 }
