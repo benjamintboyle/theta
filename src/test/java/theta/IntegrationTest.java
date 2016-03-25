@@ -99,7 +99,7 @@ public class IntegrationTest {
 	}
 
 	private void sendTickListForIngestion(List<Tick> tickList) {
-		tickList.stream().forEach(tick -> this.spyTickManager.notifyTick(tick));
+		tickList.stream().forEach(tick -> this.spyTickManager.notifyTick(tick.getTicker()));
 	}
 
 	private List<Tick> generateTickList(List<ThetaTrade> thetaList) {
@@ -151,8 +151,7 @@ public class IntegrationTest {
 		List<Tick> zeroTickList = new ArrayList<Tick>();
 
 		for (ThetaTrade theta : thetaList) {
-			zeroTickList.add(
-					new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
+			zeroTickList.add(new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
 		}
 		return zeroTickList;
 	}
