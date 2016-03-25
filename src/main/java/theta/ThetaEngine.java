@@ -59,21 +59,13 @@ public class ThetaEngine {
 	}
 
 	public void run() {
-		try {
-			logger.info("Waiting for setup to complete");
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			logger.error("Thread interupted: {}", e);
+		while (!this.brokerConnectionHandler.isConnected()) {
+			logger.info("Waiting for connection confirmation...");
 		}
+
 		this.brokerPositionHandler.requestPositionsFromBrokerage();
-		while (true) {
-			logger.info("Heartbeat...");
-			try {
-				Thread.sleep(60000);
-			} catch (InterruptedException e) {
-				logger.error("Thread interupted: {}", e);
-			}
-		}
+
+		this.tickManager.run();
 	}
 
 	private void connect() {

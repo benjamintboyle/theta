@@ -13,8 +13,8 @@ import theta.api.ConnectionHandler;
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
+	private Boolean connected = Boolean.FALSE;
 	private ArrayList<String> accountList = new ArrayList<String>();
-
 	private final ApiController ibController = new ApiController(this, new IbLogger("Inbound"),
 			new IbLogger("Outbound"));
 
@@ -28,11 +28,13 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void connected() {
+		this.connected = Boolean.TRUE;
 		logger.info("Connection established...");
 	}
 
 	@Override
 	public void disconnected() {
+		this.connected = Boolean.FALSE;
 		logger.info("Disconnected...");
 	}
 
@@ -72,13 +74,28 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 		// Paper Trading port = 7497; Operational Trading port = 7496
 		this.getController().connect("127.0.0.1", 7497, 0);
 
-		return Boolean.TRUE;
+		while (!this.connected) {
+			logger.info("Establishing connection...");
+		}
+
+		return this.connected;
 	}
 
 	@Override
 	public Boolean disconnect() {
 		logger.info("Disconnecting...");
 		this.getController().disconnect();
-		return Boolean.TRUE;
+
+		while (this.connected) {
+			logger.info("Waiting for disconnect confirmation...");
+		}
+
+		return this.connected;
+	}
+
+	@Override
+	public Boolean isConnected() {
+		logger.info("IB connection is: {}", this.connected);
+		return this.connected;
 	}
 }

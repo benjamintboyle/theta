@@ -43,6 +43,10 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 		this.executor = executor;
 	}
 
+	public void shutdown() {
+		this.running = Boolean.FALSE;
+	}
+
 	@Override
 	public void run() {
 		while (this.running) {
