@@ -83,7 +83,7 @@ public class TickManagerTest {
 		ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
 		for (Tick tick : priceTicks) {
-			this.sut.notifyTick(tick);
+			this.sut.notifyTick(tick.getTicker());
 		}
 
 		Mockito.verify(this.executor,

@@ -77,6 +77,7 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
 	}
 
+	@Override
 	public TickHandler deleteMonitor(String ticker) {
 		logger.info("Deleting Tick Monitor for: {}", ticker);
 		this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(ticker));

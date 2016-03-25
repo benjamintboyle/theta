@@ -18,9 +18,14 @@ import theta.domain.api.SecurityType;
 public class UnprocessedPositionManager {
 	private static final Logger logger = LoggerFactory.getLogger(UnprocessedPositionManager.class);
 
+	private PortfolioManager portfolioManager;
 	private List<Security> unprocessedSecurities = new ArrayList<Security>();
 
-	public Optional<ThetaTrade> processSecurity(Security security) {
+	public UnprocessedPositionManager(PortfolioManager portfolioManager) {
+		this.portfolioManager = portfolioManager;
+	}
+
+	public void processSecurity(Security security) {
 		logger.info("Adding unprocessed security: {}", security);
 		this.unprocessedSecurities.add(security);
 
@@ -55,7 +60,15 @@ public class UnprocessedPositionManager {
 			logger.info("Not enough securities to form trade: {}", bySecurityType);
 		}
 
-		return theta;
+		if (theta.isPresent()) {
+			this.portfolioManager.processPosition(theta.get());
+		}
+	}
+
+	public void processSecurities(List<Security> securities) {
+		for (Security security : securities) {
+			this.processSecurity(security);
+		}
 	}
 
 	private void logUnprocessedList() {
