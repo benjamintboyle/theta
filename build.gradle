@@ -1,7 +1,9 @@
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'findbugs'
 
+mainClassName = "theta.ThetaEngine"
 
 group = group
 version = version
