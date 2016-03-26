@@ -93,7 +93,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	}
 
 	public void registerTickMonitor(Monitor monitor) {
-		logger.info("Registering Tick Monitor with Portfolio Monitor");
+		logger.info("Registering Tick Monitor with Portfolio Manager");
 		this.monitor = monitor;
 	}
 
