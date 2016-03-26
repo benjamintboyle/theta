@@ -37,24 +37,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	}
 
 	public void processPosition(ThetaTrade theta) {
-		List<ThetaTrade> matchingThetas = this.positions.stream()
-				.filter(position -> theta.getTicker().equals(position.getTicker()))
-				.filter(position -> theta.getStrikePrice().equals(position.getStrikePrice()))
-				.collect(Collectors.toList());
-
-		switch (matchingThetas.size()) {
-		case 0:
-			this.positions.add(theta);
-			this.monitor.addMonitor(theta);
-			logger.info("Added new position: {}", theta);
-			break;
-		case 1:
-			matchingThetas.get(0).add(theta);
-			logger.info("Added to existing theta: {}", theta);
-			break;
-		default:
-			logger.error("There should never be multiple trades at the same strike: {}", matchingThetas);
-		}
+		this.positions.add(theta);
+		this.monitor.addMonitor(theta);
+		logger.info("Added new position: {}", theta);
 	}
 
 	private List<ThetaTrade> getCurrentPositionsThatMatch(Security security) {
@@ -82,6 +67,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 		// check for thetas
 		List<ThetaTrade> matchingPositions = this.getCurrentPositionsThatMatch(security);
+		logger.info("Security: {}, matches existing positions: {}", security, matchingPositions);
 
 		// remove positions
 		this.positions.removeAll(matchingPositions);
@@ -91,11 +77,10 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 
 		// get securities to re-process
 		List<Security> unprocessedSecurities = new ArrayList<Security>();
-		unprocessedSecurities.add(security);
 		unprocessedSecurities.addAll(this.getDeltaOfMatch(security, matchingPositions));
 
 		// send to unprocessed
-		this.unprocessedPositionManager.processSecurities(unprocessedSecurities);
+		this.unprocessedPositionManager.processSecurities(security, unprocessedSecurities);
 
 		this.executionMonitor.portfolioChange(security);
 	}

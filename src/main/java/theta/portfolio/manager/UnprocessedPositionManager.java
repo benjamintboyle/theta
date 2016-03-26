@@ -65,6 +65,24 @@ public class UnprocessedPositionManager {
 		}
 	}
 
+	public void processSecurities(Security security, List<Security> reprocessedSecurities) {
+		List<Security> securitiesToDiscard = this.unprocessedSecurities.stream()
+				.filter(discard -> discard.getTicker().equals(security.getTicker()))
+				.filter(discard -> discard.getSecurityType().equals(security.getSecurityType()))
+				.collect(Collectors.toList());
+
+		if (SecurityType.CALL.equals(security.getSecurityType())
+				|| SecurityType.PUT.equals(security.getSecurityType())) {
+			securitiesToDiscard = securitiesToDiscard.stream()
+					.filter(discard -> discard.getPrice() == security.getPrice()).collect(Collectors.toList());
+		}
+
+		this.unprocessedSecurities.removeAll(securitiesToDiscard);
+
+		this.processSecurities(reprocessedSecurities);
+		this.processSecurity(security);
+	}
+
 	public void processSecurities(List<Security> securities) {
 		for (Security security : securities) {
 			this.processSecurity(security);
