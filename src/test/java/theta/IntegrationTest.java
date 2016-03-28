@@ -106,8 +106,8 @@ public class IntegrationTest {
 		List<Tick> returnTicks = new ArrayList<Tick>();
 		List<Tick> zeroTicks = new ArrayList<Tick>();
 
-		zeroTicks = generateZeroTickList(thetaList);
-		returnTicks = generateStandardTickPatternList(zeroTicks);
+		zeroTicks.addAll(generateZeroTickList(thetaList));
+		returnTicks.addAll(generateStandardTickPatternList(zeroTicks));
 
 		return returnTicks;
 	}

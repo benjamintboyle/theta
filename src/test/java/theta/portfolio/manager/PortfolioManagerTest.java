@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,10 +81,12 @@ public class PortfolioManagerTest {
 	private static List<Security> parseStringToSecurity(List<String> stringListOfSecurities) {
 		List<Security> securityList = new ArrayList<Security>();
 
+		Pattern splitPattern = Pattern.compile("\\s*,\\s*");
+
 		for (String trade : stringListOfSecurities) {
 			logger.debug("Trade: {}", trade);
 
-			String[] security = trade.split("\\s*,\\s*");
+			String[] security = splitPattern.split(trade);
 			String securityType = security[0];
 			String ticker = security[1];
 			Integer quantity = Integer.valueOf(security[2]);
