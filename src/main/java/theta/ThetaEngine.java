@@ -65,6 +65,8 @@ public class ThetaEngine {
 
 		this.brokerPositionHandler.requestPositionsFromBrokerage();
 
+		// Start manager threads
+		new Thread(this.portfolioManager).start();
 		this.tickManager.run();
 	}
 
@@ -114,13 +116,7 @@ public class ThetaEngine {
 	private void attachShutdownHook() {
 		logger.info("Registering Shutdown Hook");
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-
-			@Override
-			public void run() {
-				logger.info("Executing Shutdown Hook");
-			}
-		});
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> logger.info("Executing Shutdown Hook")));
 
 		logger.info("Shutdown Hook Registered");
 	}

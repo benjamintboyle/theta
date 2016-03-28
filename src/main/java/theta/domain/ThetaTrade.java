@@ -192,9 +192,10 @@ public class ThetaTrade implements PriceLevel {
 	}
 
 	public ThetaTrade reversePosition() {
-		this.getEquity().reversePosition();
-		logger.info("Reversing trade...");
-		return this;
+		Stock stock = this.getEquity().reversePosition();
+		ThetaTrade reversedTheta = new ThetaTrade(stock, this.call, this.put);
+		logger.info("Reversing trade from {}, to this {}", this, reversedTheta);
+		return reversedTheta;
 	}
 
 	public List<Security> toSecurityList() {

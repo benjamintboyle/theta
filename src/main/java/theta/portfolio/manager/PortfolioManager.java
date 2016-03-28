@@ -2,6 +2,8 @@ package theta.portfolio.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,7 +18,7 @@ import theta.portfolio.api.PortfolioObserver;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
 
-public class PortfolioManager implements PortfolioObserver, PositionProvider {
+public class PortfolioManager implements PortfolioObserver, PositionProvider, Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
 	private PositionHandler positionHandler;
@@ -24,6 +26,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	private ExecutionMonitor executionMonitor;
 	private List<ThetaTrade> positions = new ArrayList<ThetaTrade>();
 	UnprocessedPositionManager unprocessedPositionManager = new UnprocessedPositionManager(this);
+	private BlockingQueue<Security> positionQueue = new LinkedBlockingQueue<Security>();
+
+	private Boolean running = true;
 
 	public PortfolioManager(PositionHandler positionHandler) {
 		logger.info("Starting Portfolio Manager");
@@ -64,7 +69,14 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 	@Override
 	public void ingestPosition(Security security) {
 		logger.info("Received Position update: {}", security.toString());
+		try {
+			this.positionQueue.put(security);
+		} catch (InterruptedException e) {
+			logger.error("Interupted before security could be added", e);
+		}
+	}
 
+	private void processNewPosition(Security security) {
 		// check for thetas
 		List<ThetaTrade> matchingPositions = this.getCurrentPositionsThatMatch(security);
 		logger.info("Security: {}, matches existing positions: {}", security, matchingPositions);
@@ -83,6 +95,19 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider {
 		this.unprocessedPositionManager.processSecurities(security, unprocessedSecurities);
 
 		this.executionMonitor.portfolioChange(security);
+	}
+
+	@Override
+	public void run() {
+		while (this.running) {
+			try {
+				Security security = this.positionQueue.take();
+
+				this.processNewPosition(security);
+			} catch (InterruptedException e) {
+				logger.error("Interupted while waiting for security", e);
+			}
+		}
 	}
 
 	@Override

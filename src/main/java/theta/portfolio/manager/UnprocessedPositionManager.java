@@ -74,7 +74,7 @@ public class UnprocessedPositionManager {
 		if (SecurityType.CALL.equals(security.getSecurityType())
 				|| SecurityType.PUT.equals(security.getSecurityType())) {
 			securitiesToDiscard = securitiesToDiscard.stream()
-					.filter(discard -> discard.getPrice() == security.getPrice()).collect(Collectors.toList());
+					.filter(discard -> discard.getPrice().equals(security.getPrice())).collect(Collectors.toList());
 		}
 
 		this.unprocessedSecurities.removeAll(securitiesToDiscard);

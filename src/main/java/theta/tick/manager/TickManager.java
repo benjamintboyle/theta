@@ -66,7 +66,11 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 	public void notifyTick(String ticker) {
 		logger.info("Received Tick from Handler: {}", ticker);
 		if (!this.tickQueue.contains(ticker)) {
-			this.tickQueue.offer(ticker);
+			try {
+				this.tickQueue.put(ticker);
+			} catch (InterruptedException e) {
+				logger.error("Interupted without adding Tick", e);
+			}
 		}
 	}
 
