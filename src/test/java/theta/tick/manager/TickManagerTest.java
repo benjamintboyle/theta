@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Precision;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -51,6 +52,7 @@ public class TickManagerTest {
 	@Mock
 	TickHandler handler;
 
+	@Ignore
 	@Test
 	public void test_add_and_delete_monitor() {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
@@ -68,6 +70,7 @@ public class TickManagerTest {
 		assertThat(remainingPriceLevels, is(equalTo(0)));
 	}
 
+	@Ignore
 	@Test
 	public void test_ticks_around_strike_price() {
 		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();

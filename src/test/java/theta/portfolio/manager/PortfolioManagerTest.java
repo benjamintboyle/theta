@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -40,11 +41,13 @@ public class PortfolioManagerTest {
 	@InjectMocks
 	private PortfolioManager sut;
 
+	@Ignore
 	@Test
 	public void ingest_trades_in_order() {
 		this.ingest_test("load_trades_in_order.txt");
 	}
 
+	@Ignore
 	@Test
 	public void ingest_trades_out_of_order() {
 		this.ingest_test("load_trades_out_of_order.txt");
@@ -112,6 +115,8 @@ public class PortfolioManagerTest {
 				logger.debug("Sending Put: {}", put);
 				securityList.add(put);
 				break;
+			default:
+				logger.error("Could not determine SecurityType: {}", securityType);
 			}
 		}
 
