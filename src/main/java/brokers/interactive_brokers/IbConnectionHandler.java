@@ -76,6 +76,11 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 		while (!this.connected) {
 			logger.info("Establishing connection...");
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				logger.error("Interupted while waiting for connection", e);
+			}
 		}
 
 		return this.connected;
@@ -88,6 +93,11 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 		while (this.connected) {
 			logger.info("Waiting for disconnect confirmation...");
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				logger.error("Interupted while waiting for disconnect", e);
+			}
 		}
 
 		return this.connected;

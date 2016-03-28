@@ -59,15 +59,14 @@ public class ThetaEngine {
 	}
 
 	public void run() {
-		while (!this.brokerConnectionHandler.isConnected()) {
-			logger.info("Waiting for connection confirmation...");
+		if (this.brokerConnectionHandler.isConnected()) {
+
+			this.brokerPositionHandler.requestPositionsFromBrokerage();
+
+			// Start manager threads
+			new Thread(this.portfolioManager).start();
+			this.tickManager.run();
 		}
-
-		this.brokerPositionHandler.requestPositionsFromBrokerage();
-
-		// Start manager threads
-		new Thread(this.portfolioManager).start();
-		this.tickManager.run();
 	}
 
 	private void connect() {
