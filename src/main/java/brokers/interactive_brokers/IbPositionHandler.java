@@ -64,7 +64,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 	}
 
 	@Override
-	public void subscribePositions(PortfolioObserver observer) {
+	public synchronized void subscribePositions(PortfolioObserver observer) {
 		logger.info("Portfolio Manager is observing Handler");
 		this.portfolioObserver = observer;
 	}
