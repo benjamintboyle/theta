@@ -28,7 +28,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 	@Override
 	public synchronized void position(String account, NewContract newContract, int position, double avgCost) {
 		logger.info(
-				"Handler has received position from Brokers servers: Account: [{}], Contract: [{}], Position: [{}], Average Cost: [{}]",
+				"Handler has received position from Brokers servers: Account: {}, Contract: [{}], Position: {}, Average Cost: {}",
 				account, IbUtil.contractToString(newContract.getContract()), position, avgCost);
 		switch (newContract.secType()) {
 		case STK:
@@ -47,6 +47,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 						new Option(SecurityType.PUT, newContract.symbol(), position, newContract.strike(), expiration));
 				break;
 			default:
+				logger.error("Could not identify Contract Right: {}",
+						IbUtil.contractToString(newContract.getContract()));
 				break;
 			}
 			break;
