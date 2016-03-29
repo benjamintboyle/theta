@@ -3,6 +3,7 @@ package theta.domain;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import theta.domain.api.SecurityType;
 public class Option implements Security {
 	private static final Logger logger = LoggerFactory.getLogger(Option.class);
 
+	private UUID id = UUID.randomUUID();
 	private SecurityType type;
 	private String backingTicker = "";
 	private Integer quantity;
@@ -26,6 +28,22 @@ public class Option implements Security {
 		this.strikePrice = strikePrice;
 		this.expiration = expiration;
 		logger.info("Built Option: {}", this.toString());
+	}
+
+	public Option(UUID id, SecurityType type, String backingTicker, Integer quantity, Double strikePrice,
+			LocalDate expiration) {
+		this.id = id;
+		this.type = type;
+		this.backingTicker = backingTicker;
+		this.quantity = quantity;
+		this.strikePrice = strikePrice;
+		this.expiration = expiration;
+		logger.info("Built Option: {}", this.toString());
+	}
+
+	@Override
+	public UUID getId() {
+		return this.id;
 	}
 
 	@Override
@@ -88,14 +106,8 @@ public class Option implements Security {
 
 	@Override
 	public String toString() {
-		String returnString = "{ Type: " + this.getSecurityType();
-		returnString += ", Ticker: " + this.getTicker();
-		returnString += ", Quantity: " + this.getQuantity();
-		returnString += ", Strike: " + this.getStrikePrice();
-		returnString += ", Expiration: " + this.getExpiration().toString();
-		returnString += " }";
-
-		return returnString;
+		return "Option [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity=" + quantity
+				+ ", strikePrice=" + strikePrice + ", expiration=" + expiration + "]";
 	}
 
 	@Override
@@ -104,6 +116,7 @@ public class Option implements Security {
 		int result = 1;
 		result = prime * result + ((backingTicker == null) ? 0 : backingTicker.hashCode());
 		result = prime * result + ((expiration == null) ? 0 : expiration.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
 		result = prime * result + ((strikePrice == null) ? 0 : strikePrice.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -128,6 +141,11 @@ public class Option implements Security {
 			if (other.expiration != null)
 				return false;
 		} else if (!expiration.equals(other.expiration))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (quantity == null) {
 			if (other.quantity != null)

@@ -1,6 +1,9 @@
 package brokers.interactive_brokers;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +20,24 @@ import theta.portfolio.api.PortfolioObserver;
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
 
+	private Map<Integer, UUID> identityMap = new HashMap<Integer, UUID>();
+
 	private IbController controller;
 	private PortfolioObserver portfolioObserver;
 
 	public IbPositionHandler(IbController controller) {
 		logger.info("Starting Interactive Brokers Position Handler");
 		this.controller = controller;
+	}
+
+	private UUID generateId(Integer id) {
+		UUID uuid = UUID.randomUUID();
+
+		if (this.identityMap.containsKey(id)) {
+			uuid = this.identityMap.get(id);
+		}
+
+		return uuid;
 	}
 
 	@Override
@@ -32,25 +47,32 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 				account, IbUtil.contractToString(newContract.getContract()), position, avgCost);
 		switch (newContract.secType()) {
 		case STK:
-			this.portfolioObserver.ingestPosition(new Stock(newContract.symbol(), position, avgCost));
+			Stock stock = new Stock(this.generateId(newContract.getContract().m_conId), newContract.symbol(), position,
+					avgCost);
+			this.portfolioObserver.ingestPosition(stock);
+
 			break;
 		case OPT:
-			LocalDate expiration = Option.convertExpiration(newContract.expiry());
-
+			SecurityType securityType = null;
 			switch (newContract.right()) {
 			case Call:
-				this.portfolioObserver.ingestPosition(new Option(SecurityType.CALL, newContract.symbol(), position,
-						newContract.strike(), expiration));
+				securityType = SecurityType.CALL;
 				break;
 			case Put:
-				this.portfolioObserver.ingestPosition(
-						new Option(SecurityType.PUT, newContract.symbol(), position, newContract.strike(), expiration));
+				securityType = SecurityType.PUT;
 				break;
 			default:
 				logger.error("Could not identify Contract Right: {}",
 						IbUtil.contractToString(newContract.getContract()));
 				break;
 			}
+
+			LocalDate expiration = Option.convertExpiration(newContract.expiry());
+
+			Option option = new Option(this.generateId(newContract.getContract().m_conId), securityType,
+					newContract.symbol(), position, newContract.strike(), expiration);
+			this.portfolioObserver.ingestPosition(option);
+
 			break;
 		default:
 			logger.error("Can not determine Position Type: {}", IbUtil.contractToString(newContract.getContract()));
