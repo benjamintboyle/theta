@@ -31,7 +31,8 @@ public class IbTickSubscriber implements TickSubscriber {
 		contract.primaryExch("ISLAND");
 
 		IbTickHandler ibTickHandler = new IbTickHandler(ticker, tickObserver);
-		logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}", contract);
+		logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
+				IbUtil.contractToString(contract.getContract()));
 		this.ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
 		return ibTickHandler;
