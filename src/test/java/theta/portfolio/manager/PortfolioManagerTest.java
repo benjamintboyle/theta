@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,19 +99,19 @@ public class PortfolioManagerTest {
 
 			switch (securityType) {
 			case "STOCK":
-				Stock stock = new Stock(ticker, quantity, price);
+				Stock stock = new Stock(UUID.randomUUID(), ticker, quantity, price);
 				logger.debug("Sending Stock: {}", stock);
 				securityList.add(stock);
 				break;
 			case "CALL":
-				Option call = new Option(SecurityType.CALL, ticker, quantity, price,
+				Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity, price,
 						LocalDate.now().plusDays(Long.parseLong(security[4])));
 				logger.debug("Sending Call: {}", call);
 
 				securityList.add(call);
 				break;
 			case "PUT":
-				Option put = new Option(SecurityType.PUT, ticker, quantity, price,
+				Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity, price,
 						LocalDate.now().plusDays(Long.parseLong(security[4])));
 				logger.debug("Sending Put: {}", put);
 				securityList.add(put);

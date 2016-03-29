@@ -21,15 +21,6 @@ public class Option implements Security {
 	private Double strikePrice;
 	private LocalDate expiration;
 
-	public Option(SecurityType type, String backingTicker, Integer quantity, Double strikePrice, LocalDate expiration) {
-		this.type = type;
-		this.backingTicker = backingTicker;
-		this.quantity = quantity;
-		this.strikePrice = strikePrice;
-		this.expiration = expiration;
-		logger.info("Built Option: {}", this.toString());
-	}
-
 	public Option(UUID id, SecurityType type, String backingTicker, Integer quantity, Double strikePrice,
 			LocalDate expiration) {
 		this.id = id;

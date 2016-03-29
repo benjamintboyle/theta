@@ -9,14 +9,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import java.util.UUID;
+
 @RunWith(MockitoJUnitRunner.class)
 public class StockTest {
 	public static Stock buildTestStock() {
-		return new Stock("CHK", 100, 15.0);
+		return new Stock(UUID.randomUUID(), "CHK", 100, 15.0);
 	}
 
 	public static Stock buildTestStockShort() {
-		return new Stock("CHK", -100, 15.0);
+		return new Stock(UUID.randomUUID(), "CHK", -100, 15.0);
 	}
 
 	@Test

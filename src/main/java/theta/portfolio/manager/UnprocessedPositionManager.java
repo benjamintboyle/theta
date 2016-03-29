@@ -26,42 +26,78 @@ public class UnprocessedPositionManager {
 	}
 
 	public void processSecurity(Security security) {
-		logger.info("Adding unprocessed security: {}", security);
-		this.unprocessedSecurities.add(security);
 
 		this.logUnprocessedList();
 
-		Optional<ThetaTrade> theta = Optional.empty();
+		if (security.getQuantity() != 0) {
+			logger.info("Adding unprocessed security: {}", security);
+			this.unprocessedSecurities.add(security);
 
-		// Filter by ticker, then group by security type
-		Map<SecurityType, List<Security>> bySecurityType = this.unprocessedSecurities.stream()
-				.filter(unprocessed -> unprocessed.getTicker().equals(security.getTicker()))
-				.collect(Collectors.groupingBy(Security::getSecurityType));
-		// if there are 3 security types (Stock, Call, Put)
-		if (bySecurityType.size() == 3) {
-			for (Security call : bySecurityType.get(SecurityType.CALL)) {
-				List<Security> putsAtStrike = bySecurityType.get(SecurityType.PUT).stream()
-						.filter(put -> put.getPrice().equals(call.getPrice())).collect(Collectors.toList());
+			Optional<ThetaTrade> theta = Optional.empty();
 
-				Stock stock = (Stock) bySecurityType.get(SecurityType.STOCK).get(0);
-				Option callOption = (Option) call;
-				Option putOption = (Option) putsAtStrike.get(0);
+			// Filter by ticker, then group by security type
+			Map<SecurityType, List<Security>> bySecurityType = this.unprocessedSecurities.stream()
+					.filter(unprocessed -> unprocessed.getTicker().equals(security.getTicker()))
+					.collect(Collectors.groupingBy(Security::getSecurityType));
+			// if there are 3 security types (Stock, Call, Put)
+			if (bySecurityType.size() == 3) {
+				logger.info("Attempting to build Theta...");
+				for (Security call : bySecurityType.get(SecurityType.CALL)) {
+					List<Security> putsAtStrike = bySecurityType.get(SecurityType.PUT).stream()
+							.filter(put -> put.getPrice().equals(call.getPrice())).collect(Collectors.toList());
 
-				theta = ThetaTrade.of(stock, callOption, putOption);
-				logger.info("Created Theta from unprocessed securities: {}", theta);
+					Stock stock = (Stock) bySecurityType.get(SecurityType.STOCK).get(0);
+					Option callOption = (Option) call;
+					Option putOption = (Option) putsAtStrike.get(0);
 
-				this.unprocessedSecurities.remove(stock);
-				this.unprocessedSecurities.remove(callOption);
-				this.unprocessedSecurities.remove(putOption);
+					// only 100
+					Stock singleStock = new Stock(stock.getTicker(),
+							100 * stock.getQuantity() / Math.abs(stock.getQuantity()), stock.getAverageTradePrice());
+					Option singleCall = new Option(callOption.getSecurityType(), callOption.getTicker(), -1,
+							callOption.getStrikePrice(), callOption.getExpiration());
+					Option singlePut = new Option(putOption.getSecurityType(), putOption.getTicker(), -1,
+							putOption.getStrikePrice(), putOption.getExpiration());
 
-				this.logUnprocessedList();
+					theta = ThetaTrade.of(singleStock, singleCall, singlePut);
+					logger.info("Created Theta from unprocessed securities: {}", theta);
+
+					this.unprocessedSecurities.remove(stock);
+					this.unprocessedSecurities.remove(callOption);
+					this.unprocessedSecurities.remove(putOption);
+
+					List<Security> securitiesToReprocess = new ArrayList<Security>();
+					securitiesToReprocess.add(new Stock(stock.getTicker(),
+							stock.getQuantity() - singleStock.getQuantity(), stock.getAverageTradePrice()));
+					securitiesToReprocess.add(new Option(callOption.getSecurityType(), callOption.getTicker(),
+							callOption.getQuantity() + 1, callOption.getStrikePrice(), callOption.getExpiration()));
+					securitiesToReprocess.add(new Option(putOption.getSecurityType(), putOption.getTicker(),
+							putOption.getQuantity() + 1, putOption.getStrikePrice(), putOption.getExpiration()));
+					this.processSecurities(securitiesToReprocess);
+
+					// process difference
+					this.logUnprocessedList();
+				}
+			} else {
+				logger.info("Not enough securities to form trade: {}", bySecurityType);
+			}
+
+			if (theta.isPresent()) {
+				this.portfolioManager.processPosition(theta.get());
 			}
 		} else {
-			logger.info("Not enough securities to form trade: {}", bySecurityType);
-		}
-
-		if (theta.isPresent()) {
-			this.portfolioManager.processPosition(theta.get());
+			List<Security> securitiesToRemove = this.unprocessedSecurities.stream()
+					.filter(position -> position.getTicker().equals(security.getTicker()))
+					.filter(position -> position.getSecurityType().equals(security.getSecurityType()))
+					.collect(Collectors.toList());
+			if (security.getSecurityType().equals(SecurityType.CALL)
+					|| security.getSecurityType().equals(SecurityType.PUT)) {
+				securitiesToRemove = securitiesToRemove.stream()
+						.filter(position -> position.getPrice().equals(security.getPrice()))
+						.collect(Collectors.toList());
+			}
+			logger.info("Clearing Unprocessed Positions: {}, related to {}", securitiesToRemove, security);
+			this.unprocessedSecurities.removeAll(securitiesToRemove);
+			this.logUnprocessedList();
 		}
 	}
 

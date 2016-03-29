@@ -3,6 +3,7 @@ package theta.domain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,18 +16,22 @@ import theta.tick.api.PriceLevelDirection;
 public class ThetaTrade implements PriceLevel {
 	private static final Logger logger = LoggerFactory.getLogger(ThetaTrade.class);
 
+	private UUID id = UUID.randomUUID();
 	private final SecurityType type = SecurityType.THETA;
-
 	private Option call;
 	private Option put;
 	private Stock equity;
 	private Integer quantity = 0;
 
-	private ThetaTrade(Stock stock, Option call, Option put) {
-		logger.info("Building Theta: {}, {}, {}", stock, call, put);
+	private ThetaTrade(UUID id, Stock stock, Option call, Option put) {
 		this.add(call);
 		this.add(put);
 		this.add(stock);
+		logger.info("Built Theta: {}", this);
+	}
+
+	public UUID getId() {
+		return this.id;
 	}
 
 	public static Optional<ThetaTrade> of(Stock stock, Option call, Option put) {
@@ -44,7 +49,7 @@ public class ThetaTrade implements PriceLevel {
 						// Options are opposite types
 						if (call.getSecurityType().equals(SecurityType.CALL)
 								&& put.getSecurityType().equals(SecurityType.PUT)) {
-							theta = new ThetaTrade(stock, call, put);
+							theta = new ThetaTrade(UUID.randomUUID(), stock, call, put);
 						} else {
 							logger.error("Options aren't a call: {} and a put: {}", call, put);
 						}
@@ -193,7 +198,7 @@ public class ThetaTrade implements PriceLevel {
 
 	public ThetaTrade reversePosition() {
 		Stock stock = this.getEquity().reversePosition();
-		ThetaTrade reversedTheta = new ThetaTrade(stock, this.call, this.put);
+		ThetaTrade reversedTheta = new ThetaTrade(this.id, stock, this.call, this.put);
 		logger.info("Reversing trade from {}, to this {}", this, reversedTheta);
 		return reversedTheta;
 	}
@@ -208,21 +213,31 @@ public class ThetaTrade implements PriceLevel {
 	}
 
 	@Override
+	public PriceLevelDirection tradeIf() {
+		PriceLevelDirection priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
+
+		if (this.getEquity().getQuantity() > 0) {
+			priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
+		}
+		if (this.getEquity().getQuantity() < 0) {
+			priceLevelDirection = PriceLevelDirection.RISES_ABOVE;
+		}
+
+		return priceLevelDirection;
+	}
+
+	public ThetaTrade plus(ThetaTrade theta) {
+		
+	}
+	
+	public static ThetaTrade singleContractTemplateOf(ThetaTrade theta) {
+		return new ThetaTrade(UUID.randomUUID(), new Stock);
+	}
+
+	@Override
 	public String toString() {
-		String returnString = "{ Type: " + this.getStrategyType();
-		if (this.hasEquity()) {
-			returnString += ", " + this.equity.getSecurityType() + ": " + this.equity.toString();
-		}
-		if (this.hasCall()) {
-			returnString += ", " + this.call.getSecurityType() + ": " + this.call.toString();
-		}
-		if (this.hasPut()) {
-			returnString += ", " + this.put.getSecurityType() + ": " + this.put.toString();
-		}
-
-		returnString += " }";
-
-		return returnString;
+		return "ThetaTrade [id=" + id + ", type=" + type + ", call=" + call + ", put=" + put + ", equity=" + equity
+				+ ", quantity=" + quantity + "]";
 	}
 
 	@Override
@@ -231,7 +246,9 @@ public class ThetaTrade implements PriceLevel {
 		int result = 1;
 		result = prime * result + ((call == null) ? 0 : call.hashCode());
 		result = prime * result + ((equity == null) ? 0 : equity.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((put == null) ? 0 : put.hashCode());
+		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -255,27 +272,23 @@ public class ThetaTrade implements PriceLevel {
 				return false;
 		} else if (!equity.equals(other.equity))
 			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
 		if (put == null) {
 			if (other.put != null)
 				return false;
 		} else if (!put.equals(other.put))
 			return false;
+		if (quantity == null) {
+			if (other.quantity != null)
+				return false;
+		} else if (!quantity.equals(other.quantity))
+			return false;
 		if (type != other.type)
 			return false;
 		return true;
-	}
-
-	@Override
-	public PriceLevelDirection tradeIf() {
-		PriceLevelDirection priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
-
-		if (this.getEquity().getQuantity() > 0) {
-			priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
-		}
-		if (this.getEquity().getQuantity() < 0) {
-			priceLevelDirection = PriceLevelDirection.RISES_ABOVE;
-		}
-
-		return priceLevelDirection;
 	}
 }
