@@ -226,14 +226,6 @@ public class ThetaTrade implements PriceLevel {
 		return priceLevelDirection;
 	}
 
-	public ThetaTrade plus(ThetaTrade theta) {
-		
-	}
-	
-	public static ThetaTrade singleContractTemplateOf(ThetaTrade theta) {
-		return new ThetaTrade(UUID.randomUUID(), new Stock);
-	}
-
 	@Override
 	public String toString() {
 		return "ThetaTrade [id=" + id + ", type=" + type + ", call=" + call + ", put=" + put + ", equity=" + equity
