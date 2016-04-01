@@ -1,7 +1,9 @@
 package theta.portfolio.manager;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
@@ -10,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import theta.api.PositionHandler;
+import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
@@ -24,8 +27,11 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	private PositionHandler positionHandler;
 	private Monitor monitor;
 	private ExecutionMonitor executionMonitor;
-	private List<ThetaTrade> positions = new ArrayList<ThetaTrade>();
-	UnprocessedPositionManager unprocessedPositionManager = new UnprocessedPositionManager(this);
+	private Map<UUID, ThetaTrade> positionMap = new HashMap<UUID, ThetaTrade>();
+	private Map<UUID, Security> securityIdMap = new HashMap<UUID, Security>();
+	private Map<UUID, UUID> positionSecurityMap = new HashMap<UUID, UUID>();
+	// UnprocessedPositionManager unprocessedPositionManager = new
+	// UnprocessedPositionManager(this);
 	private BlockingQueue<Security> positionQueue = new LinkedBlockingQueue<Security>();
 
 	private Boolean running = true;
@@ -41,31 +47,6 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 		this.monitor = monitor;
 	}
 
-	public void processPosition(ThetaTrade theta) {
-		this.positions.add(theta);
-		this.monitor.addMonitor(theta);
-		logger.info("Added new position: {}", theta);
-	}
-
-	private List<ThetaTrade> getCurrentPositionsThatMatch(Security security) {
-		List<ThetaTrade> tickMatchingThetas = this.positions.stream()
-				.filter(theta -> theta.getTicker().equals(security.getTicker())).collect(Collectors.toList());
-
-		if (SecurityType.CALL.equals(security.getSecurityType())
-				|| SecurityType.PUT.equals(security.getSecurityType())) {
-			tickMatchingThetas = tickMatchingThetas.stream()
-					.filter(theta -> theta.getStrikePrice().equals(security.getPrice())).collect(Collectors.toList());
-		}
-
-		return tickMatchingThetas;
-	}
-
-	private List<Security> getDeltaOfMatch(Security security, List<ThetaTrade> matchingPositions) {
-		return matchingPositions.stream().flatMap(theta -> theta.toSecurityList().stream())
-				.filter(matchingSecurity -> !matchingSecurity.getSecurityType().equals(security.getSecurityType()))
-				.collect(Collectors.toList());
-	}
-
 	@Override
 	public void ingestPosition(Security security) {
 		logger.info("Received Position update: {}", security.toString());
@@ -76,23 +57,35 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 		}
 	}
 
-	private void processNewPosition(Security security) {
-		// check for thetas
-		List<ThetaTrade> matchingPositions = this.getCurrentPositionsThatMatch(security);
-		logger.info("Security: {}, matches existing positions: {}", security, matchingPositions);
+	private void processPosition(Security security) {
+		// Update security list
+		// process security list
 
-		// remove positions
-		this.positions.removeAll(matchingPositions);
-		for (ThetaTrade theta : matchingPositions) {
-			this.monitor.deleteMonitor(theta);
+		// If security changed from previous value associated with Security's Id
+		if (!security.equals(this.securityIdMap.put(security.getId(), security))) {
+			// If security is mapped to a position, remove position and
+			// position-security map entry
+			if (this.positionSecurityMap.containsKey(security.getId())) {
+				this.positionMap.remove(this.positionSecurityMap.remove(security.getId()));
+			}
+
+			// process securities into positions
+			Map<SecurityType, Map<String, Map<Double, List<Security>>>> unassignedSecurities = this.securityIdMap
+					.keySet().parallelStream().filter(id -> !this.positionSecurityMap.containsKey(id))
+					.map(id -> this.securityIdMap.get(id)).collect(Collectors.groupingBy(Security::getSecurityType,
+							Collectors.groupingBy(Security::getTicker, Collectors.groupingBy(Security::getPrice))));
+			for (String ticker : unassignedSecurities.get(SecurityType.CALL).keySet()) {
+
+				List<Security> stockList = unassignedSecurities.get(SecurityType.STOCK).get(ticker).entrySet().stream().map(price -> price.getValue()).m
+
+				for (Double callPrice : unassignedSecurities.get(SecurityType.CALL).get(ticker).keySet()) {
+					List<Security> callList = unassignedSecurities.get(SecurityType.CALL).get(ticker).get(callPrice);
+					List<Security> putList = unassignedSecurities.get(SecurityType.PUT).get(ticker).get(callPrice);
+				
+					
+				}
+			}
 		}
-
-		// get securities to re-process
-		List<Security> unprocessedSecurities = new ArrayList<Security>();
-		unprocessedSecurities.addAll(this.getDeltaOfMatch(security, matchingPositions));
-
-		// send to unprocessed
-		this.unprocessedPositionManager.processSecurities(security, unprocessedSecurities);
 
 		this.executionMonitor.portfolioChange(security);
 	}
@@ -103,7 +96,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 			try {
 				Security security = this.positionQueue.take();
 
-				this.processNewPosition(security);
+				this.processPosition(security);
 			} catch (InterruptedException e) {
 				logger.error("Interupted while waiting for security", e);
 			}
@@ -113,7 +106,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	@Override
 	public List<ThetaTrade> providePositions(String ticker) {
 		logger.info("Providing Positions for: {}", ticker);
-		return this.positions.parallelStream().filter(position -> position.getTicker().equals(ticker))
+		return this.positionMap.values().parallelStream().filter(position -> position.getTicker().equals(ticker))
 				.filter(position -> position.isComplete()).collect(Collectors.toList());
 	}
 
@@ -128,7 +121,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	}
 
 	public void logPositions() {
-		for (ThetaTrade position : this.positions) {
+		for (ThetaTrade position : this.positionMap.values()) {
 			logger.info("Current position: {}", position);
 		}
 	}
