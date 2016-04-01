@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import theta.api.PositionHandler;
+import theta.domain.Option;
 import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
@@ -30,7 +31,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	private ExecutionMonitor executionMonitor;
 	private Map<UUID, ThetaTrade> positionMap = new HashMap<UUID, ThetaTrade>();
 	private Map<UUID, Security> securityIdMap = new HashMap<UUID, Security>();
-	private Map<UUID, UUID> positionSecurityMap = new HashMap<UUID, UUID>();
+	private Map<UUID, UUID> securityPositionMap = new HashMap<UUID, UUID>();
 	// UnprocessedPositionManager unprocessedPositionManager = new
 	// UnprocessedPositionManager(this);
 	private BlockingQueue<Security> positionQueue = new LinkedBlockingQueue<Security>();
@@ -65,8 +66,8 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 
 			// If security is mapped to a position, remove position and
 			// position-security map entry
-			if (this.positionSecurityMap.containsKey(security.getId())) {
-				ThetaTrade theta = this.positionMap.remove(this.positionSecurityMap.remove(security.getId()));
+			if (this.securityPositionMap.containsKey(security.getId())) {
+				ThetaTrade theta = this.positionMap.remove(this.securityPositionMap.remove(security.getId()));
 				if (!this.positionMap.values().parallelStream()
 						.filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny().isPresent()) {
 					this.monitor.deleteMonitor(theta);
@@ -75,7 +76,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 
 			// process securities into positions
 			Map<SecurityType, Map<String, Map<Double, List<Security>>>> unassignedSecurities = this.securityIdMap
-					.keySet().parallelStream().filter(id -> !this.positionSecurityMap.containsKey(id))
+					.keySet().parallelStream().filter(id -> !this.securityPositionMap.containsKey(id))
 					.map(id -> this.securityIdMap.get(id)).collect(Collectors.groupingBy(Security::getSecurityType,
 							Collectors.groupingBy(Security::getTicker, Collectors.groupingBy(Security::getPrice))));
 			for (String ticker : unassignedSecurities.get(SecurityType.CALL).keySet()) {
@@ -95,11 +96,15 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 						// at this point we know stock and call are valid, but
 						// not put
 						if (putListAtPrice.size() > 0) {
-							Stock stock = new Stock(stockList.get(0).getId(), stockList.get(0).getTicker(),
-									stockList.get(0).getQuantity(), stockList.get(0).getPrice());
-							Option call = new Option(callListAtPrice.get(0).getId(), SecurityType.CALL, callListAtPrice.get(0).getTicker(), callListAtPrice.get(0).getQuantity(), callListAtPrice.get(0).getPrice(), callListAtPrice.get(0))
-							ThetaTrade theta = ThetaTrade.of(stockList.get(0), callListAtPrice.get(0),
-									putListAtPrice.get(0));
+							ThetaTrade theta = ThetaTrade.of((Stock) stockList.get(0), (Option) callListAtPrice.get(0),
+									(Option) putListAtPrice.get(0)).orElse(null);
+							if (theta != null) {
+								this.positionMap.put(theta.getId(), theta);
+								this.securityPositionMap.put(theta.getEquity().getId(), theta.getId());
+								this.securityPositionMap.put(theta.getCall().getId(), theta.getId());
+								this.securityPositionMap.put(theta.getPut().getId(), theta.getId());
+								this.monitor.addMonitor(theta);
+							}
 						}
 					}
 				}
