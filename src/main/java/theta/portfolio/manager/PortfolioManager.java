@@ -106,7 +106,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 						.map(Entry::getValue).flatMap(List::stream).collect(Collectors.toList());
 
 				// if there is enough stock
-				if (stockList.stream().mapToInt(stock -> stock.getQuantity()).sum() >= 100) {
+				if (Math.abs(stockList.stream().mapToInt(stock -> stock.getQuantity()).sum()) >= 100) {
 					List<Double> callPrices = unassignedSecurities.entrySet().stream()
 							.filter(type -> type.getKey().equals(SecurityType.CALL))
 							.flatMap(type -> type.getValue().entrySet().stream())
