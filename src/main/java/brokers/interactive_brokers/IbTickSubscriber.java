@@ -41,7 +41,6 @@ public class IbTickSubscriber implements TickSubscriber {
 	@Override
 	public Boolean unsubscribeEquity(TickHandler tickHandler) {
 		logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
-		// TODO: Figure out how to validate cast, and if cancel was successful
 		this.ibController.getController().cancelTopMktData((ITopMktDataHandler) tickHandler);
 
 		return Boolean.TRUE;
