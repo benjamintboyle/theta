@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,8 +33,6 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	private Map<UUID, ThetaTrade> positionMap = new HashMap<UUID, ThetaTrade>();
 	private Map<UUID, Security> securityIdMap = new HashMap<UUID, Security>();
 	private Map<UUID, UUID> securityPositionMap = new HashMap<UUID, UUID>();
-	// UnprocessedPositionManager unprocessedPositionManager = new
-	// UnprocessedPositionManager(this);
 	private BlockingQueue<Security> positionQueue = new LinkedBlockingQueue<Security>();
 
 	private Boolean running = true;
@@ -59,52 +58,81 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 		}
 	}
 
+	private void removePositionIfExists(Security security) {
+		// If security is mapped to a position, remove position and
+		// position-security map entry
+		if (this.securityPositionMap.containsKey(security.getId())) {
+			ThetaTrade theta = this.positionMap.remove(this.securityPositionMap.remove(security.getId()));
+			if (!this.positionMap.values().parallelStream()
+					.filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny().isPresent()) {
+				this.monitor.deleteMonitor(theta);
+			}
+		}
+	}
+
+	private void processSecurity(List<Security> stockList, List<Security> callList, List<Security> putList) {
+		Optional<ThetaTrade> optionalTheta = ThetaTrade.of((Stock) stockList.get(0), (Option) callList.get(0),
+				(Option) putList.get(0));
+		if (optionalTheta.isPresent()) {
+			ThetaTrade theta = optionalTheta.get();
+			this.positionMap.put(theta.getId(), theta);
+			this.securityPositionMap.put(theta.getEquity().getId(), theta.getId());
+			this.securityPositionMap.put(theta.getCall().getId(), theta.getId());
+			this.securityPositionMap.put(theta.getPut().getId(), theta.getId());
+			this.monitor.addMonitor(theta);
+		}
+	}
+
 	private void processPosition(Security security) {
 
 		// If security changed from previous value associated with Security's Id
 		if (!security.equals(this.securityIdMap.put(security.getId(), security))) {
-
-			// If security is mapped to a position, remove position and
-			// position-security map entry
-			if (this.securityPositionMap.containsKey(security.getId())) {
-				ThetaTrade theta = this.positionMap.remove(this.securityPositionMap.remove(security.getId()));
-				if (!this.positionMap.values().parallelStream()
-						.filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny().isPresent()) {
-					this.monitor.deleteMonitor(theta);
-				}
-			}
+			removePositionIfExists(security);
 
 			// process securities into positions
+			// SecurityType -> Ticker -> Price -> Security
 			Map<SecurityType, Map<String, Map<Double, List<Security>>>> unassignedSecurities = this.securityIdMap
 					.keySet().parallelStream().filter(id -> !this.securityPositionMap.containsKey(id))
 					.map(id -> this.securityIdMap.get(id)).collect(Collectors.groupingBy(Security::getSecurityType,
 							Collectors.groupingBy(Security::getTicker, Collectors.groupingBy(Security::getPrice))));
-			for (String ticker : unassignedSecurities.get(SecurityType.CALL).keySet()) {
 
-				// All stocks unassigned stocks for specific ticker
+			List<String> allUnassignedStockTickers = unassignedSecurities.entrySet().stream()
+					.filter(type -> type.getKey().equals(SecurityType.STOCK)).map(type -> type.getValue())
+					.flatMap(ticker -> ticker.keySet().stream()).distinct().collect(Collectors.toList());
+
+			for (String ticker : allUnassignedStockTickers) {
+				// All unassigned stocks for specific ticker
 				List<Security> stockList = unassignedSecurities.get(SecurityType.STOCK).get(ticker).entrySet().stream()
 						.map(Entry::getValue).flatMap(List::stream).collect(Collectors.toList());
 
 				// if there is enough stock
 				if (stockList.stream().mapToInt(stock -> stock.getQuantity()).sum() >= 100) {
-					// For each price level of call options
-					for (Double callPrice : unassignedSecurities.get(SecurityType.CALL).get(ticker).keySet()) {
-						List<Security> callListAtPrice = unassignedSecurities.get(SecurityType.CALL).get(ticker)
-								.get(callPrice);
-						List<Security> putListAtPrice = unassignedSecurities.get(SecurityType.PUT).get(ticker)
-								.get(callPrice);
-						// at this point we know stock and call are valid, but
-						// not put
-						if (putListAtPrice.size() > 0) {
-							ThetaTrade theta = ThetaTrade.of((Stock) stockList.get(0), (Option) callListAtPrice.get(0),
-									(Option) putListAtPrice.get(0)).orElse(null);
-							if (theta != null) {
-								this.positionMap.put(theta.getId(), theta);
-								this.securityPositionMap.put(theta.getEquity().getId(), theta.getId());
-								this.securityPositionMap.put(theta.getCall().getId(), theta.getId());
-								this.securityPositionMap.put(theta.getPut().getId(), theta.getId());
-								this.monitor.addMonitor(theta);
-							}
+					List<Double> callPrices = unassignedSecurities.entrySet().stream()
+							.filter(type -> type.getKey().equals(SecurityType.CALL))
+							.flatMap(type -> type.getValue().entrySet().stream())
+							.filter(tickerList -> tickerList.getKey().equals(ticker))
+							.map(tickerList -> tickerList.getValue()).flatMap(price -> price.keySet().stream())
+							.collect(Collectors.toList());
+
+					for (Double callPrice : callPrices) {
+						List<Security> callList = unassignedSecurities.entrySet().stream()
+								.filter(type -> type.getKey().equals(SecurityType.CALL))
+								.flatMap(type -> type.getValue().entrySet().stream())
+								.filter(tickerList -> tickerList.getKey().equals(ticker))
+								.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
+								.filter(price -> price.getKey().equals(callPrice))
+								.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
+
+						List<Security> putList = unassignedSecurities.entrySet().stream()
+								.filter(type -> type.getKey().equals(SecurityType.PUT))
+								.flatMap(type -> type.getValue().entrySet().stream())
+								.filter(tickerList -> tickerList.getKey().equals(ticker))
+								.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
+								.filter(price -> price.getKey().equals(callPrice))
+								.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
+
+						if (!putList.isEmpty()) {
+							processSecurity(stockList, callList, putList);
 						}
 					}
 				}
