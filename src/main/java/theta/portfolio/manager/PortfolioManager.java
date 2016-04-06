@@ -63,8 +63,8 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 		// position-security map entry
 		if (this.securityPositionMap.containsKey(security.getId())) {
 			ThetaTrade theta = this.positionMap.remove(this.securityPositionMap.remove(security.getId()));
-			if (!this.positionMap.values().parallelStream()
-					.filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny().isPresent()) {
+			if (!this.positionMap.values().stream().filter(ticker -> ticker.getTicker().equals(theta.getTicker()))
+					.findAny().isPresent()) {
 				this.monitor.deleteMonitor(theta);
 			}
 		}
@@ -92,7 +92,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 			// process securities into positions
 			// SecurityType -> Ticker -> Price -> Security
 			Map<SecurityType, Map<String, Map<Double, List<Security>>>> unassignedSecurities = this.securityIdMap
-					.keySet().parallelStream().filter(id -> !this.securityPositionMap.containsKey(id))
+					.keySet().stream().filter(id -> !this.securityPositionMap.containsKey(id))
 					.map(id -> this.securityIdMap.get(id)).collect(Collectors.groupingBy(Security::getSecurityType,
 							Collectors.groupingBy(Security::getTicker, Collectors.groupingBy(Security::getPrice))));
 
@@ -158,7 +158,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	@Override
 	public List<ThetaTrade> providePositions(String ticker) {
 		logger.info("Providing Positions for: {}", ticker);
-		return this.positionMap.values().parallelStream().filter(position -> position.getTicker().equals(ticker))
+		return this.positionMap.values().stream().filter(position -> position.getTicker().equals(ticker))
 				.filter(position -> position.isComplete()).collect(Collectors.toList());
 	}
 
