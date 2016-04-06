@@ -26,11 +26,19 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Double bidPrice = Double.MIN_VALUE;
 	private Double askPrice = Double.MIN_VALUE;
 	private Double lastPrice = Double.MIN_VALUE;
+	private Double openPrice = Double.MIN_VALUE;
+	private Double lowPrice = Double.MIN_VALUE;
+	private Double highPrice = Double.MIN_VALUE;
+	private Double haltedPrice = Double.MIN_VALUE;
+
 	private Instant lastTime = Instant.now();
+
 	private Integer bidSize = Integer.MIN_VALUE;
 	private Integer askSize = Integer.MIN_VALUE;
 	private Double closePrice = Double.MIN_VALUE;
 	private Integer volume = Integer.MIN_VALUE;
+	private int lastSize = Integer.MIN_VALUE;
+
 	private Boolean isSnapshot;
 
 	private Set<Double> fallsBelow = new HashSet<Double>();
@@ -57,12 +65,22 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			break;
 		case LAST:
 			this.lastPrice = price;
-
 			this.priceTrigger(this.lastPrice);
-
 			break;
 		case CLOSE:
 			this.closePrice = price;
+			break;
+		case OPEN:
+			this.openPrice = price;
+			break;
+		case LOW:
+			this.lowPrice = price;
+			break;
+		case HIGH:
+			this.highPrice = price;
+			break;
+		case HALTED:
+			this.haltedPrice = price;
 			break;
 		default:
 			logger.error("Tick not logged for: {}", tickType);
@@ -84,6 +102,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			break;
 		case VOLUME:
 			this.volume = size;
+			break;
+		case LAST_SIZE:
+			this.lastSize = size;
 			break;
 		default:
 			logger.error("Tick Size not logged for: {}", tickType);
@@ -152,6 +173,22 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		return this.lastPrice;
 	}
 
+	public Double getOpenPrice() {
+		return this.openPrice;
+	}
+
+	public Double getLowPrice() {
+		return this.lowPrice;
+	}
+
+	public Double getHighPrice() {
+		return this.highPrice;
+	}
+
+	public Double getHaltedPrice() {
+		return this.haltedPrice;
+	}
+
 	@Override
 	public LocalDateTime getLastTime() {
 		return LocalDateTime.ofInstant(this.lastTime, ZoneOffset.UTC);
@@ -175,6 +212,10 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	@Override
 	public Integer getVolume() {
 		return this.volume;
+	}
+
+	public Integer getLastSize() {
+		return this.lastSize;
 	}
 
 	@Override
