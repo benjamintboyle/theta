@@ -15,6 +15,7 @@ import theta.execution.api.Executable;
 
 import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.Types.Action;
+import com.ib.controller.Types.SecType;
 
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
@@ -61,6 +62,9 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 		ibOrder.orderId(0);
 
 		NewContract contract = new NewContract(new Contract());
+		contract.symbol(order.getTicker());
+		contract.secType(SecType.STK);
+		contract.exchange("SMART");
 
 		logger.info("Built Interactive Brokers New Contract: {}", IbUtil.contractToString(contract.getContract()));
 		logger.info("Built Interactive Brokers Order: {}", ibOrder);
