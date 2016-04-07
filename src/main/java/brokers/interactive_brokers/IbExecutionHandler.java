@@ -62,7 +62,7 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 
 		NewContract contract = new NewContract(new Contract());
 
-		logger.info("Built Interactive Brokers New Contract: {}", contract);
+		logger.info("Built Interactive Brokers New Contract: {}", IbUtil.contractToString(contract.getContract()));
 		logger.info("Built Interactive Brokers Order: {}", ibOrder);
 		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);

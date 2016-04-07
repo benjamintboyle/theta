@@ -94,4 +94,10 @@ public class EquityOrder implements Executable {
 	private Boolean isValidSecurityType(SecurityType securityType) {
 		return this.securityType.equals(securityType);
 	}
+
+	@Override
+	public String toString() {
+		return "EquityOrder [securityType=" + securityType + ", ticker=" + ticker + ", quantity=" + quantity
+				+ ", action=" + action + ", executionType=" + executionType + "]";
+	}
 }
