@@ -99,7 +99,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 		logger.info("Disconnecting...");
 		this.getController().disconnect();
 
-		while (this.connected) {
+		while (this.isConnected()) {
 			logger.info("Waiting for disconnect confirmation...");
 			try {
 				Thread.sleep(5);
