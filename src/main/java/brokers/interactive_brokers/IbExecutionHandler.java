@@ -31,7 +31,7 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	public void orderState(NewOrderState orderState) {
 		// ApiDemo.INSTANCE.controller().removeOrderHandler(this);
 
-		logger.info("Order State: {}", orderState);
+		logger.info("Order State: {}", IbUtil.newOrderStateToString(orderState));
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 		contract.exchange("SMART");
 
 		logger.info("Built Interactive Brokers New Contract: {}", IbUtil.contractToString(contract.getContract()));
-		logger.info("Built Interactive Brokers Order: {}", ibOrder);
+		logger.info("Built Interactive Brokers Order: {}", IbUtil.newOrderToString(ibOrder));
 		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
 
