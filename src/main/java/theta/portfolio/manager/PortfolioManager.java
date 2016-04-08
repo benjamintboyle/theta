@@ -82,6 +82,8 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 			this.securityPositionMap.put(theta.getPut().getId(), theta.getId());
 			this.monitor.addMonitor(theta);
 		}
+
+		this.logPositions();
 	}
 
 	private void processPosition(Security security) {
@@ -137,11 +139,11 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 								.filter(quantity -> quantity < 0).sum();
 
 						// if there is enough stock
-						if (stockQuantityLong % 100 == 0) {
+						if (stockQuantityLong % 100 == 0 && stockQuantityLong > 0) {
 							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() > 0)
 									.collect(Collectors.toList()), callList, putList);
 						}
-						if (stockQuantityShort % 100 == 0) {
+						if (stockQuantityShort % 100 == 0 && stockQuantityShort > 0) {
 							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() < 0)
 									.collect(Collectors.toList()), callList, putList);
 						}
