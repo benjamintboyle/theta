@@ -13,6 +13,10 @@ import theta.api.ConnectionHandler;
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
+	private static final String GATEWAY_IP_ADDRESS = "127.0.0.1";
+	// Paper Trading port = 7497; Operational Trading port = 7496
+	private static final int GATEWAY_PORT = 7497;
+
 	private Boolean connected = Boolean.FALSE;
 	private ArrayList<String> accountList = new ArrayList<String>();
 	private final ApiController ibController = new ApiController(this, new IbLogger("Inbound"),
@@ -72,10 +76,11 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public Boolean connect() {
-		logger.info("Connecting to Interactive Brokers Gateway at IP: 127.0.0.1:7497 as Client 0");
+		logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client 0", GATEWAY_IP_ADDRESS,
+				GATEWAY_PORT);
 
 		// Paper Trading port = 7497; Operational Trading port = 7496
-		this.getController().connect("127.0.0.1", 7497, 0);
+		this.getController().connect(GATEWAY_IP_ADDRESS, GATEWAY_PORT, 0);
 
 		while (!this.connected) {
 			logger.info("Establishing connection...");
