@@ -58,6 +58,7 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 		}
 	}
 
+	// Removes positions if security is contained within it
 	private void removePositionIfExists(Security security) {
 		// If security is mapped to a position, remove position and
 		// position-security map entry
@@ -105,34 +106,44 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 				List<Security> stockList = unassignedSecurities.get(SecurityType.STOCK).get(ticker).entrySet().stream()
 						.map(Entry::getValue).flatMap(List::stream).collect(Collectors.toList());
 
-				// if there is enough stock
-				if (Math.abs(stockList.stream().mapToInt(stock -> stock.getQuantity()).sum()) >= 100) {
-					List<Double> callPrices = unassignedSecurities.entrySet().stream()
+				List<Double> callPrices = unassignedSecurities.entrySet().stream()
+						.filter(type -> type.getKey().equals(SecurityType.CALL))
+						.flatMap(type -> type.getValue().entrySet().stream())
+						.filter(tickerList -> tickerList.getKey().equals(ticker))
+						.map(tickerList -> tickerList.getValue()).flatMap(price -> price.keySet().stream())
+						.collect(Collectors.toList());
+
+				for (Double callPrice : callPrices) {
+					List<Security> callList = unassignedSecurities.entrySet().stream()
 							.filter(type -> type.getKey().equals(SecurityType.CALL))
 							.flatMap(type -> type.getValue().entrySet().stream())
 							.filter(tickerList -> tickerList.getKey().equals(ticker))
-							.map(tickerList -> tickerList.getValue()).flatMap(price -> price.keySet().stream())
-							.collect(Collectors.toList());
+							.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
+							.filter(price -> price.getKey().equals(callPrice))
+							.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
 
-					for (Double callPrice : callPrices) {
-						List<Security> callList = unassignedSecurities.entrySet().stream()
-								.filter(type -> type.getKey().equals(SecurityType.CALL))
-								.flatMap(type -> type.getValue().entrySet().stream())
-								.filter(tickerList -> tickerList.getKey().equals(ticker))
-								.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
-								.filter(price -> price.getKey().equals(callPrice))
-								.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
+					List<Security> putList = unassignedSecurities.entrySet().stream()
+							.filter(type -> type.getKey().equals(SecurityType.PUT))
+							.flatMap(type -> type.getValue().entrySet().stream())
+							.filter(tickerList -> tickerList.getKey().equals(ticker))
+							.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
+							.filter(price -> price.getKey().equals(callPrice))
+							.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
 
-						List<Security> putList = unassignedSecurities.entrySet().stream()
-								.filter(type -> type.getKey().equals(SecurityType.PUT))
-								.flatMap(type -> type.getValue().entrySet().stream())
-								.filter(tickerList -> tickerList.getKey().equals(ticker))
-								.flatMap(tickerList -> tickerList.getValue().entrySet().stream())
-								.filter(price -> price.getKey().equals(callPrice))
-								.flatMap(price -> price.getValue().stream()).collect(Collectors.toList());
+					if (!putList.isEmpty()) {
+						Integer stockQuantityLong = stockList.stream().mapToInt(stock -> stock.getQuantity())
+								.filter(quantity -> quantity > 0).sum();
+						Integer stockQuantityShort = stockList.stream().mapToInt(stock -> stock.getQuantity())
+								.filter(quantity -> quantity < 0).sum();
 
-						if (!putList.isEmpty()) {
-							processSecurity(stockList, callList, putList);
+						// if there is enough stock
+						if (stockQuantityLong % 100 == 0) {
+							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() > 0)
+									.collect(Collectors.toList()), callList, putList);
+						}
+						if (stockQuantityShort % 100 == 0) {
+							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() < 0)
+									.collect(Collectors.toList()), callList, putList);
 						}
 					}
 				}
