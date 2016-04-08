@@ -14,7 +14,7 @@ public class IbLogger implements ILogger {
 	}
 
 	public IbLogger(String loggerType) {
-		this.loggerType = loggerType;
+		// this.loggerType = loggerType;
 	}
 
 	@Override
