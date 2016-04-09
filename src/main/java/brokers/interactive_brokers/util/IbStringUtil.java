@@ -1,11 +1,11 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.util;
 
 import com.ib.client.ComboLeg;
 import com.ib.client.Contract;
 import com.ib.controller.NewOrder;
 import com.ib.controller.NewOrderState;
 
-public class IbUtil {
+public class IbStringUtil {
 	public static String contractToString(Contract contract) {
 		StringBuilder stringBuilder = new StringBuilder();
 

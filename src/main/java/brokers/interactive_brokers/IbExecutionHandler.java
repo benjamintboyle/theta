@@ -17,6 +17,8 @@ import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.Types.Action;
 import com.ib.controller.Types.SecType;
 
+import brokers.interactive_brokers.util.IbStringUtil;
+
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
 
@@ -31,7 +33,7 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	public void orderState(NewOrderState orderState) {
 		// ApiDemo.INSTANCE.controller().removeOrderHandler(this);
 
-		logger.info("Order State: {}", IbUtil.newOrderStateToString(orderState));
+		logger.info("Order State: {}", IbStringUtil.newOrderStateToString(orderState));
 	}
 
 	@Override
@@ -66,8 +68,8 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 		contract.secType(SecType.STK);
 		contract.exchange("SMART");
 
-		logger.info("Built Interactive Brokers New Contract: {}", IbUtil.contractToString(contract.getContract()));
-		logger.info("Built Interactive Brokers Order: {}", IbUtil.newOrderToString(ibOrder));
+		logger.info("Built Interactive Brokers New Contract: {}", IbStringUtil.contractToString(contract.getContract()));
+		logger.info("Built Interactive Brokers Order: {}", IbStringUtil.newOrderToString(ibOrder));
 		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
 

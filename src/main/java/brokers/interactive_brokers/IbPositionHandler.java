@@ -3,12 +3,17 @@ package brokers.interactive_brokers;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ib.controller.ApiController.IPositionHandler;
+
+import brokers.interactive_brokers.util.IbOptionUtil;
+import brokers.interactive_brokers.util.IbStringUtil;
+
 import com.ib.controller.NewContract;
 
 import theta.api.PositionHandler;
@@ -20,7 +25,7 @@ import theta.portfolio.api.PortfolioObserver;
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
 
-	private Map<Integer, UUID> identityMap = new HashMap<Integer, UUID>();
+	private Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
 
 	private IbController controller;
 	private PortfolioObserver portfolioObserver;
@@ -30,11 +35,11 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 		this.controller = controller;
 	}
 
-	private UUID generateId(Integer id) {
+	private UUID generateId(Integer contractId) {
 		UUID uuid = UUID.randomUUID();
 
-		if (this.identityMap.containsKey(id)) {
-			uuid = this.identityMap.get(id);
+		if (this.contractIdMap.containsKey(contractId)) {
+			uuid = this.contractIdMap.get(contractId);
 		}
 
 		return uuid;
@@ -44,7 +49,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 	public synchronized void position(String account, NewContract newContract, int position, double avgCost) {
 		logger.info(
 				"Handler has received position from Brokers servers: Account: {}, Contract: [{}], Position: {}, Average Cost: {}",
-				account, IbUtil.contractToString(newContract.getContract()), position, avgCost);
+				account, IbStringUtil.contractToString(newContract.getContract()), position, avgCost);
 		switch (newContract.secType()) {
 		case STK:
 			Stock stock = new Stock(this.generateId(newContract.getContract().m_conId), newContract.symbol(), position,
@@ -63,19 +68,23 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 				break;
 			default:
 				logger.error("Could not identify Contract Right: {}",
-						IbUtil.contractToString(newContract.getContract()));
+						IbStringUtil.contractToString(newContract.getContract()));
 				break;
 			}
 
-			LocalDate expiration = Option.convertExpiration(newContract.expiry());
+			Optional<LocalDate> optionalExpiration = IbOptionUtil.convertExpiration(newContract.expiry());
 
-			Option option = new Option(this.generateId(newContract.getContract().m_conId), securityType,
-					newContract.symbol(), position, newContract.strike(), expiration);
-			this.portfolioObserver.ingestPosition(option);
-
+			if (optionalExpiration.isPresent()) {
+				Option option = new Option(this.generateId(newContract.getContract().m_conId), securityType,
+						newContract.symbol(), position, newContract.strike(), optionalExpiration.get());
+				this.portfolioObserver.ingestPosition(option);
+			} else {
+				logger.error("Invalid Option Expiration");
+			}
 			break;
 		default:
-			logger.error("Can not determine Position Type: {}", IbUtil.contractToString(newContract.getContract()));
+			logger.error("Can not determine Position Type: {}",
+					IbStringUtil.contractToString(newContract.getContract()));
 			break;
 		}
 	}

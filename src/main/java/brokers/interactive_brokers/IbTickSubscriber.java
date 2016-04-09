@@ -7,6 +7,7 @@ import com.ib.controller.ApiController.ITopMktDataHandler;
 import com.ib.controller.NewContract;
 import com.ib.controller.Types.SecType;
 
+import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.tick.api.TickObserver;
@@ -32,7 +33,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
 		IbTickHandler ibTickHandler = new IbTickHandler(ticker, tickObserver);
 		logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
-				IbUtil.contractToString(contract.getContract()));
+				IbStringUtil.contractToString(contract.getContract()));
 		this.ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
 		return ibTickHandler;
