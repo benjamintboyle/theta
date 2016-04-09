@@ -17,7 +17,7 @@ import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
-public class ThetaEngine {
+public class ThetaEngine implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
 
 	// Brokerage handlers
@@ -55,9 +55,11 @@ public class ThetaEngine {
 	public static void main(String[] args) {
 		// Create Theta Engine
 		ThetaEngine thetaEngine = new ThetaEngine();
-		thetaEngine.run();
+		new Thread(thetaEngine).start();
 	}
 
+
+	@Override
 	public void run() {
 		if (this.brokerConnectionHandler.isConnected()) {
 
@@ -65,7 +67,7 @@ public class ThetaEngine {
 
 			// Start manager threads
 			new Thread(this.portfolioManager).start();
-			this.tickManager.run();
+			new Thread(this.tickManager).start();
 		}
 	}
 

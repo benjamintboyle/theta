@@ -2,7 +2,7 @@ package theta;
 
 import static org.junit.Assert.fail;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,13 +126,13 @@ public class IntegrationTest {
 			String ticker = tick.getTicker();
 			Double strike = tick.getPrice();
 
-			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike + 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
-			tickList.add(new Tick(ticker, strike - 0.01, tickType, LocalDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike + 0.01, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, ZonedDateTime.now()));
+			tickList.add(new Tick(ticker, strike - 0.01, tickType, ZonedDateTime.now()));
 			/*
 			 * tickList.add(new Tick(ticker, strike, tickType,
 			 * LocalDateTime.now())); tickList.add(new Tick(ticker, strike,
@@ -157,7 +157,7 @@ public class IntegrationTest {
 		List<Tick> zeroTickList = new ArrayList<Tick>();
 
 		for (ThetaTrade theta : thetaList) {
-			zeroTickList.add(new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, LocalDateTime.now()));
+			zeroTickList.add(new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, ZonedDateTime.now()));
 		}
 		return zeroTickList;
 	}

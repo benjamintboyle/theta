@@ -1,6 +1,6 @@
 package theta.tick.domain;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ public class Tick {
 	private String ticker;
 	private Double price;
 	private TickType type;
-	private LocalDateTime timestamp;
+	private ZonedDateTime timestamp;
 
-	public Tick(String ticker, Double price, TickType type, LocalDateTime timestamp) {
+	public Tick(String ticker, Double price, TickType type, ZonedDateTime timestamp) {
 		this.ticker = ticker;
 		this.price = price;
 		this.type = type;
@@ -35,7 +35,7 @@ public class Tick {
 		return this.type;
 	}
 
-	public LocalDateTime getTimestamp() {
+	public ZonedDateTime getTimestamp() {
 		return this.timestamp;
 	}
 

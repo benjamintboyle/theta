@@ -1,8 +1,8 @@
 package brokers.interactive_brokers;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Double highPrice = Double.MIN_VALUE;
 	private Double haltedPrice = Double.MIN_VALUE;
 
-	private Instant lastTime = Instant.now();
+	private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.MIN, ZoneId.of("America/New_York"));
 
 	private Integer bidSize = Integer.MIN_VALUE;
 	private Integer askSize = Integer.MIN_VALUE;
@@ -114,12 +114,11 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 	@Override
 	public void tickString(NewTickType tickType, String value) {
-		logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
-				this.ticker, tickType, value);
-
 		switch (tickType) {
 		case LAST_TIMESTAMP:
-			this.lastTime = Instant.ofEpochSecond(Long.parseLong(value));
+			this.lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ZoneId.of("America/New_York"));
+			logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+					this.ticker, tickType, this.lastTime);
 			break;
 		default:
 			logger.error("Tick String not logged for: {}", tickType);
@@ -143,14 +142,18 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private void priceTrigger(Double price) {
 		for (Double priceToFallBelow : this.fallsBelow) {
 			if (price < priceToFallBelow) {
-				this.tickObserver.notifyTick(this.ticker);
+				this.publishTickNotification();
 			}
 		}
 		for (Double priceToRiseAbove : this.risesAbove) {
 			if (price > priceToRiseAbove) {
-				this.tickObserver.notifyTick(this.ticker);
+				this.publishTickNotification();
 			}
 		}
+	}
+
+	private void publishTickNotification() {
+		this.tickObserver.notifyTick(this.ticker);
 	}
 
 	@Override
@@ -190,8 +193,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	}
 
 	@Override
-	public LocalDateTime getLastTime() {
-		return LocalDateTime.ofInstant(this.lastTime, ZoneOffset.UTC);
+	public ZonedDateTime getLastTime() {
+		return this.lastTime;
 	}
 
 	@Override
@@ -269,4 +272,5 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 		return this.fallsBelow.size() + this.risesAbove.size();
 	}
+
 }

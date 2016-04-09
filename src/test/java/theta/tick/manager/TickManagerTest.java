@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,7 +103,7 @@ public class TickManagerTest {
 			double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
 			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
 			priceTicks.add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST,
-					LocalDateTime.now()));
+					ZonedDateTime.now()));
 		}
 
 		return priceTicks;

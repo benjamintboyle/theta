@@ -1,5 +1,7 @@
 package theta.tick.manager;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +56,9 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 				// Blocks until tick available
 				Tick tick = this.getNextTick();
 
-				this.processTicks(tick);
-
+				if (tick.getTimestamp().isAfter(ZonedDateTime.now().minus(15, ChronoUnit.SECONDS))) {
+					this.processTicks(tick);
+				}
 			} catch (InterruptedException e) {
 				logger.error("Interupted while waiting for tick", e);
 			}
@@ -122,6 +125,8 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 	}
 
 	private void processTicks(Tick tick) {
+		logger.info("Processing Tick: {}", tick);
+
 		List<ThetaTrade> tradesToCheck = this.positionProvider.providePositions(tick.getTicker());
 
 		logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);

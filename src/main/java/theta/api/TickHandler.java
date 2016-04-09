@@ -1,10 +1,11 @@
 package theta.api;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import theta.tick.api.PriceLevel;
 
 public interface TickHandler {
+
 	public String getTicker();
 
 	public Double getBid();
@@ -13,7 +14,7 @@ public interface TickHandler {
 
 	public Double getLast();
 
-	public LocalDateTime getLastTime();
+	public ZonedDateTime getLastTime();
 
 	public Integer getBidSize();
 
