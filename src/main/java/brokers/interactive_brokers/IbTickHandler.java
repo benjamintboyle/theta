@@ -31,7 +31,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 	private Double highPrice = Double.MIN_VALUE;
 	private Double haltedPrice = Double.MIN_VALUE;
 
-	private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.MIN, ZoneId.of("America/New_York"));
+	private ZonedDateTime lastTime = ZonedDateTime.now().minusYears(100);
 
 	private Integer bidSize = Integer.MIN_VALUE;
 	private Integer askSize = Integer.MIN_VALUE;
