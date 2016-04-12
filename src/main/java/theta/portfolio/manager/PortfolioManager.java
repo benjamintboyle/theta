@@ -72,6 +72,8 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	}
 
 	private void processSecurity(List<Security> stockList, List<Security> callList, List<Security> putList) {
+		logger.info("Processing stock list: {}, call list: {}, put list: {}", stockList, callList, putList);
+
 		Optional<ThetaTrade> optionalTheta = ThetaTrade.of((Stock) stockList.get(0), (Option) callList.get(0),
 				(Option) putList.get(0));
 		if (optionalTheta.isPresent()) {
@@ -82,8 +84,6 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 			this.securityPositionMap.put(theta.getPut().getId(), theta.getId());
 			this.monitor.addMonitor(theta);
 		}
-
-		this.logPositions();
 	}
 
 	private void processPosition(Security security) {
@@ -138,6 +138,9 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 						Integer stockQuantityShort = stockList.stream().mapToInt(stock -> stock.getQuantity())
 								.filter(quantity -> quantity < 0).sum();
 
+						logger.info("{} Long Stock Quantity: {}, {} Short Stock Quantity: {}", security.getTicker(),
+								stockQuantityLong, security.getTicker(), stockQuantityShort);
+
 						// if there is enough stock
 						if (stockQuantityLong % 100 == 0 && stockQuantityLong > 0) {
 							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() > 0)
@@ -150,8 +153,11 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 					}
 				}
 			}
+		} else {
+			logger.warn("Security did not change from previous update: {}", security);
 		}
 
+		this.logPositions();
 		this.executionMonitor.portfolioChange(security);
 	}
 
@@ -188,6 +194,12 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 	public void logPositions() {
 		for (ThetaTrade position : this.positionMap.values()) {
 			logger.info("Current position: {}", position);
+		}
+
+		for (Security security : this.securityIdMap.values().stream()
+				.filter(security -> !this.securityPositionMap.containsKey(security.getId()))
+				.collect(Collectors.toList())) {
+			logger.info("Current unprocessed security: {}", security);
 		}
 	}
 }
