@@ -138,15 +138,15 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 						Integer stockQuantityShort = stockList.stream().mapToInt(stock -> stock.getQuantity())
 								.filter(quantity -> quantity < 0).sum();
 
-						logger.info("{} Long Stock Quantity: {}, {} Short Stock Quantity: {}", security.getTicker(),
-								stockQuantityLong, security.getTicker(), stockQuantityShort);
+						logger.info("{} Long Stock Quantity: {}, {} Short Stock Quantity: {}", ticker,
+								stockQuantityLong, ticker, stockQuantityShort);
 
 						// if there is enough stock
 						if (stockQuantityLong % 100 == 0 && stockQuantityLong > 0) {
 							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() > 0)
 									.collect(Collectors.toList()), callList, putList);
 						}
-						if (stockQuantityShort % 100 == 0 && stockQuantityShort > 0) {
+						if (stockQuantityShort % 100 == 0 && stockQuantityShort < 0) {
 							processSecurity(stockList.stream().filter(stock -> stock.getQuantity() < 0)
 									.collect(Collectors.toList()), callList, putList);
 						}
