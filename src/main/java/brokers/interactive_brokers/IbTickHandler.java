@@ -235,11 +235,13 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
 		switch (priceLevel.tradeIf()) {
 		case FALLS_BELOW:
-			logger.info("Adding {} ${} price level: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(), priceLevel);
+			logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+					priceLevel);
 			this.fallsBelow.add(priceLevel.getStrikePrice());
 			break;
 		case RISES_ABOVE:
-			logger.info("Adding {} ${} price level: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(), priceLevel);
+			logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+					priceLevel);
 			this.risesAbove.add(priceLevel.getStrikePrice());
 			break;
 		default:
