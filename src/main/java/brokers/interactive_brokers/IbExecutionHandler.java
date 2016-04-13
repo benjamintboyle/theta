@@ -17,6 +17,7 @@ import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.Types.Action;
 import com.ib.controller.Types.SecType;
 
+import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
 
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
@@ -52,22 +53,9 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	@Override
 	public Boolean executeOrder(Executable order) {
 		logger.info("Executing order: {}", order.toString());
-		NewOrder ibOrder = new NewOrder();
+		NewOrder ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
 
-		if (order.getQuantity() > 0) {
-			ibOrder.action(Action.SELL);
-		} else {
-			ibOrder.action(Action.BUY);
-		}
-		ibOrder.totalQuantity(2 * Math.abs(order.getQuantity()));
-		ibOrder.orderType(OrderType.MKT);
-		ibOrder.orderId(0);
-
-		NewContract contract = new NewContract(new Contract());
-		contract.symbol(order.getTicker());
-		contract.secType(SecType.STK);
-		contract.exchange("SMART");
-		contract.currency("USD");
+		NewContract contract = IbOrderUtil.buildStockOrderContract(order.getTicker());
 
 		logger.info("Built Interactive Brokers New Contract: {}",
 				IbStringUtil.contractToString(contract.getContract()));
