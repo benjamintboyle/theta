@@ -48,6 +48,8 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 		if (order.validate(security)) {
 			if (this.addActiveTrade(order)) {
 				this.executionHandler.executeOrder(order);
+			} else {
+				logger.error("Order will not be executed: {}", order);
 			}
 		}
 	}
@@ -60,7 +62,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 			this.activeOrders.put(order.getId(), order);
 			isTradeUnique = Boolean.TRUE;
 		} else {
-			logger.warn("Order will not be executed. Attempted to repeat order: {}", order);
+			logger.warn("Order already placed for: {}", order);
 		}
 
 		return isTradeUnique;
