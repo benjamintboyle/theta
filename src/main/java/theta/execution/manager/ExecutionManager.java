@@ -1,9 +1,8 @@
 package theta.execution.manager;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
 	private ExecutionHandler executionHandler;
 
-	private List<Executable> activeOrders = new ArrayList<Executable>();
+	private Map<UUID, Executable> activeOrders = new HashMap<UUID, Executable>();
 
 	public ExecutionManager(ExecutionHandler executionHandler) {
 		logger.info("Starting Execution Manager");
@@ -57,16 +56,11 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 		logger.info("Adding Active Trade: {} to Execution Monitor", order.toString());
 		Boolean isTradeUnique = Boolean.FALSE;
 
-		List<Executable> matchingActiveTrades = this.activeOrders.stream()
-				.filter(active -> active.getTicker().equals(order.getTicker()))
-				.filter(active -> active.getExecutionAction().equals(order.getExecutionAction()))
-				.collect(Collectors.toList());
-
-		if (matchingActiveTrades.isEmpty()) {
-			this.activeOrders.add(order);
+		if (!this.activeOrders.containsKey(order.getId())) {
+			this.activeOrders.put(order.getId(), order);
 			isTradeUnique = Boolean.TRUE;
 		} else {
-			logger.error("Attempting to repeat order: {}", order);
+			logger.warn("Order will not be executed. Attempted to repeat order: {}", order);
 		}
 
 		return isTradeUnique;
@@ -77,26 +71,14 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 		logger.info("Execution Monitor was notified that Portfolio changed: {}", security.toString());
 		Boolean activeTradeRemoved = Boolean.FALSE;
 
-		for (Iterator<Executable> i = this.activeOrders.iterator(); i.hasNext();) {
-			Executable active = i.next();
+		if (this.activeOrders.containsKey(security.getId())) {
+			Executable executable = this.activeOrders.remove(security.getId());
 
-			if (active.getTicker().equals(security.getTicker())) {
-				if (active.getExecutionAction().equals(ExecutionAction.BUY) && security.getQuantity() > 0) {
-					if (active.getQuantity().equals(security.getQuantity())) {
-						logger.info("Removing Security: {} from Execution Monitor", active.toString());
-						i.remove();
-					} else {
-						logger.error("Active Order: {} doesn't match portfolio update: {}", active, security);
-					}
-				} else if (active.getExecutionAction().equals(ExecutionAction.SELL) && security.getQuantity() < 0) {
-					if (active.getQuantity().equals(security.getQuantity())) {
-						logger.info("Removing Security: {} from Execution Monitor", active.toString());
-						i.remove();
-					} else {
-						logger.error("Active Order: {} doesn't match portfolio update: {}", active, security);
-					}
-				}
-			}
+			logger.info("Active Trade removed for Executable: {}", executable);
+
+			activeTradeRemoved = Boolean.TRUE;
+		} else {
+			logger.info("Security not an active trade: {}", security);
 		}
 
 		return activeTradeRemoved;

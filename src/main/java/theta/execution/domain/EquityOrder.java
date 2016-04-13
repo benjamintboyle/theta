@@ -51,6 +51,7 @@ public class EquityOrder implements Executable {
 		return this.ticker;
 	}
 
+	@Override
 	public SecurityType getSecurityType() {
 		return this.securityType;
 	}
@@ -114,7 +115,9 @@ public class EquityOrder implements Executable {
 
 	@Override
 	public String toString() {
-		return "EquityOrder [securityType=" + securityType + ", ticker=" + ticker + ", quantity=" + quantity
-				+ ", action=" + action + ", executionType=" + executionType + "]";
+		return "EquityOrder [id=" + this.id + ", securityType=" + this.securityType + ", ticker=" + this.ticker
+				+ ", quantity=" + this.quantity + ", action=" + this.action + ", executionType=" + this.executionType
+				+ "]";
 	}
+
 }
