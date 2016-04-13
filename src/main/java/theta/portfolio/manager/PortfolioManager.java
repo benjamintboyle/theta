@@ -60,12 +60,23 @@ public class PortfolioManager implements PortfolioObserver, PositionProvider, Ru
 
 	// Removes positions if security is contained within it
 	private void removePositionIfExists(Security security) {
-		// If security is mapped to a position, remove position and
-		// position-security map entry
+		logger.info("Checking if security is already mapped to a trade position: {}", security);
+
 		if (this.securityPositionMap.containsKey(security.getId())) {
-			ThetaTrade theta = this.positionMap.remove(this.securityPositionMap.remove(security.getId()));
+			UUID thetaId = this.securityPositionMap.remove(security.getId());
+			logger.info("Removed security from Security-Position Map with Id: {}", thetaId);
+
+			ThetaTrade theta = this.positionMap.remove(thetaId);
+
+			// Remove link/map for call and put associated with ThetaTrade
+			this.securityPositionMap.remove(theta.getCall().getId());
+			this.securityPositionMap.remove(theta.getPut().getId());
+
+			logger.info("Removed theta trade: {}, based on new security: {}", theta, security);
+
 			if (!this.positionMap.values().stream().filter(ticker -> ticker.getTicker().equals(theta.getTicker()))
 					.findAny().isPresent()) {
+				logger.info("No more theta positions for {}, removing monitor", theta.getTicker());
 				this.monitor.deleteMonitor(theta);
 			}
 		}
