@@ -1,6 +1,7 @@
 package theta.execution.domain;
 
 import java.util.HashSet;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,18 +16,34 @@ import theta.execution.manager.ExecutionManager;
 public class EquityOrder implements Executable {
 	private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
 
+	private UUID id;
 	private final SecurityType securityType = SecurityType.STOCK;
 	private String ticker;
 	private Integer quantity;
 	private ExecutionAction action;
 	private ExecutionType executionType;
 
-	public EquityOrder(String ticker, Integer quantity, ExecutionAction action, ExecutionType executionType) {
+	public EquityOrder(UUID id, String ticker, Integer quantity, ExecutionAction action, ExecutionType executionType) {
+		this.id = id;
 		this.ticker = ticker;
 		this.quantity = quantity;
 		this.action = action;
 		this.executionType = executionType;
 		logger.info("Built Equity Order: {}", this.toString());
+	}
+
+	public EquityOrder(Security security, ExecutionAction action, ExecutionType executionType) {
+		this.id = security.getId();
+		this.ticker = security.getTicker();
+		this.quantity = security.getQuantity();
+		this.action = action;
+		this.executionType = executionType;
+		logger.info("Built Equity Order: {}", this.toString());
+	}
+
+	@Override
+	public UUID getId() {
+		return this.id;
 	}
 
 	@Override

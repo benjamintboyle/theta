@@ -1,8 +1,13 @@
 package theta.execution.api;
 
+import java.util.UUID;
+
 import theta.domain.api.Security;
 
 public interface Executable {
+
+	public UUID getId();
+
 	public String getTicker();
 
 	public ExecutionAction getExecutionAction();

@@ -40,8 +40,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 			action = ExecutionAction.BUY;
 		}
 
-		Executable order = new EquityOrder(trade.getTicker(), trade.getEquity().getQuantity(), action,
-				ExecutionType.MARKET);
+		Executable order = new EquityOrder(trade.getEquity(), action, ExecutionType.MARKET);
 		this.execute(trade.getEquity(), order);
 	}
 
