@@ -3,22 +3,16 @@ package brokers.interactive_brokers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ib.client.Contract;
+import com.ib.controller.ApiController.IOrderHandler;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewOrder;
 import com.ib.controller.NewOrderState;
 import com.ib.controller.OrderStatus;
-import com.ib.controller.OrderType;
-
-import theta.api.ExecutionHandler;
-import theta.execution.api.Executable;
-
-import com.ib.controller.ApiController.IOrderHandler;
-import com.ib.controller.Types.Action;
-import com.ib.controller.Types.SecType;
 
 import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
+import theta.api.ExecutionHandler;
+import theta.execution.api.Executable;
 
 public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbExecutionHandler.class);
@@ -57,9 +51,6 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 
 		NewContract contract = IbOrderUtil.buildStockOrderContract(order.getTicker());
 
-		logger.info("Built Interactive Brokers New Contract: {}",
-				IbStringUtil.contractToString(contract.getContract()));
-		logger.info("Built Interactive Brokers Order: {}", IbStringUtil.newOrderToString(ibOrder));
 		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
 
