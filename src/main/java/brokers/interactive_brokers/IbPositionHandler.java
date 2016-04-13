@@ -40,6 +40,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
 		if (this.contractIdMap.containsKey(contractId)) {
 			uuid = this.contractIdMap.get(contractId);
+		} else {
+			this.contractIdMap.put(contractId, uuid);
 		}
 
 		return uuid;
