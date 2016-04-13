@@ -67,8 +67,10 @@ public class IbExecutionHandler implements IOrderHandler, ExecutionHandler {
 		contract.symbol(order.getTicker());
 		contract.secType(SecType.STK);
 		contract.exchange("SMART");
+		contract.currency("USD");
 
-		logger.info("Built Interactive Brokers New Contract: {}", IbStringUtil.contractToString(contract.getContract()));
+		logger.info("Built Interactive Brokers New Contract: {}",
+				IbStringUtil.contractToString(contract.getContract()));
 		logger.info("Built Interactive Brokers Order: {}", IbStringUtil.newOrderToString(ibOrder));
 		logger.info("Sending Order to Broker Servers...");
 		this.ibController.getController().placeOrModifyOrder(contract, ibOrder, this);
