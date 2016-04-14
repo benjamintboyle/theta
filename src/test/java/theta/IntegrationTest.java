@@ -38,7 +38,7 @@ public class IntegrationTest {
 	private ExecutionHandler mockExecutionHandler;
 
 	private PortfolioManager spyPortfolioManager;
-	private TickManager spyTickManager;
+	private TickManager spyTickManager = null;
 	private ExecutionManager spyExecutionManager;
 
 	@Before
