@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,7 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 			logger.info("Monitor already exists for '{}'", theta);
 		}
 
-		logger.info("Current Monitors: {}", this.tickHandlers.keySet());
+		logger.info("Current Monitors: {}", this.tickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
 	}

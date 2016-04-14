@@ -4,33 +4,36 @@
 
 	<Appenders>
 		<Appender type="RollingFile" name="MainLogFile" fileName="logs/ThetaEngine.log"
-			filePattern="logs/$${date:yyyy-MM}/ThetaEngine_%d{yyyy-MM-dd}.log.gz">
+			filePattern="logs/$${date:yyyy-MM}/ThetaEngine_%d{yyyy-MM-dd}_%i.log.gz">
 			<Layout type="PatternLayout">
 				<Pattern>%highlight{%d %p [%t] %C - %m%n}</Pattern>
 			</Layout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
 					modulate="true" />
+				<OnStartupTriggeringPolicy />
 			</Policies>
 		</Appender>
 		<Appender type="RollingFile" name="BrokerLogFile" fileName="logs/RawBroker.log"
-			filePattern="logs/$${date:yyyy-MM}/RawBroker_%d{yyyy-MM-dd}.log.gz">
+			filePattern="logs/$${date:yyyy-MM}/RawBroker_%d{yyyy-MM-dd}_%i.log.gz">
 			<Layout type="PatternLayout">
 				<Pattern>%m</Pattern>
 			</Layout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
 					modulate="true" />
+				<OnStartupTriggeringPolicy />
 			</Policies>
 		</Appender>
 		<Appender type="RollingFile" name="TickLogFile" fileName="logs/Tick.log"
-			filePattern="logs/$${date:yyyy-MM}/Tick_%d{yyyy-MM-dd}.log.gz">
+			filePattern="logs/$${date:yyyy-MM}/Tick_%d{yyyy-MM-dd}_%i.log.gz">
 			<Layout type="PatternLayout">
 				<Pattern>%highlight{%d %p [%t] %C - %m%n}</Pattern>
 			</Layout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
 					modulate="true" />
+				<OnStartupTriggeringPolicy />
 			</Policies>
 		</Appender>
 	</Appenders>
