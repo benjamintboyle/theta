@@ -116,7 +116,7 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 
 	private void reversePosition(ThetaTrade theta) {
 		logger.info("Reversing position for '{}'}", theta);
-		this.tickHandlers.get(theta.getTicker()).removePriceLevel(theta);
+		this.deleteMonitor(theta);
 		this.executor.reverseTrade(theta);
 	}
 
