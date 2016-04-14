@@ -264,11 +264,15 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 		switch (priceLevel.tradeIf()) {
 		case FALLS_BELOW:
 			logger.info("Removing FALLS_BELOW price level: {}", priceLevel);
-			this.fallsBelow.remove(priceLevel.getStrikePrice());
+			if (!this.fallsBelow.remove(priceLevel.getStrikePrice())) {
+				logger.warn("No Price Level to remove for: {}", priceLevel);
+			}
 			break;
 		case RISES_ABOVE:
 			logger.info("Removing RISES_ABOVE price level: {}", priceLevel);
-			this.risesAbove.remove(priceLevel.getStrikePrice());
+			if (!this.risesAbove.remove(priceLevel.getStrikePrice())) {
+				logger.warn("No Price Level to remove for: {}", priceLevel);
+			}
 			break;
 		default:
 			logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
