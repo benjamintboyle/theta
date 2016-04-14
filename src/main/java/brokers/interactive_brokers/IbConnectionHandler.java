@@ -69,7 +69,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
 	@Override
 	public void show(String string) {
-		logger.info("Show: {}", string);
+		logger.warn("Show: {}", string);
 	}
 
 	@Override
