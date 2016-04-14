@@ -79,19 +79,22 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 
 	@Override
 	public void addMonitor(ThetaTrade theta) {
-		logger.info("Adding Monitor for '{}'", theta);
 
 		if (!this.tickHandlers.containsKey(theta.getTicker())) {
+			logger.info("Adding Monitor for '{}'", theta);
 			TickHandler tickHandler = this.tickSubscriber.subscribeEquity(theta.getTicker(), this);
 			this.tickHandlers.put(theta.getTicker(), tickHandler);
+		} else {
+			logger.info("Monitor already exists for '{}'", theta);
 		}
+
+		logger.info("Current Monitors: {}", this.tickHandlers.keySet());
 
 		this.tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
 	}
 
 	@Override
 	public Integer deleteMonitor(ThetaTrade theta) {
-		logger.info("Deleting Tick Monitor for: {}", theta);
 
 		Integer priceLevelsMonitored = 0;
 
@@ -101,8 +104,11 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 			priceLevelsMonitored = tickHandler.removePriceLevel(theta);
 
 			if (priceLevelsMonitored == 0) {
+				logger.info("Deleting Tick Monitor for: {}", theta);
 				this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(theta.getTicker()));
 			}
+		} else {
+			logger.warn("Tick Monitor for: {} does not exist", theta);
 		}
 
 		return priceLevelsMonitored;

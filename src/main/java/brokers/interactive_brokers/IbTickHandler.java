@@ -248,6 +248,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
 		}
 
+		this.logPriceLevels();
+
 		return this.fallsBelow.size() + this.risesAbove.size();
 	}
 
@@ -272,7 +274,13 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 			logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
 		}
 
+		this.logPriceLevels();
+
 		return this.fallsBelow.size() + this.risesAbove.size();
 	}
 
+	private void logPriceLevels() {
+		logger.info("Price Levels for '{}': FALLS_BELOW={}, RISES_ABOVE={}", this.ticker, this.fallsBelow,
+				this.risesAbove);
+	}
 }
