@@ -59,6 +59,8 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 	public void message(int id, int messageCode, String message) {
 		if (messageCode >= 2100 && messageCode <= 2110) {
 			logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
+		} else if (messageCode == 1102 || messageCode == 2104 || messageCode == 2106) {
+			logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
 		} else {
 			logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
 		}
