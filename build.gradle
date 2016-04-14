@@ -6,7 +6,6 @@ apply plugin: 'findbugs'
 mainClassName = "theta.ThetaEngine"
 
 group = group
-version = version
 
 repositories {
     jcenter()

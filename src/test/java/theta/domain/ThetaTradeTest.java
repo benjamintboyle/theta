@@ -1,5 +1,6 @@
 package theta.domain;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -32,6 +33,7 @@ public class ThetaTradeTest {
 		return trade;
 	}
 
+	@Ignore
 	@Test
 	public void equityThetaTradeTest() {
 		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
@@ -39,6 +41,7 @@ public class ThetaTradeTest {
 		assertThat(thetaTrade.getEquity(), is(equalTo(StockTest.buildTestStock())));
 	}
 
+	@Ignore
 	@Test
 	public void callThetaTradeTest() {
 		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
@@ -46,6 +49,7 @@ public class ThetaTradeTest {
 		assertThat(thetaTrade.getCall(), is(equalTo(OptionTest.buildTestShortCallOption())));
 	}
 
+	@Ignore
 	@Test
 	public void putThetaTradeTest() {
 		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
