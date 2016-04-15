@@ -51,19 +51,19 @@ public class ThetaTrade implements PriceLevel {
 								&& put.getSecurityType().equals(SecurityType.PUT)) {
 							theta = new ThetaTrade(UUID.randomUUID(), stock, call, put);
 						} else {
-							logger.error("Options aren't a call: {} and a put: {}", call, put);
+							logger.warn("Options aren't a call: {} and a put: {}", call, put);
 						}
 					} else {
-						logger.error("Quantities do not match: {}, {}, {}", stock, call, put);
+						logger.warn("Quantities do not match: {}, {}, {}", stock, call, put);
 					}
 				} else {
-					logger.error("Option expirations do not match: {}, {}", call, put);
+					logger.warn("Option expirations do not match: {}, {}", call, put);
 				}
 			} else {
-				logger.error("Option strike prices do not match: {}, {}", call, put);
+				logger.warn("Option strike prices do not match: {}, {}", call, put);
 			}
 		} else {
-			logger.error("Tickers do not match: {}, {}, {}", stock, call, put);
+			logger.warn("Tickers do not match: {}, {}, {}", stock, call, put);
 		}
 
 		return Optional.ofNullable(theta);
