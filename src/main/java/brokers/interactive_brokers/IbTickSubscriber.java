@@ -1,5 +1,8 @@
 package brokers.interactive_brokers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +19,7 @@ public class IbTickSubscriber implements TickSubscriber {
 	private static final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
 
 	private IbController ibController;
+	private Map<String, IbTickHandler> ibTickHandlers = new HashMap<String, IbTickHandler>();
 
 	public IbTickSubscriber(IbController ibController) {
 		logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -36,13 +40,16 @@ public class IbTickSubscriber implements TickSubscriber {
 				IbStringUtil.contractToString(contract.getContract()));
 		this.ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
+		this.ibTickHandlers.put(ticker, ibTickHandler);
+
 		return ibTickHandler;
 	}
 
 	@Override
 	public Boolean unsubscribeEquity(TickHandler tickHandler) {
 		logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
-		this.ibController.getController().cancelTopMktData((ITopMktDataHandler) tickHandler);
+		this.ibController.getController()
+				.cancelTopMktData((ITopMktDataHandler) this.ibTickHandlers.get(tickHandler.getTicker()));
 
 		return Boolean.TRUE;
 	}

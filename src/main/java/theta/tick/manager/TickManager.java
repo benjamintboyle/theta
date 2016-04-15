@@ -106,7 +106,8 @@ public class TickManager implements Monitor, TickObserver, Runnable {
 
 			if (priceLevelsMonitored == 0) {
 				logger.info("Deleting Tick Monitor for: {}", theta);
-				this.tickSubscriber.unsubscribeEquity(this.tickHandlers.get(theta.getTicker()));
+				this.tickSubscriber.unsubscribeEquity(tickHandler);
+				this.tickHandlers.remove(theta.getTicker());
 			}
 		} else {
 			logger.warn("Tick Monitor for: {} does not exist", theta);
