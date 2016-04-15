@@ -44,8 +44,8 @@ public class ThetaTrade implements PriceLevel {
 				// Options have same expiration
 				if (call.getExpiration().equals(put.getExpiration())) {
 					// If quantities match
-					if ((call.getQuantity().equals(put.getQuantity()))
-							&& (Math.abs(stock.getQuantity() / put.getQuantity()) == 100)) {
+					if ((call.getQuantity() != 0) && (call.getQuantity().equals(put.getQuantity()))
+							&& (Math.abs(stock.getQuantity() / call.getQuantity()) == 100)) {
 						// Options are opposite types
 						if (call.getSecurityType().equals(SecurityType.CALL)
 								&& put.getSecurityType().equals(SecurityType.PUT)) {
