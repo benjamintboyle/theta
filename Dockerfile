@@ -2,10 +2,15 @@ FROM java:jre
 
 EXPOSE 2001
 
-#WORKDIR /opt/ibgateway/
-#COPY libs/IBJts/ .
-#CMD ["java", "-cp", "jts.jar:total.2013.jar", "-Dsun.java2d.noddraw=true", "-Xmx512M", "ibgateway.GWClient"]
+COPY build/distributions/theta.tar theta.sh shutdown.sh /opt/
 
-WORKDIR /opt/theta/
-COPY build/libs/theta*.jar bin/
-# CMD ["java", "-jar", "/opt/theta/bin/theta-0.1.jar"]
+RUN tar -xvf /opt/theta.tar --directory /opt/; \
+      rm /opt/theta.tar; \
+      mv /opt/theta.sh /opt/shutdown.sh /opt/theta/; \
+      adduser --disabled-password --gecos "" theta; \
+      chgrp theta /opt/theta; \
+      chmod 775 /opt/theta
+
+USER theta
+
+# CMD ["/opt/theta/theta.sh"]
