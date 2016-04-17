@@ -1,5 +1,6 @@
 package brokers.interactive_brokers;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -85,8 +86,16 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 		// Paper Trading port = 7497; Operational Trading port = 7496
 		this.getController().connect(GATEWAY_IP_ADDRESS, GATEWAY_PORT, 0);
 
+		Instant nextTimeToReport = Instant.now();
+
 		while (!this.connected) {
-			logger.info("Establishing connection...");
+			// Only write out "Establishing connection" message every 60 seconds
+			if (nextTimeToReport.isBefore(Instant.now())) {
+				logger.info("Establishing connection...");
+				nextTimeToReport = Instant.now().plusSeconds(60);
+			}
+
+			// Pause 5 milliseconds between each check for a connection
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
