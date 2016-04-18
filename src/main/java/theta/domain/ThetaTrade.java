@@ -228,20 +228,20 @@ public class ThetaTrade implements PriceLevel {
 
 	@Override
 	public String toString() {
-		return "ThetaTrade [id=" + id + ", type=" + type + ", call=" + call + ", put=" + put + ", equity=" + equity
-				+ ", quantity=" + quantity + "]";
+		return "ThetaTrade [id=" + this.id + ", type=" + this.type + ", quantity=" + this.quantity + ", equity="
+				+ this.equity + ", call=" + this.call + ", put=" + this.put + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((call == null) ? 0 : call.hashCode());
-		result = prime * result + ((equity == null) ? 0 : equity.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((put == null) ? 0 : put.hashCode());
-		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
+		result = prime * result + ((this.equity == null) ? 0 : this.equity.hashCode());
+		result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+		result = prime * result + ((this.put == null) ? 0 : this.put.hashCode());
+		result = prime * result + ((this.quantity == null) ? 0 : this.quantity.hashCode());
+		result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
 		return result;
 	}
 
@@ -254,32 +254,32 @@ public class ThetaTrade implements PriceLevel {
 		if (getClass() != obj.getClass())
 			return false;
 		ThetaTrade other = (ThetaTrade) obj;
-		if (call == null) {
+		if (this.call == null) {
 			if (other.call != null)
 				return false;
-		} else if (!call.equals(other.call))
+		} else if (!this.call.equals(other.call))
 			return false;
-		if (equity == null) {
+		if (this.equity == null) {
 			if (other.equity != null)
 				return false;
-		} else if (!equity.equals(other.equity))
+		} else if (!this.equity.equals(other.equity))
 			return false;
-		if (id == null) {
+		if (this.id == null) {
 			if (other.id != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!this.id.equals(other.id))
 			return false;
-		if (put == null) {
+		if (this.put == null) {
 			if (other.put != null)
 				return false;
-		} else if (!put.equals(other.put))
+		} else if (!this.put.equals(other.put))
 			return false;
-		if (quantity == null) {
+		if (this.quantity == null) {
 			if (other.quantity != null)
 				return false;
-		} else if (!quantity.equals(other.quantity))
+		} else if (!this.quantity.equals(other.quantity))
 			return false;
-		if (type != other.type)
+		if (this.type != other.type)
 			return false;
 		return true;
 	}
