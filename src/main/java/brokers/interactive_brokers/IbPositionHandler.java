@@ -78,7 +78,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
 			if (optionalExpiration.isPresent()) {
 				Option option = new Option(this.generateId(newContract.getContract().m_conId), securityType,
-						newContract.symbol(), position, newContract.strike(), optionalExpiration.get());
+						newContract.symbol(), position, newContract.strike(), optionalExpiration.get(), avgCost);
 				this.portfolioObserver.ingestPosition(option);
 			} else {
 				logger.error("Invalid Option Expiration");

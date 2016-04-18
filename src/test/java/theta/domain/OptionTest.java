@@ -19,19 +19,19 @@ public class OptionTest {
 	private static final LocalDate expiration = LocalDate.now().plusDays(30);
 
 	public static Option buildTestCallOption() {
-		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", 1, 15.0, OptionTest.expiration);
+		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", 1, 15.0, OptionTest.expiration, 0.7);
 	}
 
 	public static Option buildTestShortCallOption() {
-		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", -1, 15.0, OptionTest.expiration);
+		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", -1, 15.0, OptionTest.expiration, 0.7);
 	}
 
 	public static Option buildTestPutOption() {
-		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", 1, 15.0, OptionTest.expiration);
+		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", 1, 15.0, OptionTest.expiration, 0.7);
 	}
 
 	public static Option buildTestShortPutOption() {
-		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", -1, 15.0, OptionTest.expiration);
+		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", -1, 15.0, OptionTest.expiration, 0.7);
 	}
 
 	@Test

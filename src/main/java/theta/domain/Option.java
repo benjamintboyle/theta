@@ -14,19 +14,21 @@ public class Option implements Security {
 
 	private UUID id = UUID.randomUUID();
 	private SecurityType type;
-	private String backingTicker = "";
+	private String backingTicker;
 	private Integer quantity;
 	private Double strikePrice;
 	private LocalDate expiration;
+	private Double averageTradePrice;
 
 	public Option(UUID id, SecurityType type, String backingTicker, Integer quantity, Double strikePrice,
-			LocalDate expiration) {
+			LocalDate expiration, Double averageTradePrice) {
 		this.id = id;
 		this.type = type;
 		this.backingTicker = backingTicker;
 		this.quantity = quantity;
 		this.strikePrice = strikePrice;
 		this.expiration = expiration;
+		this.averageTradePrice = averageTradePrice;
 		logger.info("Built Option: {}", this.toString());
 	}
 
@@ -63,22 +65,28 @@ public class Option implements Security {
 		return this.expiration;
 	}
 
+	public Double getAverageTradePrice() {
+		return this.averageTradePrice;
+	}
+
 	@Override
 	public String toString() {
-		return "Option [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity=" + quantity
-				+ ", strikePrice=" + strikePrice + ", expiration=" + expiration + "]";
+		return "Option [id=" + this.id + ", type=" + this.type + ", backingTicker=" + this.backingTicker + ", quantity="
+				+ this.quantity + ", strikePrice=" + this.strikePrice + ", expiration=" + this.expiration
+				+ ", averageTradePrice=" + this.averageTradePrice + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((backingTicker == null) ? 0 : backingTicker.hashCode());
-		result = prime * result + ((expiration == null) ? 0 : expiration.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
-		result = prime * result + ((strikePrice == null) ? 0 : strikePrice.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((this.averageTradePrice == null) ? 0 : this.averageTradePrice.hashCode());
+		result = prime * result + ((this.backingTicker == null) ? 0 : this.backingTicker.hashCode());
+		result = prime * result + ((this.expiration == null) ? 0 : this.expiration.hashCode());
+		result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+		result = prime * result + ((this.quantity == null) ? 0 : this.quantity.hashCode());
+		result = prime * result + ((this.strikePrice == null) ? 0 : this.strikePrice.hashCode());
+		result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
 		return result;
 	}
 
@@ -91,32 +99,37 @@ public class Option implements Security {
 		if (getClass() != obj.getClass())
 			return false;
 		Option other = (Option) obj;
-		if (backingTicker == null) {
+		if (this.averageTradePrice == null) {
+			if (other.averageTradePrice != null)
+				return false;
+		} else if (!this.averageTradePrice.equals(other.averageTradePrice))
+			return false;
+		if (this.backingTicker == null) {
 			if (other.backingTicker != null)
 				return false;
-		} else if (!backingTicker.equals(other.backingTicker))
+		} else if (!this.backingTicker.equals(other.backingTicker))
 			return false;
-		if (expiration == null) {
+		if (this.expiration == null) {
 			if (other.expiration != null)
 				return false;
-		} else if (!expiration.equals(other.expiration))
+		} else if (!this.expiration.equals(other.expiration))
 			return false;
-		if (id == null) {
+		if (this.id == null) {
 			if (other.id != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!this.id.equals(other.id))
 			return false;
-		if (quantity == null) {
+		if (this.quantity == null) {
 			if (other.quantity != null)
 				return false;
-		} else if (!quantity.equals(other.quantity))
+		} else if (!this.quantity.equals(other.quantity))
 			return false;
-		if (strikePrice == null) {
+		if (this.strikePrice == null) {
 			if (other.strikePrice != null)
 				return false;
-		} else if (!strikePrice.equals(other.strikePrice))
+		} else if (!this.strikePrice.equals(other.strikePrice))
 			return false;
-		if (type != other.type)
+		if (this.type != other.type)
 			return false;
 		return true;
 	}

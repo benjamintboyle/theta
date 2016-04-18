@@ -105,14 +105,14 @@ public class PortfolioManagerTest {
 				break;
 			case "CALL":
 				Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity, price,
-						LocalDate.now().plusDays(Long.parseLong(security[4])));
+						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
 				logger.debug("Sending Call: {}", call);
 
 				securityList.add(call);
 				break;
 			case "PUT":
 				Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity, price,
-						LocalDate.now().plusDays(Long.parseLong(security[4])));
+						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
 				logger.debug("Sending Put: {}", put);
 				securityList.add(put);
 				break;
