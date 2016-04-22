@@ -14,7 +14,8 @@ import theta.api.ConnectionHandler;
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
 
-	private static final String GATEWAY_IP_ADDRESS = "ib-gateway";
+	// Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
+	private static final String GATEWAY_IP_ADDRESS = "172.17.0.3";
 	// Paper Trading port = 7497; Operational Trading port = 7496
 	private static final int GATEWAY_PORT = 7497;
 
