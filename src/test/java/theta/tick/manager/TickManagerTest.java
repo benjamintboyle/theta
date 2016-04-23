@@ -1,10 +1,5 @@
 package theta.tick.manager;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +8,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Precision;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,73 +32,51 @@ import theta.tick.domain.TickType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TickManagerTest {
-	private static final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
-
 	private static Double aroundPricePlusMinus = 0.05;
+
+	private static final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
 	private static Integer numberOfPriceTicks = 10000;
 
 	@Mock
-	private TickSubscriber tickSubscriber;
+	private Executor executor;
+	@Mock
+	TickHandler handler;
 	@Mock
 	PositionProvider positonProvider;
-	@Mock
-	private Executor executor;
 	@InjectMocks
 	private TickManager sut;
 
 	@Mock
-	TickHandler handler;
+	private TickSubscriber tickSubscriber;
 
-	@Ignore
-	@Test
-	public void test_add_and_delete_monitor() {
-		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
-		logger.debug("Trade to Monitor: {}", trade);
+	private Integer calculatePriceTransitions(final Double strikePrice, final List<Double> list) {
+		Integer priceTransitions = 0;
+		Boolean isPositionLong = Boolean.TRUE;
 
-		Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
-		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getTicker(), Mockito.any(TickObserver.class)))
-				.thenReturn(handler);
+		for (Integer i = 0; i < list.size(); i++) {
+			final Double currentTick = list.get(i);
 
-		this.sut.addMonitor(trade);
-
-		Integer remainingPriceLevels = this.sut.deleteMonitor(trade);
-		logger.debug("Monitor removed from Tick Manager for Theta: {}", trade);
-
-		assertThat(remainingPriceLevels, is(equalTo(0)));
-	}
-
-	@Ignore
-	@Test
-	public void test_ticks_around_strike_price() {
-		ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
-		logger.debug("Trade initialized: {}", trade);
-
-		List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
-		Mockito.when(this.positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-		Mockito.when(this.tickSubscriber.subscribeEquity(trade.getTicker(), Mockito.any(TickObserver.class)))
-				.thenReturn(handler);
-
-		this.sut.addMonitor(trade);
-
-		ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
-
-		for (Tick tick : priceTicks) {
-			this.sut.notifyTick(tick.getTicker());
+			if ((currentTick > strikePrice) && !isPositionLong) {
+				priceTransitions++;
+				isPositionLong = !isPositionLong;
+			} else if ((currentTick < strikePrice) && isPositionLong) {
+				priceTransitions++;
+				isPositionLong = !isPositionLong;
+			} else {
+				TickManagerTest.logger.error("Possible miscalculated tick");
+			}
 		}
 
-		Mockito.verify(this.executor,
-				Mockito.times(this.calculatePriceTransitions(trade.getStrikePrice(),
-						priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
-				.reverseTrade(any(ThetaTrade.class));
+		return priceTransitions;
 	}
 
-	private ArrayList<Tick> generatePriceTicksAround(Integer numberOfTicks, ThetaTrade theta) {
-		ArrayList<Tick> priceTicks = new ArrayList<Tick>();
+	private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final ThetaTrade theta) {
+		final ArrayList<Tick> priceTicks = new ArrayList<Tick>();
 
 		for (Integer i = 0; i < numberOfTicks; i++) {
-			double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
-			double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
-			double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
+			final double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
+			final double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
+			final double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
 			priceTicks.add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST,
 					ZonedDateTime.now()));
 		}
@@ -109,24 +84,48 @@ public class TickManagerTest {
 		return priceTicks;
 	}
 
-	private Integer calculatePriceTransitions(Double strikePrice, List<Double> list) {
-		Integer priceTransitions = 0;
-		Boolean isPositionLong = Boolean.TRUE;
+	@Ignore
+	@Test
+	public void test_add_and_delete_monitor() {
+		final ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
+		TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
-		for (Integer i = 0; i < list.size(); i++) {
-			Double currentTick = list.get(i);
+		Mockito.when(this.handler.getTicker()).thenReturn(trade.getTicker());
+		Mockito.when(
+				this.tickSubscriber.subscribeEquity(trade.getTicker(), org.mockito.Matchers.any(TickObserver.class)))
+				.thenReturn(this.handler);
 
-			if (currentTick > strikePrice && !isPositionLong) {
-				priceTransitions++;
-				isPositionLong = !isPositionLong;
-			} else if (currentTick < strikePrice && isPositionLong) {
-				priceTransitions++;
-				isPositionLong = !isPositionLong;
-			} else {
-				logger.error("Possible miscalculated tick");
-			}
+		this.sut.addMonitor(trade);
+
+		final Integer remainingPriceLevels = this.sut.deleteMonitor(trade);
+		TickManagerTest.logger.debug("Monitor removed from Tick Manager for Theta: {}", trade);
+
+		MatcherAssert.assertThat(remainingPriceLevels, Matchers.is(Matchers.equalTo(0)));
+	}
+
+	@Ignore
+	@Test
+	public void test_ticks_around_strike_price() {
+		final ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
+		TickManagerTest.logger.debug("Trade initialized: {}", trade);
+
+		final List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
+		Mockito.when(this.positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
+		Mockito.when(
+				this.tickSubscriber.subscribeEquity(trade.getTicker(), org.mockito.Matchers.any(TickObserver.class)))
+				.thenReturn(this.handler);
+
+		this.sut.addMonitor(trade);
+
+		final ArrayList<Tick> priceTicks = this.generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
+
+		for (final Tick tick : priceTicks) {
+			this.sut.notifyTick(tick.getTicker());
 		}
 
-		return priceTransitions;
+		Mockito.verify(this.executor,
+				Mockito.times(this.calculatePriceTransitions(trade.getStrikePrice(),
+						priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
+				.reverseTrade(org.mockito.Matchers.any(ThetaTrade.class));
 	}
 }

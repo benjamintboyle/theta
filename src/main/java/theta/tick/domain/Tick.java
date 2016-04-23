@@ -10,25 +10,25 @@ import theta.portfolio.manager.PortfolioManager;
 public class Tick {
 	private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
 
-	private String ticker;
-	private Double price;
-	private TickType type;
-	private ZonedDateTime timestamp;
+	private final Double price;
+	private final String ticker;
+	private final ZonedDateTime timestamp;
+	private final TickType type;
 
-	public Tick(String ticker, Double price, TickType type, ZonedDateTime timestamp) {
+	public Tick(final String ticker, final Double price, final TickType type, final ZonedDateTime timestamp) {
 		this.ticker = ticker;
 		this.price = price;
 		this.type = type;
 		this.timestamp = timestamp;
-		logger.info("Built Tick: {}", this.toString());
-	}
-
-	public String getTicker() {
-		return this.ticker;
+		Tick.logger.info("Built Tick: {}", this.toString());
 	}
 
 	public Double getPrice() {
 		return this.price;
+	}
+
+	public String getTicker() {
+		return this.ticker;
 	}
 
 	public TickType getTickType() {
@@ -41,6 +41,7 @@ public class Tick {
 
 	@Override
 	public String toString() {
-		return "Tick [ticker=" + ticker + ", price=" + price + ", type=" + type + ", timestamp=" + timestamp + "]";
+		return "Tick [ticker=" + this.ticker + ", price=" + this.price + ", type=" + this.type + ", timestamp="
+				+ this.timestamp + "]";
 	}
 }

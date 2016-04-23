@@ -17,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -35,12 +36,85 @@ import theta.tick.manager.TickManager;
 public class PortfolioManagerTest {
 	private static final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
 
-	@Mock
-	private PositionHandler positionHandlerMock;
+	private static List<Security> parseStringToSecurity(final List<String> stringListOfSecurities) {
+		final List<Security> securityList = new ArrayList<Security>();
+
+		final Pattern splitPattern = Pattern.compile("\\s*,\\s*");
+
+		for (final String trade : stringListOfSecurities) {
+			PortfolioManagerTest.logger.debug("Trade: {}", trade);
+
+			final String[] security = splitPattern.split(trade);
+			final String securityType = security[0];
+			final String ticker = security[1];
+			final Integer quantity = Integer.valueOf(security[2]);
+			final Double price = Double.valueOf(security[3]);
+			PortfolioManagerTest.logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker,
+					quantity, price);
+
+			switch (securityType) {
+			case "STOCK":
+				final Stock stock = new Stock(UUID.randomUUID(), ticker, quantity, price);
+				PortfolioManagerTest.logger.debug("Sending Stock: {}", stock);
+				securityList.add(stock);
+				break;
+			case "CALL":
+				final Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity, price,
+						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
+				PortfolioManagerTest.logger.debug("Sending Call: {}", call);
+
+				securityList.add(call);
+				break;
+			case "PUT":
+				final Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity, price,
+						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
+				PortfolioManagerTest.logger.debug("Sending Put: {}", put);
+				securityList.add(put);
+				break;
+			default:
+				PortfolioManagerTest.logger.error("Could not determine SecurityType: {}", securityType);
+			}
+		}
+
+		return securityList;
+	}
+
+	public static List<Security> readInputFile(final String fileName) {
+		List<String> inputList = new ArrayList<String>();
+
+		try {
+			final Path inputFile = Paths.get(PortfolioManagerTest.class.getClassLoader().getResource(fileName).toURI());
+
+			final Stream<String> stream = Files.lines(inputFile);
+			inputList = stream.collect(Collectors.toList());
+			stream.close();
+		} catch (IOException | URISyntaxException e) {
+			e.printStackTrace();
+		}
+
+		return PortfolioManagerTest.parseStringToSecurity(inputList);
+	}
+
 	@Mock
 	private TickManager pmMock;
+
+	@Mock
+	private PositionHandler positionHandlerMock;
+
 	@InjectMocks
 	private PortfolioManager sut;
+
+	private void ingest_test(final String filename) {
+		final List<Security> securitiesList = PortfolioManagerTest.readInputFile(filename);
+
+		for (final Security security : securitiesList) {
+			PortfolioManagerTest.logger.debug("Trade: {}", security);
+
+			this.sut.ingestPosition(security);
+		}
+
+		Mockito.verify(this.pmMock, Mockito.times(6)).addMonitor(Matchers.any(ThetaTrade.class));
+	}
 
 	@Ignore
 	@Test
@@ -52,75 +126,5 @@ public class PortfolioManagerTest {
 	@Test
 	public void ingest_trades_out_of_order() {
 		this.ingest_test("load_trades_out_of_order.txt");
-	}
-
-	private void ingest_test(String filename) {
-		List<Security> securitiesList = readInputFile(filename);
-
-		for (Security security : securitiesList) {
-			logger.debug("Trade: {}", security);
-
-			sut.ingestPosition(security);
-		}
-
-		Mockito.verify(pmMock, Mockito.times(6)).addMonitor(Mockito.any(ThetaTrade.class));
-	}
-
-	public static List<Security> readInputFile(String fileName) {
-		List<String> inputList = new ArrayList<String>();
-
-		try {
-			Path inputFile = Paths.get(PortfolioManagerTest.class.getClassLoader().getResource(fileName).toURI());
-
-			Stream<String> stream = Files.lines(inputFile);
-			inputList = stream.collect(Collectors.toList());
-			stream.close();
-		} catch (IOException | URISyntaxException e) {
-			e.printStackTrace();
-		}
-
-		return parseStringToSecurity(inputList);
-	}
-
-	private static List<Security> parseStringToSecurity(List<String> stringListOfSecurities) {
-		List<Security> securityList = new ArrayList<Security>();
-
-		Pattern splitPattern = Pattern.compile("\\s*,\\s*");
-
-		for (String trade : stringListOfSecurities) {
-			logger.debug("Trade: {}", trade);
-
-			String[] security = splitPattern.split(trade);
-			String securityType = security[0];
-			String ticker = security[1];
-			Integer quantity = Integer.valueOf(security[2]);
-			Double price = Double.valueOf(security[3]);
-			logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity, price);
-
-			switch (securityType) {
-			case "STOCK":
-				Stock stock = new Stock(UUID.randomUUID(), ticker, quantity, price);
-				logger.debug("Sending Stock: {}", stock);
-				securityList.add(stock);
-				break;
-			case "CALL":
-				Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity, price,
-						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-				logger.debug("Sending Call: {}", call);
-
-				securityList.add(call);
-				break;
-			case "PUT":
-				Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity, price,
-						LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-				logger.debug("Sending Put: {}", put);
-				securityList.add(put);
-				break;
-			default:
-				logger.error("Could not determine SecurityType: {}", securityType);
-			}
-		}
-
-		return securityList;
 	}
 }

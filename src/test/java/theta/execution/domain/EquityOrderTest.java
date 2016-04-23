@@ -1,11 +1,9 @@
 package theta.execution.domain;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-
 import java.util.UUID;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import theta.domain.Option;
@@ -19,71 +17,71 @@ public class EquityOrderTest {
 
 	private final EquityOrder sutLong = new EquityOrder(UUID.randomUUID(), "CHK", 100, ExecutionAction.BUY,
 			ExecutionType.MARKET);
-	private final EquityOrder sutShort = new EquityOrder(UUID.randomUUID(), "CHK", 100, ExecutionAction.SELL,
-			ExecutionType.MARKET);
 	private final EquityOrder sutQuantity = new EquityOrder(UUID.randomUUID(), "CHK", 101, ExecutionAction.BUY,
 			ExecutionType.MARKET);
-
-	@Test
-	public void validateLongToShortTest() {
-		Stock equity = StockTest.buildTestStockShort();
-
-		assertThat(sutLong.validate(equity), is(equalTo(Boolean.TRUE)));
-	}
+	private final EquityOrder sutShort = new EquityOrder(UUID.randomUUID(), "CHK", 100, ExecutionAction.SELL,
+			ExecutionType.MARKET);
 
 	@Test
 	public void validateLongToLongFailureTest() {
-		Stock equity = StockTest.buildTestStock();
+		final Stock equity = StockTest.buildTestStock();
 
-		assertThat(sutLong.validate(equity), is(equalTo(Boolean.FALSE)));
+		MatcherAssert.assertThat(this.sutLong.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
 	}
 
 	@Test
-	public void validateShortToLongTest() {
-		Stock equity = StockTest.buildTestStock();
+	public void validateLongToShortTest() {
+		final Stock equity = StockTest.buildTestStockShort();
 
-		assertThat(sutShort.validate(equity), is(equalTo(Boolean.TRUE)));
-	}
-
-	@Test
-	public void validateShortToShortFailureTest() {
-		Stock equity = StockTest.buildTestStockShort();
-
-		assertThat(sutShort.validate(equity), is(equalTo(Boolean.FALSE)));
-	}
-
-	@Test
-	public void validateSecurityTypeCallFailure() {
-		Option call = OptionTest.buildTestCallOption();
-
-		assertThat(sutShort.validate(call), is(equalTo(Boolean.FALSE)));
-	}
-
-	@Test
-	public void validateSecurityTypeShortCallFailure() {
-		Option call = OptionTest.buildTestShortCallOption();
-
-		assertThat(sutLong.validate(call), is(equalTo(Boolean.FALSE)));
-	}
-
-	@Test
-	public void validateSecurityTypePutFailure() {
-		Option put = OptionTest.buildTestPutOption();
-
-		assertThat(sutLong.validate(put), is(equalTo(Boolean.FALSE)));
-	}
-
-	@Test
-	public void validateSecurityTypeShortPutFailure() {
-		Option put = OptionTest.buildTestShortPutOption();
-
-		assertThat(sutShort.validate(put), is(equalTo(Boolean.FALSE)));
+		MatcherAssert.assertThat(this.sutLong.validate(equity), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
 	}
 
 	@Test
 	public void validateQuantityFailure() {
-		Stock equity = StockTest.buildTestStockShort();
+		final Stock equity = StockTest.buildTestStockShort();
 
-		assertThat(sutQuantity.validate(equity), is(equalTo(Boolean.FALSE)));
+		MatcherAssert.assertThat(this.sutQuantity.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+	}
+
+	@Test
+	public void validateSecurityTypeCallFailure() {
+		final Option call = OptionTest.buildTestCallOption();
+
+		MatcherAssert.assertThat(this.sutShort.validate(call), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+	}
+
+	@Test
+	public void validateSecurityTypePutFailure() {
+		final Option put = OptionTest.buildTestPutOption();
+
+		MatcherAssert.assertThat(this.sutLong.validate(put), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+	}
+
+	@Test
+	public void validateSecurityTypeShortCallFailure() {
+		final Option call = OptionTest.buildTestShortCallOption();
+
+		MatcherAssert.assertThat(this.sutLong.validate(call), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+	}
+
+	@Test
+	public void validateSecurityTypeShortPutFailure() {
+		final Option put = OptionTest.buildTestShortPutOption();
+
+		MatcherAssert.assertThat(this.sutShort.validate(put), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+	}
+
+	@Test
+	public void validateShortToLongTest() {
+		final Stock equity = StockTest.buildTestStock();
+
+		MatcherAssert.assertThat(this.sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
+	}
+
+	@Test
+	public void validateShortToShortFailureTest() {
+		final Stock equity = StockTest.buildTestStockShort();
+
+		MatcherAssert.assertThat(this.sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
 	}
 }
