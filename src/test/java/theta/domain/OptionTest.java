@@ -2,70 +2,70 @@ package theta.domain;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import theta.domain.Option;
+import org.mockito.junit.MockitoJUnitRunner;
 import theta.domain.api.SecurityType;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class OptionTest {
 
-	private static final LocalDate expiration = LocalDate.now().plusDays(30);
+  private static final LocalDate expiration = LocalDate.now().plusDays(30);
 
-	public static Option buildTestCallOption() {
-		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", 1, 15.0, OptionTest.expiration, 0.7);
-	}
+  public static Option buildTestCallOption() {
+    return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", Double.valueOf(1), 15.0,
+        OptionTest.expiration, 0.7);
+  }
 
-	public static Option buildTestShortCallOption() {
-		return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", -1, 15.0, OptionTest.expiration, 0.7);
-	}
+  public static Option buildTestShortCallOption() {
+    return new Option(UUID.randomUUID(), SecurityType.CALL, "CHK", Double.valueOf(-1), 15.0,
+        OptionTest.expiration, 0.7);
+  }
 
-	public static Option buildTestPutOption() {
-		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", 1, 15.0, OptionTest.expiration, 0.7);
-	}
+  public static Option buildTestPutOption() {
+    return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", Double.valueOf(1), 15.0,
+        OptionTest.expiration, 0.7);
+  }
 
-	public static Option buildTestShortPutOption() {
-		return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", -1, 15.0, OptionTest.expiration, 0.7);
-	}
+  public static Option buildTestShortPutOption() {
+    return new Option(UUID.randomUUID(), SecurityType.PUT, "CHK", Double.valueOf(-1), 15.0,
+        OptionTest.expiration, 0.7);
+  }
 
-	@Test
-	public void quantityCallTest() {
-		Option call = OptionTest.buildTestCallOption();
+  @Test
+  public void quantityCallTest() {
+    final Option call = OptionTest.buildTestCallOption();
 
-		assertThat(call.getQuantity(), is(equalTo(1)));
-	}
+    MatcherAssert.assertThat(call.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
+  }
 
-	@Test
-	public void quantityShortCallTest() {
-		Option shortCall = OptionTest.buildTestShortCallOption();
+  @Test
+  public void quantityShortCallTest() {
+    final Option shortCall = OptionTest.buildTestShortCallOption();
 
-		assertThat(shortCall.getQuantity(), is(equalTo(-1)));
-	}
+    MatcherAssert.assertThat(shortCall.getQuantity(), Matchers.is(Matchers.equalTo(-1.0)));
+  }
 
-	@Test
-	public void quantityPutTest() {
-		Option put = OptionTest.buildTestPutOption();
+  @Test
+  public void quantityPutTest() {
+    final Option put = OptionTest.buildTestPutOption();
 
-		assertThat(put.getQuantity(), is(equalTo(1)));
-	}
+    MatcherAssert.assertThat(put.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
+  }
 
-	@Test
-	public void quantityShortPutTest() {
-		Option shortPut = OptionTest.buildTestShortPutOption();
+  @Test
+  public void quantityShortPutTest() {
+    final Option shortPut = OptionTest.buildTestShortPutOption();
 
-		assertThat(shortPut.getQuantity(), is(equalTo(-1)));
-	}
+    MatcherAssert.assertThat(shortPut.getQuantity(), Matchers.is(Matchers.equalTo(-1.0)));
+  }
 
-	@Test
-	public void strikeCallTest() {
-		Option call = OptionTest.buildTestCallOption();
+  @Test
+  public void strikeCallTest() {
+    final Option call = OptionTest.buildTestCallOption();
 
-		assertThat(call.getStrikePrice(), is(equalTo(15.0)));
-	}
+    MatcherAssert.assertThat(call.getStrikePrice(), Matchers.is(Matchers.equalTo(15.0)));
+  }
 }

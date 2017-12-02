@@ -1,23 +1,22 @@
 package theta.execution.api;
 
 import java.util.UUID;
-
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public interface Executable {
 
-	public UUID getId();
+  public UUID getId();
 
-	public String getTicker();
+  public String getTicker();
 
-	public SecurityType getSecurityType();
+  public SecurityType getSecurityType();
 
-	public ExecutionAction getExecutionAction();
+  public ExecutionAction getExecutionAction();
 
-	public ExecutionType getExecutionType();
+  public ExecutionType getExecutionType();
 
-	public Integer getQuantity();
+  public Double getQuantity();
 
-	public Boolean validate(Security security);
+  public Boolean validate(Security security);
 }

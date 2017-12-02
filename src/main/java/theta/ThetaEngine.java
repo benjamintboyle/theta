@@ -2,7 +2,6 @@ package theta;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.IbExecutionHandler;
@@ -17,108 +16,109 @@ import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
-public class ThetaEngine implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
+public class ThetaEngine {
+  private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
 
-	// Entry point for application
-	public static void main(final String[] args) {
-		// Create Theta Engine
-		final ThetaEngine thetaEngine = new ThetaEngine();
-		new Thread(thetaEngine).start();
-	}
+  // Entry point for application
+  public static void main(final String[] args) {
+    // Create Theta Engine
+    final ThetaEngine thetaEngine = new ThetaEngine();
+    thetaEngine.start();
+  }
 
-	// Brokerage handlers
-	private ConnectionHandler brokerConnectionHandler;
-	private ExecutionHandler brokerExecutionHandler;
-	private PositionHandler brokerPositionHandler;
+  // Brokerage handlers
+  private ConnectionHandler brokerConnectionHandler;
+  private ExecutionHandler brokerExecutionHandler;
+  private PositionHandler brokerPositionHandler;
 
-	private TickSubscriber brokerTickSubscriber;
-	// Theta managers
-	private ConnectionManager connectionManager;
-	private ExecutionManager executionManager;
-	private PortfolioManager portfolioManager;
+  private TickSubscriber brokerTickSubscriber;
+  // Theta managers
+  private ConnectionManager connectionManager;
+  private ExecutionManager executionManager;
+  private PortfolioManager portfolioManager;
 
-	private TickManager tickManager;
+  private TickManager tickManager;
 
-	public ThetaEngine() {
-		ThetaEngine.logger.info("Starting ThetaEngine...");
+  public ThetaEngine() {
+    ThetaEngine.logger.info("Starting ThetaEngine...");
 
-		// Register shutdown hook
-		this.attachShutdownHook();
+    // Register shutdown hook
+    attachShutdownHook();
 
-		// Initialize Broker interfaces
-		this.initializeBrokerageHandlers();
+    // Initialize Broker interfaces
+    initializeBrokerageHandlers();
 
-		// Initialize Theta Managers with brokerage interfaces
-		this.initializeThetaManagers();
+    // Initialize Theta Managers with brokerage interfaces
+    initializeThetaManagers();
 
-		// Register managers with one another as needed
-		this.registerManagerInterfaces();
+    // Register managers with one another as needed
+    registerManagerInterfaces();
+  }
 
-		// Start ThetaEngine
-		this.connect();
-	}
+  public void start() {
 
-	private void attachShutdownHook() {
-		ThetaEngine.logger.info("Registering Shutdown Hook");
+    // Start ThetaEngine
+    connect();
 
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> ThetaEngine.logger.info("Executing Shutdown Hook")));
+    if (brokerConnectionHandler.isConnected()) {
 
-		ThetaEngine.logger.info("Shutdown Hook Registered");
-	}
+      brokerPositionHandler.requestPositionsFromBrokerage();
 
-	private void connect() {
-		ThetaEngine.logger.info("Connecting to Brokerage");
-		this.connectionManager.connect();
-	}
+      // Start manager threads
+      new Thread(portfolioManager).start();
+      new Thread(tickManager).start();
+    }
+  }
 
-	private void initializeBrokerageHandlers() {
-		ThetaEngine.logger.info("Initializing Brokerage Handlers");
+  private void attachShutdownHook() {
+    ThetaEngine.logger.info("Registering Shutdown Hook");
 
-		// Initialize API controller
-		final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
-		final IbController ibController = ibConnectionHandler;
+    Runtime.getRuntime()
+        .addShutdownHook(new Thread(() -> ThetaEngine.logger.info("Executing Shutdown Hook")));
 
-		// Brokerage specific handlers (wiring abstraction)
-		this.brokerConnectionHandler = ibConnectionHandler;
-		this.brokerPositionHandler = new IbPositionHandler(ibController);
-		this.brokerTickSubscriber = new IbTickSubscriber(ibController);
-		this.brokerExecutionHandler = new IbExecutionHandler(ibController);
+    ThetaEngine.logger.info("Shutdown Hook Registered");
+  }
 
-		ThetaEngine.logger.info("Brokerage Handlers Initialization Complete");
-	}
+  private void connect() {
+    ThetaEngine.logger.info("Connecting to Brokerage");
+    connectionManager.connect();
+  }
 
-	private void initializeThetaManagers() {
-		ThetaEngine.logger.info("Starting ThetaEngine Managers");
+  private void initializeBrokerageHandlers() {
+    ThetaEngine.logger.info("Initializing Brokerage Handlers");
 
-		this.connectionManager = new ConnectionManager(this.brokerConnectionHandler);
-		this.portfolioManager = new PortfolioManager(this.brokerPositionHandler);
-		this.tickManager = new TickManager(this.brokerTickSubscriber);
-		this.executionManager = new ExecutionManager(this.brokerExecutionHandler);
+    // Initialize API controller
+    final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler();
+    final IbController ibController = ibConnectionHandler;
 
-		ThetaEngine.logger.info("ThetaEngine Manager Startup Complete");
-	}
+    // Brokerage specific handlers (wiring abstraction)
+    brokerConnectionHandler = ibConnectionHandler;
+    brokerPositionHandler = new IbPositionHandler(ibController);
+    brokerTickSubscriber = new IbTickSubscriber(ibController);
+    brokerExecutionHandler = new IbExecutionHandler(ibController);
 
-	private void registerManagerInterfaces() {
-		ThetaEngine.logger.info("Starting Manager Cross-Registration");
+    ThetaEngine.logger.info("Brokerage Handlers Initialization Complete");
+  }
 
-		this.portfolioManager.registerTickMonitor(this.tickManager);
-		this.portfolioManager.registerExecutionMonitor(this.executionManager);
-		this.tickManager.registerExecutor(this.executionManager);
-		this.tickManager.registerPositionProvider(this.portfolioManager);
+  private void initializeThetaManagers() {
+    ThetaEngine.logger.info("Starting ThetaEngine Managers");
 
-		ThetaEngine.logger.info("Manager Cross-Registration Complete");
-	}
+    connectionManager = new ConnectionManager(brokerConnectionHandler);
+    portfolioManager = new PortfolioManager(brokerPositionHandler);
+    tickManager = new TickManager(brokerTickSubscriber);
+    executionManager = new ExecutionManager(brokerExecutionHandler);
 
-	@Override
-	public void run() {
-		if (this.brokerConnectionHandler.isConnected()) {
+    ThetaEngine.logger.info("ThetaEngine Manager Startup Complete");
+  }
 
-			this.brokerPositionHandler.requestPositionsFromBrokerage();
+  private void registerManagerInterfaces() {
+    ThetaEngine.logger.info("Starting Manager Cross-Registration");
 
-			// Start manager threads
-			new Thread(this.portfolioManager).start();
-			new Thread(this.tickManager).start();
-		}
-	}
+    portfolioManager.registerTickMonitor(tickManager);
+    portfolioManager.registerExecutionMonitor(executionManager);
+    tickManager.registerExecutor(executionManager);
+    tickManager.registerPositionProvider(portfolioManager);
+
+    ThetaEngine.logger.info("Manager Cross-Registration Complete");
+  }
 }

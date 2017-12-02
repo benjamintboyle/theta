@@ -4,16 +4,16 @@ import java.util.UUID;
 
 public interface Security {
 
-	public UUID getId();
+  public UUID getId();
 
-	public SecurityType getSecurityType();
+  public SecurityType getSecurityType();
 
-	public String getTicker();
+  public String getTicker();
 
-	public Integer getQuantity();
+  public Double getQuantity();
 
-	@Override
-	public String toString();
+  @Override
+  public String toString();
 
-	public Double getPrice();
+  public Double getPrice();
 }

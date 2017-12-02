@@ -2,44 +2,42 @@ package brokers.interactive_brokers.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.ib.client.Contract;
-import com.ib.controller.NewContract;
-import com.ib.controller.NewOrder;
-import com.ib.controller.OrderType;
-import com.ib.controller.Types.Action;
-import com.ib.controller.Types.SecType;
+import com.ib.client.Order;
+import com.ib.client.OrderType;
+import com.ib.client.Types.Action;
+import com.ib.client.Types.SecType;
 
 public class IbOrderUtil {
-	private static final Logger logger = LoggerFactory.getLogger(IbOrderUtil.class);
+  private static final Logger logger = LoggerFactory.getLogger(IbOrderUtil.class);
 
-	public static NewContract buildStockOrderContract(String ticker) {
-		NewContract contract = new NewContract(new Contract());
-		contract.symbol(ticker);
-		contract.secType(SecType.STK);
-		contract.exchange("SMART");
-		contract.currency("USD");
+  public static Contract buildStockOrderContract(String ticker) {
+    final Contract contract = new Contract();
+    contract.symbol(ticker);
+    contract.secType(SecType.STK);
+    contract.exchange("SMART");
+    contract.currency("USD");
 
-		logger.info("Built Interactive Brokers New Contract: {}",
-				IbStringUtil.contractToString(contract.getContract()));
+    logger.info("Built Interactive Brokers New Contract: {}",
+        IbStringUtil.toStringContract(contract));
 
-		return contract;
-	}
+    return contract;
+  }
 
-	public static NewOrder buildMarketOrder(Integer quantity) {
-		NewOrder ibOrder = new NewOrder();
+  public static Order buildMarketOrder(Double quantity) {
+    final Order ibOrder = new Order();
 
-		if (quantity > 0) {
-			ibOrder.action(Action.SELL);
-		} else {
-			ibOrder.action(Action.BUY);
-		}
-		ibOrder.totalQuantity(2 * Math.abs(quantity));
-		ibOrder.orderType(OrderType.MKT);
-		ibOrder.orderId(0);
+    if (quantity > 0) {
+      ibOrder.action(Action.SELL);
+    } else {
+      ibOrder.action(Action.BUY);
+    }
+    ibOrder.totalQuantity(2 * Math.abs(quantity));
+    ibOrder.orderType(OrderType.MKT);
+    ibOrder.orderId(0);
 
-		logger.info("Built Interactive Brokers Order: {}", IbStringUtil.newOrderToString(ibOrder));
+    logger.info("Built Interactive Brokers Order: {}", IbStringUtil.toStringOrder(ibOrder));
 
-		return ibOrder;
-	}
+    return ibOrder;
+  }
 }

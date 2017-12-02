@@ -1,51 +1,47 @@
 package theta.domain;
 
+import java.util.UUID;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import theta.domain.Stock;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-
-import java.util.UUID;
-
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class StockTest {
-	public static Stock buildTestStock() {
-		return new Stock(UUID.randomUUID(), "CHK", 100, 15.0);
-	}
+  public static Stock buildTestStock() {
+    return new Stock(UUID.randomUUID(), "CHK", Double.valueOf(100), 15.0);
+  }
 
-	public static Stock buildTestStockShort() {
-		return new Stock(UUID.randomUUID(), "CHK", -100, 15.0);
-	}
+  public static Stock buildTestStockShort() {
+    return new Stock(UUID.randomUUID(), "CHK", Double.valueOf(-100), 15.0);
+  }
 
-	@Test
-	public void quantityTest() {
-		Stock stock = StockTest.buildTestStock();
+  @Test
+  public void quantityTest() {
+    final Stock stock = StockTest.buildTestStock();
 
-		assertThat(stock.getQuantity(), is(equalTo(100)));
-	}
+    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(100.0)));
+  }
 
-	@Test
-	public void quantityShortTest() {
-		Stock stock = StockTest.buildTestStockShort();
+  @Test
+  public void quantityShortTest() {
+    final Stock stock = StockTest.buildTestStockShort();
 
-		assertThat(stock.getQuantity(), is(equalTo(-100)));
-	}
+    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(-100.0)));
+  }
 
-	@Test
-	public void tradePriceTest() {
-		Stock stock = StockTest.buildTestStockShort();
+  @Test
+  public void tradePriceTest() {
+    final Stock stock = StockTest.buildTestStockShort();
 
-		assertThat(stock.getAverageTradePrice(), is(equalTo(15.0)));
-	}
+    MatcherAssert.assertThat(stock.getAverageTradePrice(), Matchers.is(Matchers.equalTo(15.0)));
+  }
 
-	@Test
-	public void tickerTest() {
-		Stock stock = StockTest.buildTestStock();
+  @Test
+  public void tickerTest() {
+    final Stock stock = StockTest.buildTestStock();
 
-		assertThat(stock.getTicker(), is(equalTo("CHK")));
-	}
+    MatcherAssert.assertThat(stock.getTicker(), Matchers.is(Matchers.equalTo("CHK")));
+  }
 }

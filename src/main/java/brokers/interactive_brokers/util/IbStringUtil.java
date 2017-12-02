@@ -1,359 +1,502 @@
 package brokers.interactive_brokers.util;
 
+import java.util.List;
 import com.ib.client.ComboLeg;
 import com.ib.client.Contract;
-import com.ib.controller.NewOrder;
-import com.ib.controller.NewOrderState;
+import com.ib.client.DeltaNeutralContract;
+import com.ib.client.Order;
+import com.ib.client.OrderState;
 
 public class IbStringUtil {
-	public static String contractToString(Contract contract) {
-		StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append("Contract Id: ");
-		stringBuilder.append(contract.m_conId);
+  private static final String DELIMITTER = ", ";
 
-		stringBuilder.append(", Symbol: ");
-		stringBuilder.append(contract.m_symbol);
+  public static String toStringOrderState(OrderState orderState) {
+    final StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append(", Security Type: ");
-		stringBuilder.append(contract.m_secType);
+    if (orderState != null) {
+      stringBuilder.append("Commission: ");
+      stringBuilder.append(orderState.commission());
 
-		stringBuilder.append(", Expiry: ");
-		stringBuilder.append(contract.m_expiry);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Max Commission: ");
+      stringBuilder.append(orderState.maxCommission());
 
-		stringBuilder.append(", Strike: ");
-		stringBuilder.append(contract.m_strike);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Min Commission: ");
+      stringBuilder.append(orderState.minCommission());
 
-		stringBuilder.append(", Right: ");
-		stringBuilder.append(contract.m_right);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Status: ");
+      stringBuilder.append(orderState.status());
 
-		stringBuilder.append(", Multiplier: ");
-		stringBuilder.append(contract.m_multiplier);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Active: ");
+      stringBuilder.append(orderState.status().isActive());
 
-		stringBuilder.append(", Exchange: ");
-		stringBuilder.append(contract.m_exchange);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Commission Currency: ");
+      stringBuilder.append(orderState.commissionCurrency());
 
-		stringBuilder.append(", Currency: ");
-		stringBuilder.append(contract.m_currency);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Equity with Loan: ");
+      stringBuilder.append(orderState.equityWithLoan());
 
-		stringBuilder.append(", Local Symbol: ");
-		stringBuilder.append(contract.m_localSymbol);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Initial Margin: ");
+      stringBuilder.append(orderState.initMargin());
 
-		stringBuilder.append(", Trading Class: ");
-		stringBuilder.append(contract.m_tradingClass);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Maintenance Margin: ");
+      stringBuilder.append(orderState.maintMargin());
 
-		stringBuilder.append(", Primary Exchange: ");
-		stringBuilder.append(contract.m_primaryExch);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Warning Text: ");
+      stringBuilder.append(orderState.warningText());
+    }
+    return stringBuilder.toString();
+  }
 
-		stringBuilder.append(", Include Expired: ");
-		stringBuilder.append(contract.m_includeExpired);
+  public static String toStringOrder(Order order) {
+    final StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append(", Security Id Type: ");
-		stringBuilder.append(contract.m_secIdType);
+    if (order != null) {
+      stringBuilder.append("Action: ");
+      stringBuilder.append(order.action());
 
-		stringBuilder.append(", Security Id: ");
-		stringBuilder.append(contract.m_secId);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Action Api String: ");
+      stringBuilder.append(order.action().getApiString());
 
-		stringBuilder.append(", Combo Leg Description: ");
-		stringBuilder.append(contract.m_comboLegsDescrip);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("All or None: ");
+      stringBuilder.append(order.allOrNone());
 
-		stringBuilder.append(", Combo Legs: { ");
-		for (ComboLeg leg : contract.m_comboLegs) {
-			stringBuilder.append("[Contract Id: ");
-			stringBuilder.append(leg.m_conId);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Block Order: ");
+      stringBuilder.append(order.blockOrder());
 
-			stringBuilder.append(", Ratio: ");
-			stringBuilder.append(leg.m_ratio);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("eTrade Only: ");
+      stringBuilder.append(order.eTradeOnly());
 
-			stringBuilder.append(", Action: ");
-			stringBuilder.append(leg.m_action);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Firm Quote Only: ");
+      stringBuilder.append(order.firmQuoteOnly());
 
-			stringBuilder.append(", Exchange: ");
-			stringBuilder.append(leg.m_exchange);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Hidden: ");
+      stringBuilder.append(order.hidden());
 
-			stringBuilder.append(", Open/Close: ");
-			stringBuilder.append(leg.m_openClose);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Not Held: ");
+      stringBuilder.append(order.notHeld());
 
-			stringBuilder.append(", Short Sale Slot: ");
-			stringBuilder.append(leg.m_shortSaleSlot);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Opt Out Smart Routing: ");
+      stringBuilder.append(order.optOutSmartRouting());
 
-			stringBuilder.append(", Designated Location: ");
-			stringBuilder.append(leg.m_designatedLocation);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Outside Rth: ");
+      stringBuilder.append(order.outsideRth());
 
-			stringBuilder.append(", Exempt Code: ");
-			stringBuilder.append(leg.m_exemptCode);
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Override Percentage Constraints: ");
+      stringBuilder.append(order.overridePercentageConstraints());
 
-			stringBuilder.append("]");
-		}
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Auto Reset: ");
+      stringBuilder.append(order.scaleAutoReset());
 
-		stringBuilder.append(" }, Under Comp: { ");
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Random Percent: ");
+      stringBuilder.append(order.scaleRandomPercent());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Sweep To Fill: ");
+      stringBuilder.append(order.sweepToFill());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Transmit: ");
+      stringBuilder.append(order.transmit());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("WhatIf: ");
+      stringBuilder.append(order.whatIf());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Aux Price: ");
+      stringBuilder.append(order.auxPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta: ");
+      stringBuilder.append(order.delta());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta Neutral Aux Price: ");
+      stringBuilder.append(order.deltaNeutralAuxPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Discretionary Amt: ");
+      stringBuilder.append(order.discretionaryAmt());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Limit Price: ");
+      stringBuilder.append(order.lmtPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("NBBO Price Cap: ");
+      stringBuilder.append(order.nbboPriceCap());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Percent Offset: ");
+      stringBuilder.append(order.percentOffset());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Price Adjust Value: ");
+      stringBuilder.append(order.scalePriceAdjustValue());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Price Increment: ");
+      stringBuilder.append(order.scalePriceIncrement());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Profile Offset: ");
+      stringBuilder.append(order.scaleProfitOffset());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Starting Price: ");
+      stringBuilder.append(order.startingPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Stock Range Lower: ");
+      stringBuilder.append(order.stockRangeLower());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Stock Range Upper: ");
+      stringBuilder.append(order.stockRangeUpper());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Stock Ref Price: ");
+      stringBuilder.append(order.stockRefPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Trailing Percent: ");
+      stringBuilder.append(order.trailingPercent());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Trailing Stop Price: ");
+      stringBuilder.append(order.trailStopPrice());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Volatility: ");
+      stringBuilder.append(order.volatility());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Client Id: ");
+      stringBuilder.append(order.clientId());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Continuous Update: ");
+      stringBuilder.append(order.continuousUpdate());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta Neutral Con Id: ");
+      stringBuilder.append(order.deltaNeutralConId());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Display Size: ");
+      stringBuilder.append(order.displaySize());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Min Quantity: ");
+      stringBuilder.append(order.minQty());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Id: ");
+      stringBuilder.append(order.orderId());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Parent Id: ");
+      stringBuilder.append(order.parentId());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Init Fill Quantity: ");
+      stringBuilder.append(order.scaleInitFillQty());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Init Level Size: ");
+      stringBuilder.append(order.scaleInitLevelSize());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Init Position: ");
+      stringBuilder.append(order.scaleInitPosition());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Price Adjust Interval: ");
+      stringBuilder.append(order.scalePriceAdjustInterval());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Subs Level Size: ");
+      stringBuilder.append(order.scaleSubsLevelSize());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Total Quantity: ");
+      stringBuilder.append(order.totalQuantity());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Perm Id: ");
+      stringBuilder.append(order.permId());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("FA Method: ");
+      stringBuilder.append(order.faMethod());
 
-		if (contract.m_underComp != null) {
-			stringBuilder.append("Contract Id: ");
-			stringBuilder.append(contract.m_underComp.m_conId);
-			stringBuilder.append(", Delta: ");
-			stringBuilder.append(contract.m_underComp.m_delta);
-			stringBuilder.append(", Price: ");
-			stringBuilder.append(contract.m_underComp.m_price);
-		}
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("OCA Type: ");
+      stringBuilder.append(order.ocaType());
 
-		stringBuilder.append(" }");
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta Neutral Order Type: ");
+      stringBuilder.append(order.deltaNeutralOrderType());
 
-		return stringBuilder.toString();
-	}
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Type: ");
+      stringBuilder.append(order.orderType());
 
-	public static String newOrderStateToString(NewOrderState newOrderState) {
-		StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Reference Price Type: ");
+      stringBuilder.append(order.referencePriceType());
 
-		stringBuilder.append("Commission: ");
-		stringBuilder.append(newOrderState.commission());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Rule SOA: ");
+      stringBuilder.append(order.rule80A());
 
-		stringBuilder.append(", Max Commission: ");
-		stringBuilder.append(newOrderState.maxCommission());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Account: ");
+      stringBuilder.append(order.account());
 
-		stringBuilder.append(", Min Commission: ");
-		stringBuilder.append(newOrderState.minCommission());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Algo Strategy: ");
+      stringBuilder.append(order.algoStrategy());
 
-		stringBuilder.append(", Status: ");
-		stringBuilder.append(newOrderState.status());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Algo Id: ");
+      stringBuilder.append(order.algoId());
 
-		stringBuilder.append(", Order Active: ");
-		stringBuilder.append(newOrderState.status().isActive());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("FA Group: ");
+      stringBuilder.append(order.faGroup());
 
-		stringBuilder.append(", Commission Currency: ");
-		stringBuilder.append(newOrderState.commissionCurrency());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("FA Percentage: ");
+      stringBuilder.append(order.faPercentage());
 
-		stringBuilder.append(", Equity with Loan: ");
-		stringBuilder.append(newOrderState.equityWithLoan());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("FA Profile: ");
+      stringBuilder.append(order.faProfile());
 
-		stringBuilder.append(", Initial Margin: ");
-		stringBuilder.append(newOrderState.initMargin());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Good After Time: ");
+      stringBuilder.append(order.goodAfterTime());
 
-		stringBuilder.append(", Maintenance Margin: ");
-		stringBuilder.append(newOrderState.maintMargin());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Good Till Date: ");
+      stringBuilder.append(order.goodTillDate());
 
-		stringBuilder.append(", Warning Text: ");
-		stringBuilder.append(newOrderState.warningText());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Hedge Param: ");
+      stringBuilder.append(order.hedgeParam());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("OCA Group: ");
+      stringBuilder.append(order.ocaGroup());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Ref: ");
+      stringBuilder.append(order.orderRef());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("TIF: ");
+      stringBuilder.append(order.tif());
 
-		return stringBuilder.toString();
-	}
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Volatility Type: ");
+      stringBuilder.append(order.volatilityType());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Smart Combo Routing Params: ");
+      stringBuilder.append(order.smartComboRoutingParams());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Trigger Method: ");
+      stringBuilder.append(order.triggerMethod());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Algo Params: ");
+      stringBuilder.append(order.algoParams());
 
-	public static String newOrderToString(NewOrder newOrder) {
-		StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Combo Legs: ");
+      stringBuilder.append(order.orderComboLegs());
 
-		stringBuilder.append("Action: ");
-		stringBuilder.append(newOrder.action());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Scale Table: ");
+      stringBuilder.append(order.scaleTable());
+    }
+    return stringBuilder.toString();
 
-		stringBuilder.append(", Action Api String: ");
-		stringBuilder.append(newOrder.action().getApiString());
+  }
 
-		stringBuilder.append(", All or None: ");
-		stringBuilder.append(newOrder.allOrNone());
+  public static String toStringContract(Contract contract) {
+    final StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append(", Block Order: ");
-		stringBuilder.append(newOrder.blockOrder());
+    if (contract != null) {
+      stringBuilder.append("Contract Id: ");
+      stringBuilder.append(contract.conid());
 
-		stringBuilder.append(", eTrade Only: ");
-		stringBuilder.append(newOrder.eTradeOnly());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Symbol: ");
+      stringBuilder.append(contract.symbol());
 
-		stringBuilder.append(", Firm Quote Only: ");
-		stringBuilder.append(newOrder.firmQuoteOnly());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Security Type: ");
+      stringBuilder.append(contract.secType());
 
-		stringBuilder.append(", Hidden: ");
-		stringBuilder.append(newOrder.hidden());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Expiration Date: ");
+      stringBuilder.append(contract.lastTradeDateOrContractMonth());
 
-		stringBuilder.append(", Not Held: ");
-		stringBuilder.append(newOrder.notHeld());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Strike Price: ");
+      stringBuilder.append(contract.strike());
 
-		stringBuilder.append(", Opt Out Smart Routing: ");
-		stringBuilder.append(newOrder.optOutSmartRouting());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Right: ");
+      stringBuilder.append(contract.right());
 
-		stringBuilder.append(", Outside Rth: ");
-		stringBuilder.append(newOrder.outsideRth());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Multiplier: ");
+      stringBuilder.append(contract.multiplier());
 
-		stringBuilder.append(", Override Percentage Constraints: ");
-		stringBuilder.append(newOrder.overridePercentageConstraints());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Primary Exchange: ");
+      stringBuilder.append(contract.primaryExch());
 
-		stringBuilder.append(", Scale Auto Reset: ");
-		stringBuilder.append(newOrder.scaleAutoReset());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Currency: ");
+      stringBuilder.append(contract.currency());
 
-		stringBuilder.append(", Scale Random Percent: ");
-		stringBuilder.append(newOrder.scaleRandomPercent());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Local Symbol: ");
+      stringBuilder.append(contract.localSymbol());
 
-		stringBuilder.append(", Sweep To Fill: ");
-		stringBuilder.append(newOrder.sweepToFill());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Trading Class: ");
+      stringBuilder.append(contract.tradingClass());
 
-		stringBuilder.append(", Transmit: ");
-		stringBuilder.append(newOrder.transmit());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Security Id Type: ");
+      stringBuilder.append(contract.secIdType());
 
-		stringBuilder.append(", WhatIf: ");
-		stringBuilder.append(newOrder.whatIf());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Security Id: ");
+      stringBuilder.append(contract.secId());
 
-		stringBuilder.append(", Aux Price: ");
-		stringBuilder.append(newOrder.auxPrice());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta Neutral Contract: ");
+      stringBuilder.append("[");
+      stringBuilder.append(IbStringUtil.toStringDeltaNeutralContract(contract.underComp()));
+      stringBuilder.append("]");
 
-		stringBuilder.append(", Delta: ");
-		stringBuilder.append(newOrder.delta());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Include Expired: ");
+      stringBuilder.append(contract.includeExpired());
 
-		stringBuilder.append(", Delta Neutral Aux Price: ");
-		stringBuilder.append(newOrder.deltaNeutralAuxPrice());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Combo Legs Description: ");
+      stringBuilder.append(contract.comboLegsDescrip());
 
-		stringBuilder.append(", Discretionary Amt: ");
-		stringBuilder.append(newOrder.discretionaryAmt());
+      final List<ComboLeg> comboLegList = contract.comboLegs();
 
-		stringBuilder.append(", Limit Price: ");
-		stringBuilder.append(newOrder.lmtPrice());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Combo Legs: ");
+      stringBuilder.append("[");
+      stringBuilder.append("Count: ");
+      stringBuilder.append(comboLegList.size());
 
-		stringBuilder.append(", NBBO Price Cap: ");
-		stringBuilder.append(newOrder.nbboPriceCap());
+      for (int i = 0; i < comboLegList.size(); i++) {
+        stringBuilder.append(DELIMITTER);
+        stringBuilder.append(i);
+        stringBuilder.append(": [");
 
-		stringBuilder.append(", Percent Offset: ");
-		stringBuilder.append(newOrder.percentOffset());
+        IbStringUtil.toStringComboLeg(comboLegList.get(i));
 
-		stringBuilder.append(", Scale Price Adjust Value: ");
-		stringBuilder.append(newOrder.scalePriceAdjustValue());
+        stringBuilder.append("]");
+      }
 
-		stringBuilder.append(", Scale Price Increment: ");
-		stringBuilder.append(newOrder.scalePriceIncrement());
+      stringBuilder.append("]");
+    }
 
-		stringBuilder.append(", Scale Profile Offset: ");
-		stringBuilder.append(newOrder.scaleProfitOffset());
+    return stringBuilder.toString();
+  }
 
-		stringBuilder.append(", Starting Price: ");
-		stringBuilder.append(newOrder.startingPrice());
+  public static String toStringDeltaNeutralContract(DeltaNeutralContract deltaNeutralContract) {
+    final StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append(", Stock Range Lower: ");
-		stringBuilder.append(newOrder.stockRangeLower());
+    if (deltaNeutralContract != null) {
+      stringBuilder.append("Contract Id: ");
+      stringBuilder.append(deltaNeutralContract.conid());
 
-		stringBuilder.append(", Stock Range Upper: ");
-		stringBuilder.append(newOrder.stockRangeUpper());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Delta: ");
+      stringBuilder.append(deltaNeutralContract.delta());
 
-		stringBuilder.append(", Stock Ref Price: ");
-		stringBuilder.append(newOrder.stockRefPrice());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Price: ");
+      stringBuilder.append(deltaNeutralContract.price());
+    }
 
-		stringBuilder.append(", Trailing Percent: ");
-		stringBuilder.append(newOrder.trailingPercent());
+    return stringBuilder.toString();
+  }
 
-		stringBuilder.append(", Trailing Stop Price: ");
-		stringBuilder.append(newOrder.trailStopPrice());
+  public static String toStringComboLeg(ComboLeg comboLeg) {
+    final StringBuilder stringBuilder = new StringBuilder();
 
-		stringBuilder.append(", Volatility: ");
-		stringBuilder.append(newOrder.volatility());
+    if (comboLeg != null) {
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Contract Id: ");
+      stringBuilder.append(comboLeg.conid());
 
-		stringBuilder.append(", Client Id: ");
-		stringBuilder.append(newOrder.clientId());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Ratio: ");
+      stringBuilder.append(comboLeg.ratio());
 
-		stringBuilder.append(", Continuous Update: ");
-		stringBuilder.append(newOrder.continuousUpdate());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Action: ");
+      stringBuilder.append(comboLeg.action());
 
-		stringBuilder.append(", Delta Neutral Con Id: ");
-		stringBuilder.append(newOrder.deltaNeutralConId());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Exchange: ");
+      stringBuilder.append(comboLeg.exchange());
 
-		stringBuilder.append(", Display Size: ");
-		stringBuilder.append(newOrder.displaySize());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Open/Close: ");
+      stringBuilder.append(comboLeg.openClose());
 
-		stringBuilder.append(", Min Quantity: ");
-		stringBuilder.append(newOrder.minQty());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Short Sale Slot: ");
+      stringBuilder.append(comboLeg.shortSaleSlot());
 
-		stringBuilder.append(", Order Id: ");
-		stringBuilder.append(newOrder.orderId());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Designated Location: ");
+      stringBuilder.append(comboLeg.designatedLocation());
 
-		stringBuilder.append(", Parent Id: ");
-		stringBuilder.append(newOrder.parentId());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Exempt Code: ");
+      stringBuilder.append(comboLeg.exemptCode());
+    }
 
-		stringBuilder.append(", Scale Init Fill Quantity: ");
-		stringBuilder.append(newOrder.scaleInitFillQty());
-
-		stringBuilder.append(", Scale Init Level Size: ");
-		stringBuilder.append(newOrder.scaleInitLevelSize());
-
-		stringBuilder.append(", Scale Init Position: ");
-		stringBuilder.append(newOrder.scaleInitPosition());
-
-		stringBuilder.append(", Scale Price Adjust Interval: ");
-		stringBuilder.append(newOrder.scalePriceAdjustInterval());
-
-		stringBuilder.append(", Scale Subs Level Size: ");
-		stringBuilder.append(newOrder.scaleSubsLevelSize());
-
-		stringBuilder.append(", Total Quantity: ");
-		stringBuilder.append(newOrder.totalQuantity());
-
-		stringBuilder.append(", Perm Id: ");
-		stringBuilder.append(newOrder.permId());
-
-		stringBuilder.append(", FA Method: ");
-		stringBuilder.append(newOrder.faMethod());
-
-		stringBuilder.append(", OCA Type: ");
-		stringBuilder.append(newOrder.ocaType());
-
-		stringBuilder.append(", Delta Neutral Order Type: ");
-		stringBuilder.append(newOrder.deltaNeutralOrderType());
-
-		stringBuilder.append(", Order Type: ");
-		stringBuilder.append(newOrder.orderType());
-
-		stringBuilder.append(", Reference Price Type: ");
-		stringBuilder.append(newOrder.referencePriceType());
-
-		stringBuilder.append(", Rule SOA: ");
-		stringBuilder.append(newOrder.rule80A());
-
-		stringBuilder.append(", Account: ");
-		stringBuilder.append(newOrder.account());
-
-		stringBuilder.append(", Algo Strategy: ");
-		stringBuilder.append(newOrder.algoStrategy());
-
-		stringBuilder.append(", Algo Id: ");
-		stringBuilder.append(newOrder.algoId());
-
-		stringBuilder.append(", FA Group: ");
-		stringBuilder.append(newOrder.faGroup());
-
-		stringBuilder.append(", FA Percentage: ");
-		stringBuilder.append(newOrder.faPercentage());
-
-		stringBuilder.append(", FA Profile: ");
-		stringBuilder.append(newOrder.faProfile());
-
-		stringBuilder.append(", Good After Time: ");
-		stringBuilder.append(newOrder.goodAfterTime());
-
-		stringBuilder.append(", Good Till Date: ");
-		stringBuilder.append(newOrder.goodTillDate());
-
-		stringBuilder.append(", Hedge Param: ");
-		stringBuilder.append(newOrder.hedgeParam());
-
-		stringBuilder.append(", OCA Group: ");
-		stringBuilder.append(newOrder.ocaGroup());
-
-		stringBuilder.append(", Order Ref: ");
-		stringBuilder.append(newOrder.orderRef());
-
-		stringBuilder.append(", TIF: ");
-		stringBuilder.append(newOrder.tif());
-
-		stringBuilder.append(", Volatility Type: ");
-		stringBuilder.append(newOrder.volatilityType());
-
-		stringBuilder.append(", Smart Combo Routing Params: ");
-		stringBuilder.append(newOrder.smartComboRoutingParams());
-
-		stringBuilder.append(", Trigger Method: ");
-		stringBuilder.append(newOrder.triggerMethod());
-
-		stringBuilder.append(", Algo Params: ");
-		stringBuilder.append(newOrder.algoParams());
-
-		stringBuilder.append(", Order Combo Legs: ");
-		stringBuilder.append(newOrder.orderComboLegs());
-
-		stringBuilder.append(", Scale Table: ");
-		stringBuilder.append(newOrder.scaleTable());
-
-		return stringBuilder.toString();
-	}
+    return stringBuilder.toString();
+  }
 }

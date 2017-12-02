@@ -1,59 +1,58 @@
 package theta.domain;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import theta.domain.Option;
-import theta.domain.Stock;
-import theta.domain.ThetaTrade;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ThetaTradeTest {
-	public static ThetaTrade buildTestThetaTrade() {
-		Stock stock = StockTest.buildTestStock();
-		Option call = OptionTest.buildTestShortCallOption();
-		Option put = OptionTest.buildTestShortPutOption();
+  public static ThetaTrade buildTestThetaTrade() {
+    final Stock stock = StockTest.buildTestStock();
+    final Option call = OptionTest.buildTestShortCallOption();
+    final Option put = OptionTest.buildTestShortPutOption();
 
-		ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
+    final ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
 
-		return trade;
-	}
+    return trade;
+  }
 
-	public static ThetaTrade buildTestShortThetaTrade() {
-		Stock stock = StockTest.buildTestStockShort();
-		Option call = OptionTest.buildTestShortCallOption();
-		Option put = OptionTest.buildTestShortPutOption();
+  public static ThetaTrade buildTestShortThetaTrade() {
+    final Stock stock = StockTest.buildTestStockShort();
+    final Option call = OptionTest.buildTestShortCallOption();
+    final Option put = OptionTest.buildTestShortPutOption();
 
-		ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
+    final ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
 
-		return trade;
-	}
+    return trade;
+  }
 
-	@Ignore
-	@Test
-	public void equityThetaTradeTest() {
-		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+  @Ignore
+  @Test
+  public void equityThetaTradeTest() {
+    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
-		assertThat(thetaTrade.getEquity(), is(equalTo(StockTest.buildTestStock())));
-	}
+    MatcherAssert.assertThat(thetaTrade.getEquity(),
+        Matchers.is(Matchers.equalTo(StockTest.buildTestStock())));
+  }
 
-	@Ignore
-	@Test
-	public void callThetaTradeTest() {
-		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+  @Ignore
+  @Test
+  public void callThetaTradeTest() {
+    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
-		assertThat(thetaTrade.getCall(), is(equalTo(OptionTest.buildTestShortCallOption())));
-	}
+    MatcherAssert.assertThat(thetaTrade.getCall(),
+        Matchers.is(Matchers.equalTo(OptionTest.buildTestShortCallOption())));
+  }
 
-	@Ignore
-	@Test
-	public void putThetaTradeTest() {
-		ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+  @Ignore
+  @Test
+  public void putThetaTradeTest() {
+    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
-		assertThat(thetaTrade.getPut(), is(equalTo(OptionTest.buildTestShortPutOption())));
-	}
+    MatcherAssert.assertThat(thetaTrade.getPut(),
+        Matchers.is(Matchers.equalTo(OptionTest.buildTestShortPutOption())));
+  }
 }
