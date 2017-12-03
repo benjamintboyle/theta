@@ -1,5 +1,6 @@
 package theta.execution.manager;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -16,7 +17,8 @@ import theta.execution.api.Executor;
 import theta.execution.domain.EquityOrder;
 
 public class ExecutionManager implements Executor, ExecutionMonitor {
-  private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
 

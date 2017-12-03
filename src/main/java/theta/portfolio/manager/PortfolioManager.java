@@ -1,5 +1,6 @@
 package theta.portfolio.manager;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,8 @@ import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
 
 public class PortfolioManager implements Runnable, PortfolioObserver, PositionProvider {
-  private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
   private Monitor monitor;

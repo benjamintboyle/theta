@@ -1,5 +1,6 @@
 package brokers.interactive_brokers;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -12,7 +13,8 @@ import theta.api.TickSubscriber;
 import theta.tick.api.TickObserver;
 
 public class IbTickSubscriber implements TickSubscriber {
-  private static final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
   private final Map<String, IbTickHandler> ibTickHandlers = new HashMap<String, IbTickHandler>();

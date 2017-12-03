@@ -1,5 +1,6 @@
 package brokers.interactive_brokers;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.ArrayList;
 import org.slf4j.Logger;
@@ -9,7 +10,8 @@ import com.ib.controller.ApiController.IConnectionHandler;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
-  private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
   // private static final String GATEWAY_IP_ADDRESS = "172.17.0.3";

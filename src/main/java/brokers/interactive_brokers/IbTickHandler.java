@@ -1,5 +1,6 @@
 package brokers.interactive_brokers;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -16,7 +17,8 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.TickObserver;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
-  private static final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DELAYED_STRING = "DELAYED_";
 

@@ -1,5 +1,6 @@
 package brokers.interactive_brokers.util;
 
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -9,7 +10,8 @@ import com.ib.client.Types.Action;
 import com.ib.client.Types.SecType;
 
 public class IbOrderUtil {
-  private static final Logger logger = LoggerFactory.getLogger(IbOrderUtil.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Contract buildStockOrderContract(String ticker) {
     final Contract contract = new Contract();

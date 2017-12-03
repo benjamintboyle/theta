@@ -1,5 +1,6 @@
 package theta.execution.domain;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -9,10 +10,10 @@ import theta.domain.api.SecurityType;
 import theta.execution.api.Executable;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
-import theta.execution.manager.ExecutionManager;
 
 public class EquityOrder implements Executable {
-  private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
   private final SecurityType securityType = SecurityType.STOCK;

@@ -1,5 +1,6 @@
 package theta;
 
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import brokers.interactive_brokers.IbConnectionHandler;
@@ -17,14 +18,8 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine {
-  private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
-
-  // Entry point for application
-  public static void main(final String[] args) {
-    // Create Theta Engine
-    final ThetaEngine thetaEngine = new ThetaEngine();
-    thetaEngine.start();
-  }
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Brokerage handlers
   private ConnectionHandler brokerConnectionHandler;
@@ -32,11 +27,11 @@ public class ThetaEngine {
   private PositionHandler brokerPositionHandler;
 
   private TickSubscriber brokerTickSubscriber;
+
   // Theta managers
   private ConnectionManager connectionManager;
   private ExecutionManager executionManager;
   private PortfolioManager portfolioManager;
-
   private TickManager tickManager;
 
   public ThetaEngine() {
@@ -56,9 +51,8 @@ public class ThetaEngine {
   }
 
   public void start() {
-
-    // Start ThetaEngine
-    connect();
+    ThetaEngine.logger.info("Connecting to Brokerage");
+    connectionManager.connect();
 
     if (brokerConnectionHandler.isConnected()) {
 
@@ -77,11 +71,6 @@ public class ThetaEngine {
         .addShutdownHook(new Thread(() -> ThetaEngine.logger.info("Executing Shutdown Hook")));
 
     ThetaEngine.logger.info("Shutdown Hook Registered");
-  }
-
-  private void connect() {
-    ThetaEngine.logger.info("Connecting to Brokerage");
-    connectionManager.connect();
   }
 
   private void initializeBrokerageHandlers() {

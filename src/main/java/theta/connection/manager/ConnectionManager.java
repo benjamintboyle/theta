@@ -1,11 +1,13 @@
 package theta.connection.manager;
 
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.api.ConnectionHandler;
 
 public class ConnectionManager {
-  private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
   public ConnectionManager(ConnectionHandler connectionHandler) {

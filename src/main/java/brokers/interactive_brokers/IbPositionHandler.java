@@ -1,5 +1,6 @@
 package brokers.interactive_brokers;
 
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,8 @@ import theta.domain.api.SecurityType;
 import theta.portfolio.api.PortfolioObserver;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
-  private static final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
 

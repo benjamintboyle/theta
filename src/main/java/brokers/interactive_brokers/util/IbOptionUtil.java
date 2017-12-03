@@ -1,12 +1,14 @@
 package brokers.interactive_brokers.util;
 
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IbOptionUtil {
-  private static final Logger logger = LoggerFactory.getLogger(IbOptionUtil.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Optional<LocalDate> convertExpiration(String date) {
     logger.debug("Converting String: '{}' to LocalDate", date);

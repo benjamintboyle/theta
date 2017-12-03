@@ -1,5 +1,6 @@
 package theta.domain;
 
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -8,7 +9,8 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Option implements Security {
-  private static final Logger logger = LoggerFactory.getLogger(Option.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private UUID id = UUID.randomUUID();
   private final SecurityType type;

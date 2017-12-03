@@ -1,6 +1,7 @@
 package theta.portfolio.manager;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +33,8 @@ import theta.tick.manager.TickManager;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class PortfolioManagerTest {
-  private static final Logger logger = LoggerFactory.getLogger(PortfolioManagerTest.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static List<Security> parseStringToSecurity(final List<String> stringListOfSecurities) {
     final List<Security> securityList = new ArrayList<Security>();
