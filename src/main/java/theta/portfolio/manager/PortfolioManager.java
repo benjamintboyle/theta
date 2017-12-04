@@ -89,8 +89,12 @@ public class PortfolioManager implements Runnable, PortfolioObserver, PositionPr
       final ThetaTrade theta = positionMap.remove(thetaId);
 
       // Remove link/map for call and put associated with ThetaTrade
-      securityPositionMap.remove(theta.getCall().getId());
-      securityPositionMap.remove(theta.getPut().getId());
+      if (securityPositionMap.containsKey(theta.getCall().getId())) {
+        securityPositionMap.remove(theta.getCall().getId());
+      }
+      if (securityPositionMap.containsKey(theta.getPut().getId())) {
+        securityPositionMap.remove(theta.getPut().getId());
+      }
 
       logger.info("Removed theta trade: {}, based on new security: {}", theta, security);
 

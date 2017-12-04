@@ -154,6 +154,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         publishTickNotification();
       }
     }
+
     for (final Double priceToRiseAbove : risesAbove) {
       if (price > priceToRiseAbove) {
         publishTickNotification();
