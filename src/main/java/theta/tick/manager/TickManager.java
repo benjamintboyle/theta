@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.ManagerState;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.ThetaTrade;
@@ -21,7 +23,7 @@ import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 
-public class TickManager implements Monitor, TickObserver, Runnable {
+public class TickManager implements Callable<ManagerState>, Monitor, TickObserver {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -29,7 +31,7 @@ public class TickManager implements Monitor, TickObserver, Runnable {
   private PositionProvider positionProvider;
   private Executor executor;
 
-  private Boolean running = true;
+  private ManagerState managerState = ManagerState.SHUTDOWN;
 
   private final BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
   private final Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
@@ -44,15 +46,21 @@ public class TickManager implements Monitor, TickObserver, Runnable {
     this(tickSubscriber);
     this.positionProvider = positionProvider;
     this.executor = executor;
-  }
 
-  public void shutdown() {
-    running = Boolean.FALSE;
+    managerState = ManagerState.STARTING;
   }
 
   @Override
-  public void run() {
-    while (running) {
+  public ManagerState call() {
+    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(),
+        MethodHandles.lookup().lookupClass().getSimpleName());
+    final String oldThreadName = Thread.currentThread().getName();
+    Thread.currentThread()
+        .setName(MethodHandles.lookup().lookupClass().getSimpleName() + " Thread");
+
+    managerState = ManagerState.RUNNING;
+
+    while (managerState == ManagerState.RUNNING) {
       try {
         // Blocks until tick available
         logger.info("Waiting to be notified about tick across strike price.");
@@ -65,6 +73,13 @@ public class TickManager implements Monitor, TickObserver, Runnable {
         logger.error("Interupted while waiting for tick", e);
       }
     }
+
+    managerState = ManagerState.SHUTDOWN;
+
+    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(), oldThreadName);
+    Thread.currentThread().setName(MethodHandles.lookup().lookupClass().getName());
+
+    return managerState;
   }
 
   @Override
@@ -116,6 +131,11 @@ public class TickManager implements Monitor, TickObserver, Runnable {
     }
 
     return priceLevelsMonitored;
+  }
+
+  public void shutdown() {
+    logger.info("Shutdown called");
+    managerState = ManagerState.STOPPING;
   }
 
   private void reversePosition(ThetaTrade theta) {

@@ -18,7 +18,7 @@ import theta.api.TickSubscriber;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
 import theta.domain.api.Security;
-import theta.execution.api.Executable;
+import theta.execution.api.ExecutableOrder;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.domain.Tick;
@@ -109,7 +109,7 @@ public class IntegrationTest {
     sendTickListForIngestion(tickList);
 
     Mockito.verify(mockExecutionHandler, Mockito.times(6))
-        .executeOrder(ArgumentMatchers.any(Executable.class));
+        .executeStockEquityMarketOrder(ArgumentMatchers.any(ExecutableOrder.class));
   }
 
   @Ignore

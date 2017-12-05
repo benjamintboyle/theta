@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
-import theta.execution.api.Executable;
+import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 
-public class EquityOrder implements Executable {
+public class EquityOrder implements ExecutableOrder {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

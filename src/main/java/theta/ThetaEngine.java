@@ -3,11 +3,12 @@ package theta;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import brokers.interactive_brokers.IbConnectionHandler;
 import brokers.interactive_brokers.IbController;
-import brokers.interactive_brokers.IbExecutionHandler;
-import brokers.interactive_brokers.IbPositionHandler;
-import brokers.interactive_brokers.IbTickSubscriber;
+import brokers.interactive_brokers.connection.IbConnectionHandler;
+import brokers.interactive_brokers.execution.IbExecutionHandler;
+import brokers.interactive_brokers.portfolio.IbPositionHandler;
+import brokers.interactive_brokers.tick.IbTickSubscriber;
+import io.reactivex.Flowable;
 import theta.api.ConnectionHandler;
 import theta.api.ExecutionHandler;
 import theta.api.PositionHandler;
@@ -34,6 +35,7 @@ public class ThetaEngine {
   private PortfolioManager portfolioManager;
   private TickManager tickManager;
 
+
   public ThetaEngine() {
     ThetaEngine.logger.info("Starting ThetaEngine...");
 
@@ -52,16 +54,18 @@ public class ThetaEngine {
 
   public void start() {
     ThetaEngine.logger.info("Connecting to Brokerage");
-    connectionManager.connect();
+    Flowable.fromCallable(connectionManager).subscribeOn(ThetaExecutorService.getManagerThread())
+        .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState));
 
-    if (brokerConnectionHandler.isConnected()) {
-
-      brokerPositionHandler.requestPositionsFromBrokerage();
-
+    if (connectionManager.isConnected()) {
       // Start manager threads
-      new Thread(portfolioManager).start();
-      new Thread(tickManager).start();
+      Flowable.fromCallable(portfolioManager).subscribeOn(ThetaExecutorService.getManagerThread())
+          .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState));
+      Flowable.fromCallable(tickManager).subscribeOn(ThetaExecutorService.getManagerThread())
+          .subscribe((endState) -> logger.info("TickManager state: {}", endState));
     }
+
+    logger.info("Connected ThetaEngine has started all managers");
   }
 
   private void attachShutdownHook() {

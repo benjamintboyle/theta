@@ -6,6 +6,7 @@ import com.ib.client.Contract;
 import com.ib.client.DeltaNeutralContract;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
+import com.ib.client.OrderStatus;
 
 public class IbStringUtil {
 
@@ -54,6 +55,50 @@ public class IbStringUtil {
       stringBuilder.append("Warning Text: ");
       stringBuilder.append(orderState.warningText());
     }
+    return stringBuilder.toString();
+  }
+
+  public static String toStringOrderStatus(OrderStatus status, double filled, double remaining,
+      double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId,
+      String whyHeld) {
+
+    final StringBuilder stringBuilder = new StringBuilder();
+
+    stringBuilder.append("Order Status: ");
+    stringBuilder.append(status);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Filled: ");
+    stringBuilder.append(filled);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Remaining: ");
+    stringBuilder.append(remaining);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Avg Price: ");
+    stringBuilder.append(avgFillPrice);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Perm Id: ");
+    stringBuilder.append(permId);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Parent Id: ");
+    stringBuilder.append(parentId);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Last Fill Price: ");
+    stringBuilder.append(lastFillPrice);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Client Id: ");
+    stringBuilder.append(clientId);
+
+    stringBuilder.append(DELIMITTER);
+    stringBuilder.append("Why Held: ");
+    stringBuilder.append(whyHeld);
+
     return stringBuilder.toString();
   }
 

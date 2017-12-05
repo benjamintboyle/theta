@@ -1,4 +1,4 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
 import com.ib.client.Types.SecType;
+import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;

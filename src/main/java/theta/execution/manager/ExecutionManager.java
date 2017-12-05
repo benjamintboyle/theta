@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import theta.api.ExecutionHandler;
 import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
-import theta.execution.api.Executable;
+import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionMonitor;
 import theta.execution.api.ExecutionType;
@@ -22,7 +22,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
   private final ExecutionHandler executionHandler;
 
-  private final Map<UUID, Executable> activeOrders = new HashMap<UUID, Executable>();
+  private final Map<UUID, ExecutableOrder> activeOrders = new HashMap<UUID, ExecutableOrder>();
 
   public ExecutionManager(ExecutionHandler executionHandler) {
     logger.info("Starting Execution Manager");
@@ -31,6 +31,9 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
   @Override
   public void reverseTrade(ThetaTrade trade) {
+
+    // TODO: This should be moved to a domain ReverseTradeOrder or possibly a factory
+
     logger.info("Reversing Trade: {}", trade.toString());
     ExecutionAction action = null;
     if (trade.getEquity().getQuantity() > 0) {
@@ -39,23 +42,31 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
       action = ExecutionAction.BUY;
     }
 
-    final Executable order = new EquityOrder(trade.getEquity(), action, ExecutionType.MARKET);
-    execute(trade.getEquity(), order);
-  }
-
-  private void execute(Security security, Executable order) {
-    logger.info("Executing trade of Security: {}, using Order: {}", security.toString(),
+    final ExecutableOrder order = new EquityOrder(trade.getEquity(), action, ExecutionType.MARKET);
+    logger.info("Validating trade of Security: {}, using Order: {}", trade.getEquity(),
         order.toString());
-    if (order.validate(security)) {
-      if (addActiveTrade(order)) {
-        executionHandler.executeOrder(order);
-      } else {
-        logger.error("Order will not be executed: {}", order);
-      }
+    if (order.validate(trade.getEquity())) {
+      executeOrder(order);
+    } else {
+      logger.error("Invalid order for Reverse Trade of Security: {}, using Order: {}",
+          trade.getEquity(), order.toString());
     }
   }
 
-  private Boolean addActiveTrade(Executable order) {
+  private void executeOrder(ExecutableOrder order) {
+    logger.info("Executing order: {}", order);
+    if (addActiveTrade(order)) {
+      // executionHandler.executeOrder(order);
+      executionHandler.executeStockEquityMarketOrder(order).onBackpressureBuffer().subscribe(
+          message -> logger.info(message),
+          error -> logger.error("OrderHandler encounter an error", error),
+          () -> logger.info("Order successfully filled: {}", order));
+    } else {
+      logger.error("Order will not be executed: {}", order);
+    }
+  }
+
+  private Boolean addActiveTrade(ExecutableOrder order) {
     logger.info("Adding Active Trade: {} to Execution Monitor", order.toString());
     Boolean isTradeUnique = Boolean.FALSE;
 
@@ -75,7 +86,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
     Boolean activeTradeRemoved = Boolean.FALSE;
 
     if (activeOrders.containsKey(security.getId())) {
-      final Executable executable = activeOrders.remove(security.getId());
+      final ExecutableOrder executable = activeOrders.remove(security.getId());
 
       logger.info("Active Trade removed for Executable: {}", executable);
 

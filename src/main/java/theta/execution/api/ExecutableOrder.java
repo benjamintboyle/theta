@@ -4,7 +4,7 @@ import java.util.UUID;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
-public interface Executable {
+public interface ExecutableOrder {
 
   public UUID getId();
 

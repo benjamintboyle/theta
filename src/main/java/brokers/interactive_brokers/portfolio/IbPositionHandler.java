@@ -1,4 +1,4 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.portfolio;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
 import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.IPositionHandler;
+import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOptionUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.PositionHandler;
@@ -49,8 +50,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   public synchronized void position(String account, Contract contract, double position,
       double avgCost) {
     logger.info(
-        "Handler has received position from Brokers servers: Account: {}, Contract: [{}], Position: {}, Average Cost: {}",
-        account, IbStringUtil.toStringContract(contract), position, avgCost);
+        "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
+        account, position, avgCost, IbStringUtil.toStringContract(contract));
     switch (contract.secType()) {
       case STK:
         final Stock stock =
@@ -81,7 +82,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
               contract.symbol(), position, contract.strike(), optionalExpiration.get(), avgCost);
           portfolioObserver.ingestPosition(option);
         } else {
-          logger.error("Invalid Option Expiration");
+          logger.error("Invalid Option Expiration for Contract: ",
+              IbStringUtil.toStringContract(contract));
         }
         break;
       default:
@@ -105,6 +107,9 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
+
+    // TODO: Remove DELAYED data
+    logger.warn("Requesting DELAYED tick data");
     controller.getController().reqMktDataType(MktDataType.Delayed);
 
     controller.getController().reqPositions(this);

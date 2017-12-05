@@ -8,10 +8,12 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.ManagerState;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -23,7 +25,8 @@ import theta.portfolio.api.PortfolioObserver;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Monitor;
 
-public class PortfolioManager implements Runnable, PortfolioObserver, PositionProvider {
+public class PortfolioManager
+    implements Callable<ManagerState>, PortfolioObserver, PositionProvider {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -35,7 +38,7 @@ public class PortfolioManager implements Runnable, PortfolioObserver, PositionPr
   private final Map<UUID, UUID> securityPositionMap = new HashMap<UUID, UUID>();
   private final BlockingQueue<Security> positionQueue = new LinkedBlockingQueue<Security>();
 
-  private final Boolean running = true;
+  private ManagerState managerState = ManagerState.SHUTDOWN;
 
   public PortfolioManager(PositionHandler positionHandler) {
     logger.info("Starting Portfolio Manager");
@@ -49,8 +52,18 @@ public class PortfolioManager implements Runnable, PortfolioObserver, PositionPr
   }
 
   @Override
-  public void run() {
-    while (running) {
+  public ManagerState call() {
+    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(),
+        MethodHandles.lookup().lookupClass().getSimpleName());
+    final String oldThreadName = Thread.currentThread().getName();
+    Thread.currentThread()
+        .setName(MethodHandles.lookup().lookupClass().getSimpleName() + " Thread");
+
+    managerState = ManagerState.RUNNING;
+
+    positionHandler.requestPositionsFromBrokerage();
+
+    while (managerState == ManagerState.RUNNING) {
       try {
         final Security security = positionQueue.take();
 
@@ -59,6 +72,13 @@ public class PortfolioManager implements Runnable, PortfolioObserver, PositionPr
         logger.error("Interupted while waiting for security", e);
       }
     }
+
+    managerState = ManagerState.SHUTDOWN;
+
+    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(), oldThreadName);
+    Thread.currentThread().setName(MethodHandles.lookup().lookupClass().getName());
+
+    return managerState;
   }
 
   @Override

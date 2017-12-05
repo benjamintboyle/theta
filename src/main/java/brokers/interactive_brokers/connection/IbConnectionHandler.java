@@ -1,4 +1,4 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.connection;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
+import brokers.interactive_brokers.IbController;
+import brokers.interactive_brokers.IbLogger;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
@@ -90,13 +92,14 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
     Instant nextTimeToReport = Instant.now();
 
-    while (!connected) {
+    while (!isConnected()) {
       // Only write out "Establishing connection" message every 60 seconds
       if (nextTimeToReport.isBefore(Instant.now())) {
         logger.info("Establishing connection...");
         nextTimeToReport = Instant.now().plusSeconds(10);
       }
 
+      // TODO: Convert to Flowable
       // Pause WAIT_DELAY_MILLI between each check for a connection
       try {
         Thread.sleep(WAIT_DELAY_MILLI);
@@ -105,7 +108,7 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
       }
     }
 
-    return connected;
+    return isConnected();
   }
 
   @Override
@@ -116,18 +119,19 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
     while (isConnected()) {
       logger.info("Waiting for disconnect confirmation...");
       try {
+        // TODO: Convert to Flowable
         Thread.sleep(WAIT_DELAY_MILLI);
       } catch (final InterruptedException e) {
         logger.error("Interupted while waiting for disconnect", e);
       }
     }
 
-    return connected;
+    return isConnected();
   }
 
   @Override
   public Boolean isConnected() {
-    logger.info("IB connection is: {}", connected);
+    logger.debug("IB connection is: {}", connected);
     return connected;
   }
 

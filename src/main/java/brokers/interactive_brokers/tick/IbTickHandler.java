@@ -1,4 +1,4 @@
-package brokers.interactive_brokers;
+package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
@@ -266,7 +266,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public Integer removePriceLevel(PriceLevel priceLevel) {
-    logger.info("Removing Price Level {} from Tick Handler: {}", priceLevel, ticker);
+    logger.info("Removing Price Level '{}' from Tick Handler: {}", priceLevel, ticker);
     if (!priceLevel.getTicker().equals(ticker)) {
       logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor",
           priceLevel.getTicker(), ticker);
