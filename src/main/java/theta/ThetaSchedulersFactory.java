@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 
-public class ThetaExecutorService {
+public class ThetaSchedulersFactory {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

@@ -16,32 +16,8 @@ public class IbStringUtil {
     final StringBuilder stringBuilder = new StringBuilder();
 
     if (orderState != null) {
-      stringBuilder.append("Commission: ");
-      stringBuilder.append(orderState.commission());
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Max Commission: ");
-      stringBuilder.append(orderState.maxCommission());
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Min Commission: ");
-      stringBuilder.append(orderState.minCommission());
-
-      stringBuilder.append(DELIMITTER);
       stringBuilder.append("Status: ");
       stringBuilder.append(orderState.status());
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Order Active: ");
-      stringBuilder.append(orderState.status().isActive());
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Commission Currency: ");
-      stringBuilder.append(orderState.commissionCurrency());
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Equity with Loan: ");
-      stringBuilder.append(orderState.equityWithLoan());
 
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Initial Margin: ");
@@ -52,9 +28,34 @@ public class IbStringUtil {
       stringBuilder.append(orderState.maintMargin());
 
       stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Equity with Loan: ");
+      stringBuilder.append(orderState.equityWithLoan());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Commission: ");
+      stringBuilder.append(orderState.commission());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Min Commission: ");
+      stringBuilder.append(orderState.minCommission());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Max Commission: ");
+      stringBuilder.append(orderState.maxCommission());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Commission Currency: ");
+      stringBuilder.append(orderState.commissionCurrency());
+
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Order Active: ");
+      stringBuilder.append(orderState.status().isActive());
+
+      stringBuilder.append(DELIMITTER);
       stringBuilder.append("Warning Text: ");
       stringBuilder.append(orderState.warningText());
     }
+
     return stringBuilder.toString();
   }
 

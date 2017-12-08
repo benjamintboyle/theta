@@ -10,17 +10,16 @@ import theta.domain.Option;
 import theta.domain.OptionTest;
 import theta.domain.Stock;
 import theta.domain.StockTest;
-import theta.execution.api.ExecutionAction;
-import theta.execution.api.ExecutionType;
+import theta.execution.api.ExecutableOrder;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
-public class EquityOrderTest {
+public class ReverseStockThetaTradeOrderTest {
 
-  private final EquityOrder sutLong = new EquityOrder(UUID.randomUUID(), "CHK", Double.valueOf(100),
-      ExecutionAction.BUY, ExecutionType.MARKET);
-  private final EquityOrder sutQuantity = new EquityOrder(UUID.randomUUID(), "CHK",
-      Double.valueOf(101), ExecutionAction.BUY, ExecutionType.MARKET);
-  private final EquityOrder sutShort = new EquityOrder(UUID.randomUUID(), "CHK",
+  private final ExecutableOrder sutLong = new ReverseStockThetaTradeOrder(UUID.randomUUID(), "CHK",
+      Double.valueOf(100), ExecutionAction.BUY, ExecutionType.MARKET);
+  private final ExecutableOrder sutQuantity = new ReverseStockThetaTradeOrder(UUID.randomUUID(),
+      "CHK", Double.valueOf(101), ExecutionAction.BUY, ExecutionType.MARKET);
+  private final ExecutableOrder sutShort = new ReverseStockThetaTradeOrder(UUID.randomUUID(), "CHK",
       Double.valueOf(100), ExecutionAction.SELL, ExecutionType.MARKET);
 
   @Test

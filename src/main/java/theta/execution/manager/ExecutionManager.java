@@ -3,18 +3,18 @@ package theta.execution.manager;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.ThetaSchedulersFactory;
 import theta.api.ExecutionHandler;
 import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionMonitor;
-import theta.execution.api.ExecutionType;
 import theta.execution.api.Executor;
-import theta.execution.domain.EquityOrder;
+import theta.execution.factory.ExecutableOrderFactory;
 
 public class ExecutionManager implements Executor, ExecutionMonitor {
   private static final Logger logger =
@@ -31,43 +31,29 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
   @Override
   public void reverseTrade(ThetaTrade trade) {
-
-    // TODO: This should be moved to a domain ReverseTradeOrder or possibly a factory
-
     logger.info("Reversing Trade: {}", trade.toString());
-    ExecutionAction action = null;
-    if (trade.getEquity().getQuantity() > 0) {
-      action = ExecutionAction.SELL;
-    } else {
-      action = ExecutionAction.BUY;
-    }
 
-    final ExecutableOrder order = new EquityOrder(trade.getEquity(), action, ExecutionType.MARKET);
-    logger.info("Validating trade of Security: {}, using Order: {}", trade.getEquity(),
-        order.toString());
-    if (order.validate(trade.getEquity())) {
-      executeOrder(order);
-    } else {
-      logger.error("Invalid order for Reverse Trade of Security: {}, using Order: {}",
-          trade.getEquity(), order.toString());
-    }
+    final Optional<ExecutableOrder> validatedOrder =
+        ExecutableOrderFactory.reverseStockPosition(trade);
+
+    validatedOrder.ifPresent(order -> executeOrder(order));
   }
 
   private void executeOrder(ExecutableOrder order) {
-    logger.info("Executing order: {}", order);
     if (addActiveTrade(order)) {
-      // executionHandler.executeOrder(order);
-      executionHandler.executeStockEquityMarketOrder(order).onBackpressureBuffer().subscribe(
-          message -> logger.info(message),
-          error -> logger.error("OrderHandler encounter an error", error),
-          () -> logger.info("Order successfully filled: {}", order));
+      logger.info("Executing order: {}", order);
+      executionHandler.executeStockEquityMarketOrder(order)
+          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread())
+          .subscribe(message -> logger.info(message),
+              error -> logger.error("OrderHandler encounter an error", error),
+              () -> logger.info("Order successfully filled: {}", order));
     } else {
       logger.error("Order will not be executed: {}", order);
     }
   }
 
   private Boolean addActiveTrade(ExecutableOrder order) {
-    logger.info("Adding Active Trade: {} to Execution Monitor", order.toString());
+    logger.info("Adding Active Trade: {} to Execution Monitor", order);
     Boolean isTradeUnique = Boolean.FALSE;
 
     if (!activeOrders.containsKey(order.getId())) {

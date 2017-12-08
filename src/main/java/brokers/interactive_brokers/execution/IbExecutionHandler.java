@@ -13,6 +13,7 @@ import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 
@@ -27,38 +28,48 @@ public class IbExecutionHandler implements ExecutionHandler {
     this.ibController = ibController;
   }
 
-  // TODO: Replaces executeOrder
   @Override
   public Flowable<String> executeStockEquityMarketOrder(ExecutableOrder order) {
     return Flowable.create(emitter -> {
 
-      final IOrderHandler orderHandler = new IOrderHandler() {
-        @Override
-        public void orderState(OrderState orderState) {
-          emitter.onNext("Order State: " + IbStringUtil.toStringOrderState(orderState));
-        }
-
-        @Override
-        public void orderStatus(OrderStatus status, double filled, double remaining,
-            double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId,
-            String whyHeld) {
-          emitter.onNext("Order Status: " + IbStringUtil.toStringOrderStatus(status, filled,
-              remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
-
-          if (status == OrderStatus.Filled) {
-            emitter.onComplete();
-          }
-        }
-
-        @Override
-        public void handle(int errorCode, final String errorMsg) {
-          emitter.onNext("Error Code: " + errorCode + ", Error Msg: " + errorMsg);
-        }
-      };
+      final IOrderHandler orderHandler = IbExecutionHandler.getOrderHandlerCallback(emitter, order);
 
       executeOrder(order, orderHandler);
 
     }, BackpressureStrategy.BUFFER);
+  }
+
+  private static IOrderHandler getOrderHandlerCallback(FlowableEmitter<String> emitter,
+      ExecutableOrder order) {
+    final IOrderHandler orderHandler = new IOrderHandler() {
+
+      @Override
+      public void orderState(OrderState orderState) {
+        emitter.onNext("Order State: " + order.getTicker() + " - "
+            + IbStringUtil.toStringOrderState(orderState));
+      }
+
+      @Override
+      public void orderStatus(OrderStatus status, double filled, double remaining,
+          double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId,
+          String whyHeld) {
+        emitter.onNext("Order Status: " + order.getTicker() + " - "
+            + IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId,
+                parentId, lastFillPrice, clientId, whyHeld));
+
+        if (status == OrderStatus.Filled && remaining == 0) {
+          emitter.onComplete();
+        }
+      }
+
+      @Override
+      public void handle(int errorCode, final String errorMsg) {
+        emitter.onNext(
+            "Error Code: " + order.getTicker() + " - " + errorCode + ", Error Msg: " + errorMsg);
+      }
+    };
+
+    return orderHandler;
   }
 
   private Boolean executeOrder(ExecutableOrder order, IOrderHandler orderHandler) {

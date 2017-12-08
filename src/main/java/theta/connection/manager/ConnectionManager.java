@@ -1,10 +1,13 @@
 package theta.connection.manager;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.Flowable;
 import theta.ManagerState;
+import theta.ThetaUtil;
 import theta.api.ConnectionHandler;
 
 public class ConnectionManager implements Callable<ManagerState> {
@@ -14,6 +17,9 @@ public class ConnectionManager implements Callable<ManagerState> {
 
   private ManagerState managerState = ManagerState.SHUTDOWN;
 
+  private static long CONNECTION_CHECK_TIMEOUT_SECONDS = 1;
+  private static long CONNECTION_CHECK_REPEAT_MILLI = 5;
+
   public ConnectionManager(ConnectionHandler connectionHandler) {
     logger.info("Starting Connection Manager");
     this.connectionHandler = connectionHandler;
@@ -22,29 +28,9 @@ public class ConnectionManager implements Callable<ManagerState> {
 
   @Override
   public ManagerState call() throws Exception {
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(),
-        MethodHandles.lookup().lookupClass().getSimpleName());
-    final String oldThreadName = Thread.currentThread().getName();
-    Thread.currentThread()
-        .setName(MethodHandles.lookup().lookupClass().getSimpleName() + " Thread");
+    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
     connect();
-
-    while (managerState == ManagerState.RUNNING) {
-      if (isConnected()) {
-        logger.info("Connected to broker.");
-      } else {
-        logger.warn("Not connected to broker");
-      }
-
-      // Convert to Flowable
-      Thread.sleep(60000);
-    }
-
-    managerState = ManagerState.SHUTDOWN;
-
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(), oldThreadName);
-    Thread.currentThread().setName(MethodHandles.lookup().lookupClass().getName());
 
     return managerState;
   }
@@ -61,20 +47,30 @@ public class ConnectionManager implements Callable<ManagerState> {
     connectionHandler.disconnect();
   }
 
+  // TODO: Convert to Flowable
   public Boolean isConnected() {
-    logger.info("Checking connection status");
+    final Instant timeout = Instant.now();
 
-    // TODO: Convert to Flowable
-    while (managerState == ManagerState.STARTING || managerState == ManagerState.STOPPING) {
+    // If state is STARTING or STOPPING, then check every 5 milliseconds for 1 second
+    while (managerState == ManagerState.STARTING || managerState == ManagerState.STOPPING
+        || timeout.plusSeconds(CONNECTION_CHECK_TIMEOUT_SECONDS).isBefore(Instant.now())) {
+
+      logger.info("ConnectionManager is {}. Checking again in 5 milliseconds...", managerState);
+
       try {
-        Thread.sleep(5);
+        Thread.sleep(CONNECTION_CHECK_REPEAT_MILLI);
       } catch (final InterruptedException e) {
-        // TODO Auto-generated catch block
-        logger.error("IsConnected was interupted", e);
+        logger.error("Connection check was interupted", e);
       }
     }
 
     return connectionHandler.isConnected();
+  }
+
+  public Flowable<ManagerState> isConnectedFlowable() {
+
+
+    return null;
   }
 
   public ManagerState getState() {

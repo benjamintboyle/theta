@@ -1,6 +1,7 @@
 package brokers.interactive_brokers.connection;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.ArrayList;
 import org.slf4j.Logger;
@@ -9,72 +10,32 @@ import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.IbLogger;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.internal.operators.flowable.FlowableOnBackpressureLatest;
 import theta.api.ConnectionHandler;
+import theta.connection.domain.ConnectionStatus;
 
-public class IbConnectionHandler implements IConnectionHandler, IbController, ConnectionHandler {
+public class IbConnectionHandler implements IbController, ConnectionHandler {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
-  // private static final String GATEWAY_IP_ADDRESS = "172.17.0.3";
-  private static final String GATEWAY_IP_ADDRESS = "127.0.0.1";
-  // Paper Trading port = 7497; Operational Trading port = 7496
-  private static final int GATEWAY_PORT = 7497;
-
   private static final long WAIT_DELAY_MILLI = 5;
 
-  private Boolean connected = Boolean.FALSE;
   private final ArrayList<String> accountList = new ArrayList<String>();
   private final ApiController ibController =
-      new ApiController(this, new IbLogger("Inbound"), new IbLogger("Outbound"));
+      new ApiController(getConnectionHandlerCallback(), new IbLogger(), new IbLogger());
 
-  public IbConnectionHandler() {
+  private FlowableOnBackpressureLatest<ConnectionStatus> connectionFlowable;
+
+  private Boolean connected = Boolean.FALSE;
+
+  private InetSocketAddress brokerGatewayAddress = null;
+
+  public IbConnectionHandler(InetSocketAddress brokerGatewayAddress) {
     logger.info("Starting Interactive Brokers Connection Handler");
-  }
 
-  @Override
-  public void connected() {
-    connected = Boolean.TRUE;
-    logger.info("Connection established...");
-  }
-
-  @Override
-  public void disconnected() {
-    connected = Boolean.FALSE;
-    logger.info("Disconnected...");
-  }
-
-  @Override
-  public void accountList(ArrayList<String> list) {
-    logger.info("Received account list: {}", list);
-
-    accountList.clear();
-    accountList.addAll(list);
-  }
-
-  @Override
-  public void error(Exception e) {
-    logger.error("Error: ", e);
-  }
-
-  @Override
-  public void message(int id, int messageCode, String message) {
-
-    if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
-      logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-          messageCode, message);
-    } else if (messageCode >= 2100 && messageCode <= 2110) {
-      logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-          messageCode, message);
-    } else {
-      logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-          messageCode, message);
-    }
-  }
-
-  @Override
-  public void show(String string) {
-    logger.warn("Show: {}", string);
+    this.brokerGatewayAddress = brokerGatewayAddress;
   }
 
   @Override
@@ -85,10 +46,13 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
   @Override
   public Boolean connect() {
     logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client 0",
-        GATEWAY_IP_ADDRESS, GATEWAY_PORT);
+        brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort());
 
     // Paper Trading port = 7497; Operational Trading port = 7496
-    getController().connect(GATEWAY_IP_ADDRESS, GATEWAY_PORT, 0, null);
+    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(),
+        brokerGatewayAddress.getPort(), 0, null);
+
+
 
     Instant nextTimeToReport = Instant.now();
 
@@ -131,11 +95,78 @@ public class IbConnectionHandler implements IConnectionHandler, IbController, Co
 
   @Override
   public Boolean isConnected() {
+    // final Boolean connected = Boolean.FALSE;
+
+    // connectionFlowable.last(ConnectionStatus.DISCONNECTED).subscribe(currentState ->
+    // currentState.equals(ConnectionStatus.CONNECTED));
+
     logger.debug("IB connection is: {}", connected);
+
     return connected;
   }
 
   public ArrayList<String> getAccountList() {
     return accountList;
+  }
+
+
+  private FlowableEmitter<ConnectionStatus> connectionEmitter(ConnectionStatus state) {
+    // connectionEmitter.onNext(state);
+    return null;
+  }
+
+  private FlowableEmitter<String> accountEmitter(String account) {
+    return null;
+  }
+
+  private IConnectionHandler getConnectionHandlerCallback() {
+    final IConnectionHandler connectionHandler = new IConnectionHandler() {
+
+      @Override
+      public void connected() {
+        logger.info("Connection established...");
+        connected = Boolean.TRUE;
+        connectionEmitter(ConnectionStatus.CONNECTED);
+      }
+
+      @Override
+      public void disconnected() {
+        logger.info("Connection disconnected...");
+        connected = Boolean.FALSE;
+        connectionEmitter(ConnectionStatus.DISCONNECTED);
+      }
+
+      @Override
+      public void accountList(ArrayList<String> list) {
+        logger.info("Received account list: {}", list);
+        Flowable.fromIterable(list).subscribe(account -> accountEmitter(account));
+      }
+
+      @Override
+      public void error(Exception e) {
+        logger.error("Interactive Brokers Error - ", e);
+      }
+
+      @Override
+      public void message(int id, int messageCode, String message) {
+        if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
+          logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
+              messageCode, message);
+        } else if (messageCode >= 2100 && messageCode <= 2110) {
+          logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
+              messageCode, message);
+        } else {
+          logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
+              messageCode, message);
+        }
+      }
+
+      @Override
+      public void show(String string) {
+        logger.warn("Interactive Brokers Show - {}", string);
+      }
+    };
+
+    return connectionHandler;
   }
 }

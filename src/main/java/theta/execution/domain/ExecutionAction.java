@@ -1,4 +1,4 @@
-package theta.execution.api;
+package theta.execution.domain;
 
 public enum ExecutionAction {
 	BUY, SELL;

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.ManagerState;
+import theta.ThetaUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.ThetaTrade;
@@ -47,20 +48,16 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
     this.positionProvider = positionProvider;
     this.executor = executor;
 
-    managerState = ManagerState.STARTING;
+    changeState(ManagerState.STARTING);
   }
 
   @Override
   public ManagerState call() {
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(),
-        MethodHandles.lookup().lookupClass().getSimpleName());
-    final String oldThreadName = Thread.currentThread().getName();
-    Thread.currentThread()
-        .setName(MethodHandles.lookup().lookupClass().getSimpleName() + " Thread");
+    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    managerState = ManagerState.RUNNING;
+    changeState(ManagerState.RUNNING);
 
-    while (managerState == ManagerState.RUNNING) {
+    while (status() == ManagerState.RUNNING) {
       try {
         // Blocks until tick available
         logger.info("Waiting to be notified about tick across strike price.");
@@ -74,12 +71,9 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
       }
     }
 
-    managerState = ManagerState.SHUTDOWN;
+    changeState(ManagerState.SHUTDOWN);
 
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(), oldThreadName);
-    Thread.currentThread().setName(MethodHandles.lookup().lookupClass().getName());
-
-    return managerState;
+    return status();
   }
 
   @Override
@@ -133,9 +127,21 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
     return priceLevelsMonitored;
   }
 
+  private void changeState(ManagerState newState) {
+    final ManagerState oldState = status();
+
+    managerState = newState;
+
+    logger.info("TickManager state transitioned from {} to {}", oldState, status());
+  }
+
+  public ManagerState status() {
+    return managerState;
+  }
+
   public void shutdown() {
     logger.info("Shutdown called");
-    managerState = ManagerState.STOPPING;
+    changeState(ManagerState.STOPPING);
   }
 
   private void reversePosition(ThetaTrade theta) {

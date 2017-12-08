@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.ManagerState;
+import theta.ThetaUtil;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -53,17 +54,13 @@ public class PortfolioManager
 
   @Override
   public ManagerState call() {
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(),
-        MethodHandles.lookup().lookupClass().getSimpleName());
-    final String oldThreadName = Thread.currentThread().getName();
-    Thread.currentThread()
-        .setName(MethodHandles.lookup().lookupClass().getSimpleName() + " Thread");
+    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    managerState = ManagerState.RUNNING;
+    changeState(ManagerState.RUNNING);
 
     positionHandler.requestPositionsFromBrokerage();
 
-    while (managerState == ManagerState.RUNNING) {
+    while (status() == ManagerState.RUNNING) {
       try {
         final Security security = positionQueue.take();
 
@@ -73,12 +70,9 @@ public class PortfolioManager
       }
     }
 
-    managerState = ManagerState.SHUTDOWN;
+    changeState(ManagerState.SHUTDOWN);
 
-    logger.info("Renaming Thread: '{}' to '{}'", Thread.currentThread().getName(), oldThreadName);
-    Thread.currentThread().setName(MethodHandles.lookup().lookupClass().getName());
-
-    return managerState;
+    return status();
   }
 
   @Override
@@ -96,6 +90,24 @@ public class PortfolioManager
     logger.info("Providing Positions for: {}", ticker);
     return positionMap.values().stream().filter(position -> position.getTicker().equals(ticker))
         .filter(position -> position.isComplete()).collect(Collectors.toList());
+  }
+
+  private ManagerState changeState(ManagerState newState) {
+    final ManagerState oldState = status();
+
+    managerState = newState;
+
+    logger.info("Portfolio Manager transitioned from {} to {}", oldState, status());
+
+    return status();
+  }
+
+  public ManagerState status() {
+    return managerState;
+  }
+
+  public ManagerState shutdown() {
+    return changeState(ManagerState.STOPPING);
   }
 
   // Removes positions if security is contained within it

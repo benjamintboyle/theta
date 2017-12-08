@@ -9,16 +9,10 @@ public class IbLogger implements ILogger {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final String loggerType = "";
-
   public IbLogger() {}
-
-  public IbLogger(String loggerType) {
-    // this.loggerType = loggerType;
-  }
 
   @Override
   public void log(String valueOf) {
-    logger.info("{} {}", loggerType, valueOf);
+    logger.info(valueOf);
   }
 }

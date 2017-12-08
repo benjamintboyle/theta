@@ -52,6 +52,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     logger.info(
         "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
         account, position, avgCost, IbStringUtil.toStringContract(contract));
+
     switch (contract.secType()) {
       case STK:
         final Stock stock =
@@ -99,7 +100,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   @Override
-  public synchronized void subscribePositions(PortfolioObserver observer) {
+  public void subscribePositions(PortfolioObserver observer) {
     logger.info("Portfolio Manager is observing Handler");
     portfolioObserver = observer;
   }
