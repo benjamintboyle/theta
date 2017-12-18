@@ -17,8 +17,8 @@ public class ConnectionManager implements Callable<ManagerState> {
 
   private ManagerState managerState = ManagerState.SHUTDOWN;
 
-  private static long CONNECTION_CHECK_TIMEOUT_SECONDS = 1;
-  private static long CONNECTION_CHECK_REPEAT_MILLI = 5;
+  private static long CONNECTION_CHECK_TIMEOUT_SECONDS = 5;
+  private static long CONNECTION_CHECK_REPEAT_MILLI = 1000;
 
   public ConnectionManager(ConnectionHandler connectionHandler) {
     logger.info("Starting Connection Manager");

@@ -95,13 +95,6 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
 
   @Override
   public Boolean isConnected() {
-    // final Boolean connected = Boolean.FALSE;
-
-    // connectionFlowable.last(ConnectionStatus.DISCONNECTED).subscribe(currentState ->
-    // currentState.equals(ConnectionStatus.CONNECTED));
-
-    logger.debug("IB connection is: {}", connected);
-
     return connected;
   }
 
