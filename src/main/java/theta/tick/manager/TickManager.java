@@ -2,9 +2,12 @@ package theta.tick.manager;
 
 import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,18 +18,18 @@ import theta.ManagerState;
 import theta.ThetaUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
-import theta.tick.api.Monitor;
 import theta.tick.api.PriceLevelDirection;
+import theta.tick.api.TickMonitor;
 import theta.tick.api.TickObserver;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 
-public class TickManager implements Callable<ManagerState>, Monitor, TickObserver {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class TickManager implements Callable<ManagerState>, TickMonitor, TickObserver {
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
   private PositionProvider positionProvider;
@@ -40,13 +43,6 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
   public TickManager(TickSubscriber tickSubscriber) {
     logger.info("Starting Tick Manager");
     this.tickSubscriber = tickSubscriber;
-  }
-
-  public TickManager(TickSubscriber tickSubscriber, PositionProvider positionProvider,
-      Executor executor) {
-    this(tickSubscriber);
-    this.positionProvider = positionProvider;
-    this.executor = executor;
 
     changeState(ManagerState.STARTING);
   }
@@ -64,7 +60,7 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
         final Tick tick = getNextTick();
         logger.info("Received notification of tick across strike price: {}", tick);
 
-        processTicks(tick);
+        processTick(tick);
 
       } catch (final InterruptedException e) {
         logger.error("Interupted while waiting for tick", e);
@@ -77,7 +73,7 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
   }
 
   @Override
-  public void notifyTick(String ticker) {
+  public void acceptTick(String ticker) {
     logger.info("Received Tick from Handler: {}", ticker);
     if (!tickQueue.contains(ticker)) {
       try {
@@ -96,11 +92,10 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
       final TickHandler tickHandler = tickSubscriber.subscribeEquity(theta.getTicker(), this);
       tickHandlers.put(theta.getTicker(), tickHandler);
     } else {
-      logger.info("Monitor already exists for '{}'", theta);
+      logger.debug("Monitor already exists for '{}'", theta);
     }
 
-    logger.info("Current Monitors: {}",
-        tickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
+    logger.info("Current Monitors: {}", tickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
     tickHandlers.get(theta.getTicker()).addPriceLevel(theta);
   }
@@ -144,10 +139,31 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
     changeState(ManagerState.STOPPING);
   }
 
-  private void reversePosition(ThetaTrade theta) {
-    logger.info("Reversing position for '{}'}", theta);
-    deleteMonitor(theta);
-    executor.reverseTrade(theta);
+  private void reversePositions(List<ThetaTrade> thetas) {
+    logger.info("Reversing position for '{}'}", thetas);
+
+    // Remove monitors, and consolidate stock
+    final Map<UUID, Stock> stocksToReverse = new HashMap<>();
+    for (final ThetaTrade theta : thetas) {
+      if (stocksToReverse.containsKey(theta.getStock().getId())) {
+        final Optional<Stock> combinedStock = Stock.of(stocksToReverse.get(theta.getStock().getId()), theta.getStock());
+
+        if (combinedStock.isPresent()) {
+          stocksToReverse.put(theta.getStock().getId(), combinedStock.get());
+        } else {
+          logger.error("Stock with same Id cannot be combined: {} {}", theta.getStock(),
+              stocksToReverse.get(theta.getId()));
+        }
+      } else {
+        stocksToReverse.put(theta.getStock().getId(), theta.getStock());
+      }
+
+      deleteMonitor(theta);
+    }
+
+    for (final Stock stock : stocksToReverse.values()) {
+      executor.reverseTrade(stock);
+    }
   }
 
   public void registerExecutor(Executor executor) {
@@ -160,7 +176,7 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
     this.positionProvider = positionProvider;
   }
 
-  private void processTicks(Tick tick) {
+  private void processTick(Tick tick) {
     logger.info("Processing Tick: {}", tick);
 
     if (tick.getTimestamp().isBefore(ZonedDateTime.now().minusSeconds(5))) {
@@ -169,8 +185,9 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
 
     final List<ThetaTrade> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
-    logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(),
-        tradesToCheck);
+    logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
+
+    final List<ThetaTrade> tradesToReverse = new ArrayList<>();
 
     for (final ThetaTrade theta : tradesToCheck) {
       logger.info("Checking Tick against position: {}", theta.toString());
@@ -178,23 +195,25 @@ public class TickManager implements Callable<ManagerState>, Monitor, TickObserve
       if (theta.getTicker().equals(tick.getTicker())) {
         if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
           if (tick.getPrice() < theta.getStrikePrice()) {
-            reversePosition(theta);
+            tradesToReverse.add(theta);
           } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}",
-                PriceLevelDirection.FALLS_BELOW, tick, theta);
+            logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.FALLS_BELOW, tick,
+                theta);
           }
         } else if (theta.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
           if (tick.getPrice() > theta.getStrikePrice()) {
-            reversePosition(theta);
+            tradesToReverse.add(theta);
           } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}",
-                PriceLevelDirection.RISES_ABOVE, tick, theta);
+            logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.RISES_ABOVE, tick,
+                theta);
           }
         } else {
           logger.error("Invalid Price Level: {}", theta.tradeIf());
         }
       }
     }
+
+    reversePositions(tradesToReverse);
   }
 
   private Tick getNextTick() throws InterruptedException {

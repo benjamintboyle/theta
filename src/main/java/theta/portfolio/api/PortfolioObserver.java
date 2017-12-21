@@ -4,5 +4,5 @@ import theta.domain.api.Security;
 
 public interface PortfolioObserver {
 
-	public void ingestPosition(Security security);
+	public void acceptPosition(Security security);
 }

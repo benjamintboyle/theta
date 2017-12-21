@@ -7,9 +7,12 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import theta.ManagerState;
 import theta.ThetaSchedulersFactory;
 import theta.api.ExecutionHandler;
-import theta.domain.ThetaTrade;
+import theta.domain.Stock;
 import theta.domain.api.Security;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionMonitor;
@@ -17,12 +20,15 @@ import theta.execution.api.Executor;
 import theta.execution.factory.ExecutableOrderFactory;
 
 public class ExecutionManager implements Executor, ExecutionMonitor {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
 
   private final Map<UUID, ExecutableOrder> activeOrders = new HashMap<UUID, ExecutableOrder>();
+
+  private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+  private ManagerState managerState = ManagerState.SHUTDOWN;
 
   public ExecutionManager(ExecutionHandler executionHandler) {
     logger.info("Starting Execution Manager");
@@ -30,11 +36,10 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   }
 
   @Override
-  public void reverseTrade(ThetaTrade trade) {
-    logger.info("Reversing Trade: {}", trade.toString());
+  public void reverseTrade(Stock stock) {
+    logger.info("Reversing Trade: {}", stock.toString());
 
-    final Optional<ExecutableOrder> validatedOrder =
-        ExecutableOrderFactory.reverseStockPosition(trade);
+    final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory.reverseStockPosition(stock);
 
     validatedOrder.ifPresent(order -> executeOrder(order));
   }
@@ -42,11 +47,12 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   private void executeOrder(ExecutableOrder order) {
     if (addActiveTrade(order)) {
       logger.info("Executing order: {}", order);
-      executionHandler.executeStockEquityMarketOrder(order)
-          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread())
-          .subscribe(message -> logger.info(message),
-              error -> logger.error("OrderHandler encounter an error", error),
+      final Disposable disposableExecutionHandler = executionHandler.executeStockEquityMarketOrder(order)
+          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(message -> logger.info(message),
+              error -> logger.error("Order Handler encountered an error", error),
               () -> logger.info("Order successfully filled: {}", order));
+
+      compositeDisposable.add(disposableExecutionHandler);
     } else {
       logger.error("Order will not be executed: {}", order);
     }
@@ -82,5 +88,19 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
     }
 
     return activeTradeRemoved;
+  }
+
+  public void shutdown() {
+    changeState(ManagerState.STOPPING);
+    compositeDisposable.dispose();
+  }
+
+  public ManagerState getState() {
+    return managerState;
+  }
+
+  public void changeState(ManagerState state) {
+    logger.info("Execution Manager is transitioning from {} to {}", getState(), state);
+    managerState = state;
   }
 }

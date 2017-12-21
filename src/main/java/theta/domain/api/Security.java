@@ -12,8 +12,8 @@ public interface Security {
 
   public Double getQuantity();
 
+  public Double getPrice();
+
   @Override
   public String toString();
-
-  public Double getPrice();
 }

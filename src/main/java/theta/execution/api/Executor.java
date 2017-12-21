@@ -1,7 +1,7 @@
 package theta.execution.api;
 
-import theta.domain.ThetaTrade;
+import theta.domain.Stock;
 
 public interface Executor {
-	public void reverseTrade(ThetaTrade trade);
+  public void reverseTrade(Stock trade);
 }

@@ -1,6 +1,7 @@
 package theta.domain;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,8 +9,7 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Stock implements Security {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Double averageTradePrice;
   private String backingTicker = "";
@@ -17,13 +17,31 @@ public class Stock implements Security {
   private final Double quantity;
   private final SecurityType type = SecurityType.STOCK;
 
-  public Stock(final UUID id, final String backingTicker, final Double quantity,
-      final Double averageTradePrice) {
+  public Stock(final UUID id, final String backingTicker, final Double quantity, final Double averageTradePrice) {
     this.id = id;
     this.backingTicker = backingTicker;
     this.quantity = quantity;
     this.averageTradePrice = averageTradePrice;
     Stock.logger.info("Built Stock: {}", toString());
+  }
+
+  // Combine two stocks if everything the same except quantity and average price
+  public static Optional<Stock> of(Stock stock1, Stock stock2) {
+
+    Optional<Stock> stock = Optional.empty();
+
+    if (stock1.getId().equals(stock2.getId())) {
+      if (stock1.getTicker().equals(stock2.getTicker())) {
+        stock = Optional.of(new Stock(stock1.getId(), stock1.getTicker(), stock1.getQuantity() + stock2.getQuantity(),
+            (stock1.getAverageTradePrice() + stock2.getAverageTradePrice()) / 2));
+      } else {
+        logger.warn("Stock Tickers do not match: {} {}", stock1, stock2);
+      }
+    } else {
+      logger.warn("Stock Ids do not match: {} {}", stock1, stock2);
+    }
+
+    return stock;
   }
 
   @Override
@@ -120,7 +138,7 @@ public class Stock implements Security {
 
   @Override
   public String toString() {
-    return "Stock [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity="
-        + quantity + ", averageTradePrice=" + averageTradePrice + "]";
+    return "Stock [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity=" + quantity
+        + ", averageTradePrice=" + averageTradePrice + "]";
   }
 }

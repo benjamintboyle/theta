@@ -70,6 +70,12 @@ public class ThetaEngine {
         .subscribeOn(ThetaSchedulersFactory.getManagerThread())
         .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState)));
 
+    try {
+      Thread.sleep(1000);
+    } catch (final InterruptedException e) {
+      logger.error("Connection check was interupted", e);
+    }
+
     if (connectionManager.isConnected()) {
       // Start manager threads
       managerDisposables.add(Flowable.fromCallable(portfolioManager)

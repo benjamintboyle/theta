@@ -13,21 +13,21 @@ import theta.domain.StockTest;
 import theta.execution.api.ExecutableOrder;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
-public class ReverseStockThetaTradeOrderTest {
+public class ReverseStockOrderTest {
 
-  private final ExecutableOrder sutLong = new ReverseStockThetaTradeOrder(UUID.randomUUID(), "CHK",
-      Double.valueOf(100), ExecutionAction.BUY, ExecutionType.MARKET);
-  private final ExecutableOrder sutQuantity = new ReverseStockThetaTradeOrder(UUID.randomUUID(),
-      "CHK", Double.valueOf(101), ExecutionAction.BUY, ExecutionType.MARKET);
-  private final ExecutableOrder sutShort = new ReverseStockThetaTradeOrder(UUID.randomUUID(), "CHK",
-      Double.valueOf(100), ExecutionAction.SELL, ExecutionType.MARKET);
+  private final Stock longStock = new Stock(UUID.randomUUID(), "CHK", 100.0, 10.0);
+  private final Stock wrongQuantityStock = new Stock(UUID.randomUUID(), "CHK", 101.0, 10.0);
+
+  private final ExecutableOrder sutLong = new ReverseStockOrder(longStock, ExecutionAction.BUY, ExecutionType.MARKET);
+  private final ExecutableOrder sutQuantity =
+      new ReverseStockOrder(wrongQuantityStock, ExecutionAction.BUY, ExecutionType.MARKET);
+  private final ExecutableOrder sutShort = new ReverseStockOrder(longStock, ExecutionAction.SELL, ExecutionType.MARKET);
 
   @Test
   public void validateLongToLongFailureTest() {
     final Stock equity = StockTest.buildTestStock();
 
-    MatcherAssert.assertThat(sutLong.validate(equity),
-        Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutLong.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 
   @Test
@@ -41,8 +41,7 @@ public class ReverseStockThetaTradeOrderTest {
   public void validateQuantityFailure() {
     final Stock equity = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(sutQuantity.validate(equity),
-        Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutQuantity.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 
   @Test
@@ -77,15 +76,13 @@ public class ReverseStockThetaTradeOrderTest {
   public void validateShortToLongTest() {
     final Stock equity = StockTest.buildTestStock();
 
-    MatcherAssert.assertThat(sutShort.validate(equity),
-        Matchers.is(Matchers.equalTo(Boolean.TRUE)));
+    MatcherAssert.assertThat(sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
   }
 
   @Test
   public void validateShortToShortFailureTest() {
     final Stock equity = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(sutShort.validate(equity),
-        Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 }

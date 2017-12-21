@@ -10,11 +10,7 @@ import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.IbLogger;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.internal.operators.flowable.FlowableOnBackpressureLatest;
 import theta.api.ConnectionHandler;
-import theta.connection.domain.ConnectionStatus;
 
 public class IbConnectionHandler implements IbController, ConnectionHandler {
   private static final Logger logger =
@@ -25,8 +21,6 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   private final ArrayList<String> accountList = new ArrayList<String>();
   private final ApiController ibController =
       new ApiController(getConnectionHandlerCallback(), new IbLogger(), new IbLogger());
-
-  private FlowableOnBackpressureLatest<ConnectionStatus> connectionFlowable;
 
   private Boolean connected = Boolean.FALSE;
 
@@ -102,37 +96,24 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
     return accountList;
   }
 
-
-  private FlowableEmitter<ConnectionStatus> connectionEmitter(ConnectionStatus state) {
-    // connectionEmitter.onNext(state);
-    return null;
-  }
-
-  private FlowableEmitter<String> accountEmitter(String account) {
-    return null;
-  }
-
   private IConnectionHandler getConnectionHandlerCallback() {
-    final IConnectionHandler connectionHandler = new IConnectionHandler() {
+    return new IConnectionHandler() {
 
       @Override
       public void connected() {
         logger.info("Connection established...");
         connected = Boolean.TRUE;
-        connectionEmitter(ConnectionStatus.CONNECTED);
       }
 
       @Override
       public void disconnected() {
         logger.info("Connection disconnected...");
         connected = Boolean.FALSE;
-        connectionEmitter(ConnectionStatus.DISCONNECTED);
       }
 
       @Override
       public void accountList(ArrayList<String> list) {
         logger.info("Received account list: {}", list);
-        Flowable.fromIterable(list).subscribe(account -> accountEmitter(account));
       }
 
       @Override
@@ -159,7 +140,5 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
         logger.warn("Interactive Brokers Show - {}", string);
       }
     };
-
-    return connectionHandler;
   }
 }

@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
-import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.IPositionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOptionUtil;
@@ -24,6 +23,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  // Map IB Id to Internal Id
   private final Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
 
   private final IbController controller;
@@ -57,7 +57,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
       case STK:
         final Stock stock =
             new Stock(generateId(contract.conid()), contract.symbol(), position, avgCost);
-        portfolioObserver.ingestPosition(stock);
+        portfolioObserver.acceptPosition(stock);
 
         break;
       case OPT:
@@ -81,7 +81,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         if (optionalExpiration.isPresent()) {
           final Option option = new Option(generateId(contract.conid()), securityType,
               contract.symbol(), position, contract.strike(), optionalExpiration.get(), avgCost);
-          portfolioObserver.ingestPosition(option);
+          portfolioObserver.acceptPosition(option);
         } else {
           logger.error("Invalid Option Expiration for Contract: ",
               IbStringUtil.toStringContract(contract));
@@ -108,10 +108,6 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
-
-    // TODO: Remove DELAYED data
-    logger.warn("Requesting DELAYED tick data");
-    controller.getController().reqMktDataType(MktDataType.Delayed);
 
     controller.getController().reqPositions(this);
   }

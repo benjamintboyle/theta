@@ -52,8 +52,8 @@ public class ConnectionManager implements Callable<ManagerState> {
     final Instant timeout = Instant.now();
 
     // If state is STARTING or STOPPING, then check every 5 milliseconds for 1 second
-    while (managerState == ManagerState.STARTING || managerState == ManagerState.STOPPING
-        || timeout.plusSeconds(CONNECTION_CHECK_TIMEOUT_SECONDS).isBefore(Instant.now())) {
+    while ((managerState == ManagerState.STARTING || managerState == ManagerState.STOPPING)
+        && timeout.plusSeconds(CONNECTION_CHECK_TIMEOUT_SECONDS).isBefore(Instant.now())) {
 
       logger.info("ConnectionManager is {}. Checking again in 5 milliseconds...", managerState);
 

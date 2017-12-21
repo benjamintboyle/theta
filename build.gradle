@@ -1,15 +1,17 @@
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'findbugs'
 
-mainClassName = "theta.ThetaEngine"
+mainClassName = "theta.Start"
 
 group = group
 
 repositories {
     jcenter()
 }
+
+sourceCompatibility = "9"
+targetCompatibility = "9"
 
 dependencies {
     // Production code dependencies

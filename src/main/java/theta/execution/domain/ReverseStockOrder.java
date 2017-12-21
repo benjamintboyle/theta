@@ -3,24 +3,17 @@ package theta.execution.domain;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.Stock;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
-public class ReverseStockThetaTradeOrder extends AbstractEquityOrder {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class ReverseStockOrder extends AbstractStockOrder {
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public ReverseStockThetaTradeOrder(UUID id, String ticker, Double quantity,
-      ExecutionAction action, ExecutionType executionType) {
-    super(id, ticker, quantity, action, executionType);
-  }
-
-  public ReverseStockThetaTradeOrder(Security security, ExecutionAction action,
-      ExecutionType executionType) {
-    super(security, action, executionType);
+  public ReverseStockOrder(Stock stock, ExecutionAction action, ExecutionType executionType) {
+    super(stock, action, executionType);
   }
 
   @Override

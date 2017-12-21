@@ -1,8 +1,7 @@
 package theta.domain;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -17,210 +16,115 @@ public class ThetaTrade implements PriceLevel {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
-  private final SecurityType type = SecurityType.THETA;
-  private Option call;
-  private Option put;
-  private Stock equity;
-  private Integer quantity = 0;
+  private final Stock stock;
+  private final ShortStraddle straddle;
 
-  private ThetaTrade(UUID id, Stock stock, Option call, Option put) {
-    this.add(call);
-    this.add(put);
-    this.add(stock);
+  private ThetaTrade(Stock stock, ShortStraddle straddle) {
+    this.stock = stock;
+    this.straddle = straddle;
     logger.info("Built Theta: {}", this);
+  }
+
+  public static Optional<ThetaTrade> of(Stock stock, Option call, Option put) {
+
+    final Optional<ShortStraddle> straddle = ShortStraddle.of(call, put);
+
+    Optional<ThetaTrade> theta = Optional.empty();
+
+    if (straddle.isPresent()) {
+      theta = ThetaTrade.of(stock, straddle.get());
+    }
+
+    return theta;
+  }
+
+  public static Optional<ThetaTrade> of(Stock stock, ShortStraddle straddle) {
+
+    Optional<ThetaTrade> theta = Optional.empty();
+
+    if (ThetaTrade.isValidCoveredStraddle(stock, straddle)) {
+      theta = Optional.of(new ThetaTrade(stock, straddle));
+    }
+
+    return theta;
   }
 
   public UUID getId() {
     return id;
   }
 
-  public static Optional<ThetaTrade> of(Stock stock, Option call, Option put) {
-    ThetaTrade theta = null;
-
-    // All same ticker
-    if ((stock.getTicker().equals(call.getTicker()))
-        && (call.getTicker().equals(put.getTicker()))) {
-      // Options have same strike
-      if (call.getStrikePrice().equals(put.getStrikePrice())) {
-        // Options have same expiration
-        if (call.getExpiration().equals(put.getExpiration())) {
-          // If quantities match
-          if ((call.getQuantity() != 0) && (call.getQuantity().equals(put.getQuantity()))
-              && (Math.abs(stock.getQuantity() / call.getQuantity()) == 100)) {
-            // Options are opposite types
-            if (call.getSecurityType().equals(SecurityType.CALL)
-                && put.getSecurityType().equals(SecurityType.PUT)) {
-              theta = new ThetaTrade(UUID.randomUUID(), stock, call, put);
-            } else {
-              logger.warn("Options aren't a call: {} and a put: {}", call, put);
-            }
-          } else {
-            logger.warn("Quantities do not match: {}, {}, {}", stock, call, put);
-          }
-        } else {
-          logger.warn("Option expirations do not match: {}, {}", call, put);
-        }
-      } else {
-        logger.warn("Option strike prices do not match: {}, {}", call, put);
-      }
-    } else {
-      logger.warn("Tickers do not match: {}, {}, {}", stock, call, put);
-    }
-
-    return Optional.ofNullable(theta);
-  }
-
-  private void add(Security security) {
-    logger.info("Adding Security: {} to ThetaTrade: {}", security.toString(), toString());
-
-    if ((!hasEquity() && !this.hasOption())
-        || (!isComplete() && security.getTicker().equals(getTicker()))) {
-      switch (security.getSecurityType()) {
-        case STOCK:
-          equity = (Stock) security;
-          break;
-        case CALL:
-          call = (Option) security;
-          break;
-        case PUT:
-          put = (Option) security;
-          break;
-        default:
-          logger.error("Invalid Security Type: {}", security.toString());
-      }
-
-      if (isComplete()) {
-        quantity++;
-      }
-    } else {
-      logger.error("Trying to add Security: {} to invalid Theta: {}", security, this);
-    }
-  }
-
-  public void add(ThetaTrade theta) {
-    if (getTicker().equals(theta.getTicker())) {
-      if (theta.getStrikePrice().equals(getStrikePrice()) || quantity == 0) {
-        quantity += theta.getQuantity();
-      } else {
-        logger.error("Tried adding incompatible strike prices: {} to this {}", theta, this);
-      }
-    } else {
-      logger.error("Tried combine different tickers: {} to this {}", theta, this);
-    }
-  }
-
+  /**
+   * Gets the number of ThetaTrade "contracts". One ThetaTrade "contract" contains a call, a put,
+   * and 100 stock. This quantity is negative or positive based on if the stock is long or short.
+   * Note, for ThetaTrades the call and put options are both short.
+   *
+   * @return
+   */
   public Integer getQuantity() {
-    return quantity;
+    return Integer.valueOf(getStock().getQuantity().intValue() / 100);
   }
 
-  public Stock getEquity() {
-    return equity;
+  public Stock getStock() {
+    return stock;
+  }
+
+  public ShortStraddle getStraddle() {
+    return straddle;
   }
 
   public Option getCall() {
-    return call;
+    return getStraddle().getCall();
   }
 
   public Option getPut() {
-    return put;
+    return getStraddle().getPut();
+  }
+
+  public SecurityType getSecurityType() {
+    return SecurityType.THETA;
+  }
+
+  public Security getSecurityOfType(SecurityType securityType) {
+    Security securityOfType = null;
+
+    switch (securityType) {
+      case STOCK:
+        securityOfType = getStock();
+        break;
+      case CALL:
+        securityOfType = getCall();
+        break;
+      case PUT:
+        securityOfType = getPut();
+        break;
+      default:
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+            securityType + " is an invalid security type for this object.");
+        logger.error("Unknown Security Type: {}", securityType, illegalArgumentException);
+        throw illegalArgumentException;
+    }
+
+    return securityOfType;
   }
 
   @Override
   public Double getStrikePrice() {
-    Double strikePrice = 0.0;
-
-    if (hasCall()) {
-      strikePrice = call.getStrikePrice();
-    } else if (hasPut()) {
-      strikePrice = put.getStrikePrice();
-    } else if (hasEquity()) {
-      strikePrice = equity.getAverageTradePrice();
-    } else {
-      logger.error("Can not determine strike price: {}", toString());
-    }
-
-    return strikePrice;
-  }
-
-  public Boolean isComplete() {
-    return isOptionComplete() && hasEquity();
-  }
-
-  public Boolean isOptionComplete() {
-    return hasCall() && hasPut();
-  }
-
-  public Boolean hasOption() {
-    return hasCall() || hasPut();
-  }
-
-  public Boolean hasOption(Security security) {
-    if (security.getSecurityType().equals(SecurityType.CALL) && hasCall()) {
-      return Boolean.TRUE;
-    }
-    if (security.getSecurityType().equals(SecurityType.PUT) && hasPut()) {
-      return Boolean.TRUE;
-    }
-
-    return Boolean.FALSE;
-  }
-
-  public Boolean hasCall() {
-    return call != null;
-  }
-
-  public Boolean hasPut() {
-    return put != null;
-  }
-
-  public Boolean hasEquity() {
-    return equity != null;
-  }
-
-  public SecurityType getStrategyType() {
-    return type;
+    return getCall().getStrikePrice();
   }
 
   @Override
   public String getTicker() {
-    String ticker = null;
-    if (hasEquity()) {
-      ticker = equity.getTicker();
-    } else if (hasCall()) {
-      ticker = call.getTicker();
-    } else if (hasPut()) {
-      ticker = put.getTicker();
-    } else {
-      logger.error("Tried to get backing ticker but not found: {}", toString());
-    }
-
-    return ticker;
-  }
-
-  public ThetaTrade reversePosition() {
-    final Stock stock = getEquity().reversePosition();
-    final ThetaTrade reversedTheta = new ThetaTrade(id, stock, call, put);
-    logger.info("Reversing trade from {}, to this {}", this, reversedTheta);
-    return reversedTheta;
-  }
-
-  public List<Security> toSecurityList() {
-    final List<Security> securityList = new ArrayList<Security>();
-    securityList.add(getEquity());
-    securityList.add(getCall());
-    securityList.add(getPut());
-
-    return securityList;
+    return getStock().getTicker();
   }
 
   @Override
   public PriceLevelDirection tradeIf() {
     PriceLevelDirection priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
 
-    if (getEquity().getQuantity() > 0) {
+    if (getStock().getQuantity() > 0) {
       priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
     }
-    if (getEquity().getQuantity() < 0) {
+    if (getStock().getQuantity() < 0) {
       priceLevelDirection = PriceLevelDirection.RISES_ABOVE;
     }
 
@@ -229,73 +133,50 @@ public class ThetaTrade implements PriceLevel {
 
   @Override
   public String toString() {
-    return "ThetaTrade [id=" + id + ", type=" + type + ", quantity=" + quantity + ", equity="
-        + equity + ", call=" + call + ", put=" + put + "]";
+    return "ThetaTrade [id=" + getId() + ", type=" + getSecurityType() + ", quantity="
+        + getQuantity() + ", stock=" + getStock() + ", call=" + getCall() + ", put=" + getPut()
+        + "]";
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((call == null) ? 0 : call.hashCode());
-    result = prime * result + ((equity == null) ? 0 : equity.hashCode());
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    result = prime * result + ((put == null) ? 0 : put.hashCode());
-    result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    return result;
+    return Objects.hash(getId(), getStock(), getStraddle());
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
+    if (obj == this) {
       return true;
     }
-    if (obj == null) {
-      return false;
+
+    if (obj instanceof ThetaTrade) {
+      final ThetaTrade other = (ThetaTrade) obj;
+
+      return Objects.equals(getStock(), other.getStock())
+          && Objects.equals(getStraddle(), other.getStraddle());
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final ThetaTrade other = (ThetaTrade) obj;
-    if (call == null) {
-      if (other.call != null) {
-        return false;
+
+    return false;
+  }
+
+  private static boolean isValidCoveredStraddle(Stock stock, ShortStraddle straddle) {
+
+    boolean isValid = false;
+
+    // All same ticker
+    if (stock.getTicker().equals(straddle.getTicker())) {
+      // If stock quantities are multiple of 100 to options
+      if (Math.abs(stock.getQuantity().intValue() / 100) == Math
+          .abs(straddle.getQuantity().intValue())) {
+        isValid = true;
+      } else {
+        logger.error("Stock is not 100 times quantity of option quantity: {}, {}",
+            stock.getQuantity(), straddle.getQuantity());
       }
-    } else if (!call.equals(other.call)) {
-      return false;
+    } else {
+      logger.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);
     }
-    if (equity == null) {
-      if (other.equity != null) {
-        return false;
-      }
-    } else if (!equity.equals(other.equity)) {
-      return false;
-    }
-    if (id == null) {
-      if (other.id != null) {
-        return false;
-      }
-    } else if (!id.equals(other.id)) {
-      return false;
-    }
-    if (put == null) {
-      if (other.put != null) {
-        return false;
-      }
-    } else if (!put.equals(other.put)) {
-      return false;
-    }
-    if (quantity == null) {
-      if (other.quantity != null) {
-        return false;
-      }
-    } else if (!quantity.equals(other.quantity)) {
-      return false;
-    }
-    if (type != other.type) {
-      return false;
-    }
-    return true;
+
+    return isValid;
   }
 }

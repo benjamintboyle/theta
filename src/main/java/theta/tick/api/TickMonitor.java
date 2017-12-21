@@ -2,7 +2,7 @@ package theta.tick.api;
 
 import theta.domain.ThetaTrade;
 
-public interface Monitor {
+public interface TickMonitor {
 
 	public void addMonitor(ThetaTrade theta);
 

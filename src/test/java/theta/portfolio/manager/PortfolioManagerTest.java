@@ -1,131 +1,117 @@
 package theta.portfolio.manager;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.Ignore;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.Flowable;
+import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
-import theta.domain.Option;
-import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
-import theta.tick.manager.TickManager;
+import theta.execution.api.ExecutionMonitor;
+import theta.tick.api.TickMonitor;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class PortfolioManagerTest {
+
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static List<Security> parseStringToSecurity(final List<String> stringListOfSecurities) {
-    final List<Security> securityList = new ArrayList<Security>();
-
-    final Pattern splitPattern = Pattern.compile("\\s*,\\s*");
-
-    for (final String trade : stringListOfSecurities) {
-      PortfolioManagerTest.logger.debug("Trade: {}", trade);
-
-      final String[] security = splitPattern.split(trade);
-      final String securityType = security[0];
-      final String ticker = security[1];
-      final Double quantity = Double.valueOf(security[2]);
-      final Double price = Double.valueOf(security[3]);
-      PortfolioManagerTest.logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}",
-          securityType, ticker, quantity, price);
-
-      switch (securityType) {
-        case "STOCK":
-          final Stock stock = new Stock(UUID.randomUUID(), ticker, quantity, price);
-          PortfolioManagerTest.logger.debug("Sending Stock: {}", stock);
-          securityList.add(stock);
-          break;
-        case "CALL":
-          final Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity,
-              price, LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-          PortfolioManagerTest.logger.debug("Sending Call: {}", call);
-
-          securityList.add(call);
-          break;
-        case "PUT":
-          final Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity,
-              price, LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-          PortfolioManagerTest.logger.debug("Sending Put: {}", put);
-          securityList.add(put);
-          break;
-        default:
-          PortfolioManagerTest.logger.error("Could not determine SecurityType: {}", securityType);
-      }
-    }
-
-    return securityList;
-  }
-
-  public static List<Security> readInputFile(final String fileName) {
-    List<String> inputList = new ArrayList<String>();
-
-    try {
-      final Path inputFile =
-          Paths.get(PortfolioManagerTest.class.getClassLoader().getResource(fileName).toURI());
-
-      final Stream<String> stream = Files.lines(inputFile);
-      inputList = stream.collect(Collectors.toList());
-      stream.close();
-    } catch (IOException | URISyntaxException e) {
-      e.printStackTrace();
-    }
-
-    return PortfolioManagerTest.parseStringToSecurity(inputList);
-  }
+  @Captor
+  ArgumentCaptor<ThetaTrade> thetaListCaptor;
 
   @Mock
-  private TickManager pmMock;
+  private PositionHandler mockPositionHandler;
 
   @Mock
-  private PositionHandler positionHandlerMock;
+  private TickMonitor mockTickManager;
 
-  @InjectMocks
+  @Mock
+  private ExecutionMonitor mockExecutionMonitor;
+
   private PortfolioManager sut;
 
-  private void ingest_test(final String filename) {
-    final List<Security> securitiesList = PortfolioManagerTest.readInputFile(filename);
+  @Before
+  public void initializeManager() {
+    sut = new PortfolioManager(mockPositionHandler);
+    sut.registerTickMonitor(mockTickManager);
+    sut.registerExecutionMonitor(mockExecutionMonitor);
+
+    Flowable.fromCallable(sut).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe();
+  }
+
+  @After
+  public void shutdownManager() {
+    sut.shutdown();
+  }
+
+  @Test
+  public void ingest_trades_in_order() {
+    final int expectedThetas = 6;
+    final List<ThetaTrade> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
+
+    final List<Integer> quantities =
+        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+
+    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
+    MatcherAssert.assertThat(quantities,
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1, -2, 1, 5, 7, 10).toArray()));
+  }
+
+  @Test
+  public void ingest_trades_out_of_order() {
+    final int expectedThetas = 6;
+    final List<ThetaTrade> thetas =
+        fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
+
+    final List<Integer> quantities =
+        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+
+    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
+    MatcherAssert.assertThat(quantities,
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7, -1, 1, 2, 5, 10).toArray()));
+  }
+
+  @Test
+  public void ingest_trades_with_multiple_strike_prices() {
+    final int expectedThetas = 4;
+    final List<ThetaTrade> thetas =
+        fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
+
+    final List<Integer> quantities =
+        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+
+    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
+    MatcherAssert.assertThat(quantities,
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(1, 2, 2, 5).toArray()));
+  }
+
+  private List<ThetaTrade> fileIngestHelper(final String filename, int expected) {
+    final List<Security> securitiesList = PortfolioTestUtil.readInputFile(filename);
 
     for (final Security security : securitiesList) {
       PortfolioManagerTest.logger.debug("Trade: {}", security);
 
-      sut.ingestPosition(security);
+      sut.acceptPosition(security);
     }
 
-    Mockito.verify(pmMock, Mockito.times(6)).addMonitor(ArgumentMatchers.any(ThetaTrade.class));
-  }
+    Mockito.verify(mockTickManager, Mockito.timeout(5000).times(expected))
+        .addMonitor(thetaListCaptor.capture());
 
-  @Ignore
-  @Test
-  public void ingest_trades_in_order() {
-    ingest_test("load_trades_in_order.txt");
-  }
-
-  @Ignore
-  @Test
-  public void ingest_trades_out_of_order() {
-    ingest_test("load_trades_out_of_order.txt");
+    return thetaListCaptor.getAllValues();
   }
 }

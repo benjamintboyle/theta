@@ -34,7 +34,7 @@ public class ThetaTradeTest {
   public void equityThetaTradeTest() {
     final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
-    MatcherAssert.assertThat(thetaTrade.getEquity(),
+    MatcherAssert.assertThat(thetaTrade.getStock(),
         Matchers.is(Matchers.equalTo(StockTest.buildTestStock())));
   }
 

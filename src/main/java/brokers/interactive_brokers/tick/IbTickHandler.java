@@ -20,8 +20,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String DELAYED_STRING = "DELAYED_";
-
   private final TickObserver tickObserver;
 
   private final String ticker;
@@ -57,8 +55,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     logger.info(
         "Received Tick from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Price: {}, CanAutoExecute: {}",
         ticker, tickType, price, canAutoExecute);
-
-    tickType = convertDelayedTickType(tickType);
 
     switch (tickType) {
       case BID:
@@ -97,8 +93,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     logger.info(
         "Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
         ticker, tickType, size);
-
-    tickType = convertDelayedTickType(tickType);
 
     switch (tickType) {
       case BID_SIZE:
@@ -163,7 +157,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   private void publishTickNotification() {
-    tickObserver.notifyTick(ticker);
+    tickObserver.acceptTick(ticker);
   }
 
   @Override
@@ -297,17 +291,5 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private void logPriceLevels() {
     logger.info("Price Levels for '{}': FALLS_BELOW={}, RISES_ABOVE={}", ticker, fallsBelow,
         risesAbove);
-  }
-
-  private TickType convertDelayedTickType(TickType tickType) {
-    if (tickType.name().startsWith(DELAYED_STRING)) {
-      final TickType nonDelayedTickType =
-          TickType.valueOf(tickType.name().substring(DELAYED_STRING.length()));
-
-      logger.warn("Converting DELAYED Tick Type from: {} to: {}", tickType, nonDelayedTickType);
-      tickType = nonDelayedTickType;
-    }
-
-    return tickType;
   }
 }

@@ -97,7 +97,8 @@ public class IntegrationTest {
     final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
     // Add all securities to be ingested to a list
-    final List<Security> listOfSecurities = thetaTrade.toSecurityList();
+    final List<Security> listOfSecurities =
+        List.of(thetaTrade.getStock(), thetaTrade.getCall(), thetaTrade.getPut());
 
     // Send all securities in list for ingestion
     sendPositionListForIngestion(listOfSecurities);
@@ -141,11 +142,11 @@ public class IntegrationTest {
   }
 
   private void sendPositionListForIngestion(final List<Security> positions) {
-    positions.forEach(spyPortfolioManager::ingestPosition);
+    positions.forEach(spyPortfolioManager::acceptPosition);
   }
 
   private void sendTickListForIngestion(final List<Tick> tickList) {
-    tickList.stream().forEach(tick -> spyTickManager.notifyTick(tick.getTicker()));
+    tickList.stream().forEach(tick -> spyTickManager.acceptTick(tick.getTicker()));
   }
 
   @Before

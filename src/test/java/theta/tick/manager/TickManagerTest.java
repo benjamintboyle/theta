@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.domain.Stock;
 import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
@@ -69,16 +70,15 @@ public class TickManagerTest {
     return priceTransitions;
   }
 
-  private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks,
-      final ThetaTrade theta) {
+  private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final ThetaTrade theta) {
     final ArrayList<Tick> priceTicks = new ArrayList<Tick>();
 
     for (Integer i = 0; i < numberOfTicks; i++) {
       final double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
       final double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
       final double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-      priceTicks.add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2),
-          TickType.LAST, ZonedDateTime.now()));
+      priceTicks
+          .add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST, ZonedDateTime.now()));
     }
 
     return priceTicks;
@@ -91,8 +91,7 @@ public class TickManagerTest {
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
     Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
-    Mockito.when(
-        tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);
@@ -111,23 +110,21 @@ public class TickManagerTest {
 
     final List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
     Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-    Mockito.when(
-        tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);
 
-    final ArrayList<Tick> priceTicks =
-        generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
+    final ArrayList<Tick> priceTicks = generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
     for (final Tick tick : priceTicks) {
-      sut.notifyTick(tick.getTicker());
+      sut.acceptTick(tick.getTicker());
     }
 
     Mockito
         .verify(executor,
             Mockito.times(calculatePriceTransitions(trade.getStrikePrice(),
                 priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
-        .reverseTrade(ArgumentMatchers.any(ThetaTrade.class));
+        .reverseTrade(ArgumentMatchers.any(Stock.class));
   }
 }
