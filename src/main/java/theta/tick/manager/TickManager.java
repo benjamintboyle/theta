@@ -217,10 +217,19 @@ public class TickManager implements Callable<ManagerState>, TickMonitor, TickObs
   }
 
   private Tick getNextTick() throws InterruptedException {
+    Tick tick = null;
+
     final String ticker = tickQueue.take();
 
-    final TickHandler tickHandler = tickHandlers.get(ticker);
+    final Optional<TickHandler> optionalTickHandler = Optional.ofNullable(tickHandlers.get(ticker));
 
-    return new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime());
+    if (optionalTickHandler.isPresent()) {
+      final TickHandler tickHandler = optionalTickHandler.get();
+      tick = new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime());
+    } else {
+      tick = getNextTick();
+    }
+
+    return tick;
   }
 }
