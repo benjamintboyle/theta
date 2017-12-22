@@ -2,7 +2,7 @@ apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-mainClassName = "theta.Start"
+mainClassName = "theta.ThetaEngine"
 
 group = 'theta'
 version = '0.1'
