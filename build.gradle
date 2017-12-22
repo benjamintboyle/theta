@@ -4,14 +4,15 @@ apply plugin: 'eclipse'
 
 mainClassName = "theta.Start"
 
-group = group
+group = 'theta'
+version = '0.1'
 
 repositories {
     jcenter()
 }
 
-sourceCompatibility = "9"
-targetCompatibility = "9"
+sourceCompatibility = 9
+targetCompatibility = 9
 
 dependencies {
     // Production code dependencies
@@ -22,10 +23,14 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '+'
     implementation group: 'io.reactivex.rxjava2', name: 'rxjava', version: '+'
 
-    implementation files('../../eclipse-workspace/interactive-brokers-api/build/libs/interactive-brokers-api.jar')
+    implementation project(':interactive-brokers-api')
 
     // Test code dependencies
     testImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '+'
     testImplementation group: 'junit', name: 'junit', version: '+'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '+'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4.1'
 }
