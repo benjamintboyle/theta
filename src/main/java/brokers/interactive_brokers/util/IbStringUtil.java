@@ -63,8 +63,8 @@ public class IbStringUtil {
     return stringBuilder.toString();
   }
 
-  public static String toStringOrderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
-      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+  public static String toStringOrderStatus(OrderStatus status, Double filled, Double remaining, Double avgFillPrice,
+      Long permId, Integer parentId, Double lastFillPrice, Integer clientId, String whyHeld) {
 
     final StringBuilder stringBuilder = new StringBuilder();
 
