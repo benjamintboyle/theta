@@ -20,8 +20,7 @@ import theta.domain.api.SecurityType;
 import theta.portfolio.api.PortfolioObserver;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Map IB Id to Internal Id
   private final Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
@@ -47,16 +46,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   @Override
-  public synchronized void position(String account, Contract contract, double position,
-      double avgCost) {
+  public synchronized void position(String account, Contract contract, double position, double avgCost) {
     logger.info(
         "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
         account, position, avgCost, IbStringUtil.toStringContract(contract));
 
     switch (contract.secType()) {
       case STK:
-        final Stock stock =
-            new Stock(generateId(contract.conid()), contract.symbol(), position, avgCost);
+        final Stock stock = new Stock(generateId(contract.conid()), contract.symbol(), position, avgCost);
         portfolioObserver.acceptPosition(stock);
 
         break;
@@ -70,8 +67,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
             securityType = SecurityType.PUT;
             break;
           default:
-            logger.error("Could not identify Contract Right: {}",
-                IbStringUtil.toStringContract(contract));
+            logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
             break;
         }
 
@@ -79,17 +75,15 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
             IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
 
         if (optionalExpiration.isPresent()) {
-          final Option option = new Option(generateId(contract.conid()), securityType,
-              contract.symbol(), position, contract.strike(), optionalExpiration.get(), avgCost);
+          final Option option = new Option(generateId(contract.conid()), securityType, contract.symbol(), position,
+              contract.strike(), optionalExpiration.get(), avgCost);
           portfolioObserver.acceptPosition(option);
         } else {
-          logger.error("Invalid Option Expiration for Contract: ",
-              IbStringUtil.toStringContract(contract));
+          logger.error("Invalid Option Expiration for Contract: ", IbStringUtil.toStringContract(contract));
         }
         break;
       default:
-        logger.error("Can not determine Position Type: {}",
-            IbStringUtil.toStringContract(contract));
+        logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
         break;
     }
   }

@@ -10,8 +10,7 @@ import com.ib.client.Types.Action;
 import com.ib.client.Types.SecType;
 
 public class IbOrderUtil {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Contract buildStockOrderContract(String ticker) {
     final Contract contract = new Contract();
@@ -20,8 +19,7 @@ public class IbOrderUtil {
     contract.exchange("SMART");
     contract.currency("USD");
 
-    logger.info("Built Interactive Brokers New Contract: {}",
-        IbStringUtil.toStringContract(contract));
+    logger.info("Built Interactive Brokers New Contract: {}", IbStringUtil.toStringContract(contract));
 
     return contract;
   }

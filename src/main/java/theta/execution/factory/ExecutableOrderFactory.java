@@ -12,8 +12,7 @@ import theta.execution.domain.ExecutionType;
 import theta.execution.domain.ReverseStockOrder;
 
 public class ExecutableOrderFactory {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Optional<ExecutableOrder> reverseStockPosition(Stock stock) {
     logger.info("Reversing Stock Position: {}", stock);
@@ -27,8 +26,7 @@ public class ExecutableOrderFactory {
 
     logger.info("Validating trade of Security: {}, using Order: {}", stock, order);
     if (!order.validate(stock)) {
-      logger.error("Invalid order for Reverse Trade of Security: {}, using Order: {}", stock,
-          order.toString());
+      logger.error("Invalid order for Reverse Trade of Security: {}, using Order: {}", stock, order.toString());
       order = null;
     }
 

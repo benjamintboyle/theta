@@ -1,9 +1,9 @@
 package theta.tick.api;
 
 public interface PriceLevel {
-	public String getTicker();
+  public String getTicker();
 
-	public Double getStrikePrice();
+  public Double getStrikePrice();
 
-	public PriceLevelDirection tradeIf();
+  public PriceLevelDirection tradeIf();
 }

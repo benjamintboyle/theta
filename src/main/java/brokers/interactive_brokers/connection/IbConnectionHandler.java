@@ -13,8 +13,7 @@ import brokers.interactive_brokers.IbLogger;
 import theta.api.ConnectionHandler;
 
 public class IbConnectionHandler implements IbController, ConnectionHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final long WAIT_DELAY_MILLI = 5;
 
@@ -43,8 +42,8 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
         brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort());
 
     // Paper Trading port = 7497; Operational Trading port = 7496
-    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(),
-        brokerGatewayAddress.getPort(), 0, null);
+    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), 0,
+        null);
 
 
 
@@ -124,14 +123,11 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
       @Override
       public void message(int id, int messageCode, String message) {
         if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
-          logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-              messageCode, message);
+          logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
         } else if (messageCode >= 2100 && messageCode <= 2110) {
-          logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-              messageCode, message);
+          logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
         } else {
-          logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id,
-              messageCode, message);
+          logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
         }
       }
 

@@ -17,8 +17,7 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.TickObserver;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickObserver tickObserver;
 
@@ -90,9 +89,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public void tickSize(TickType tickType, int size) {
-    logger.info(
-        "Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
-        ticker, tickType, size);
+    logger.info("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}", ticker,
+        tickType, size);
 
     switch (tickType) {
       case BID_SIZE:
@@ -118,8 +116,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     switch (tickType) {
       case LAST_TIMESTAMP:
         lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ZoneId.systemDefault());
-        logger.info(
-            "Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+        logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
             ticker, tickType, lastTime);
         break;
       default:
@@ -130,9 +127,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public void marketDataType(MktDataType marketDataType) {
-    logger.info(
-        "Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}",
-        ticker, marketDataType);
+    logger.info("Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}", ticker,
+        marketDataType);
 
     isSnapshot = marketDataType == MktDataType.Frozen;
   }
@@ -234,19 +230,18 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Integer addPriceLevel(PriceLevel priceLevel) {
     logger.info("Adding Price Level {} to Tick Handler: {}", priceLevel, ticker);
     if (!priceLevel.getTicker().equals(ticker)) {
-      logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(),
-          ticker);
+      logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), ticker);
     }
 
     switch (priceLevel.tradeIf()) {
       case FALLS_BELOW:
-        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(),
-            priceLevel.getStrikePrice(), priceLevel);
+        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+            priceLevel);
         fallsBelow.add(priceLevel.getStrikePrice());
         break;
       case RISES_ABOVE:
-        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(),
-            priceLevel.getStrikePrice(), priceLevel);
+        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+            priceLevel);
         risesAbove.add(priceLevel.getStrikePrice());
         break;
       default:
@@ -262,8 +257,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Integer removePriceLevel(PriceLevel priceLevel) {
     logger.info("Removing Price Level '{}' from Tick Handler: {}", priceLevel, ticker);
     if (!priceLevel.getTicker().equals(ticker)) {
-      logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor",
-          priceLevel.getTicker(), ticker);
+      logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor", priceLevel.getTicker(), ticker);
     }
 
     switch (priceLevel.tradeIf()) {
@@ -289,7 +283,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   private void logPriceLevels() {
-    logger.info("Price Levels for '{}': FALLS_BELOW={}, RISES_ABOVE={}", ticker, fallsBelow,
-        risesAbove);
+    logger.info("Price Levels for '{}': FALLS_BELOW={}, RISES_ABOVE={}", ticker, fallsBelow, risesAbove);
   }
 }

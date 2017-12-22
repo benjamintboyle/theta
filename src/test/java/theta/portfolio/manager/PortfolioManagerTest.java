@@ -28,8 +28,7 @@ import theta.tick.api.TickMonitor;
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class PortfolioManagerTest {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Captor
   ArgumentCaptor<ThetaTrade> thetaListCaptor;
@@ -64,8 +63,7 @@ public class PortfolioManagerTest {
     final int expectedThetas = 6;
     final List<ThetaTrade> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
 
-    final List<Integer> quantities =
-        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
@@ -75,11 +73,9 @@ public class PortfolioManagerTest {
   @Test
   public void ingest_trades_out_of_order() {
     final int expectedThetas = 6;
-    final List<ThetaTrade> thetas =
-        fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
+    final List<ThetaTrade> thetas = fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
 
-    final List<Integer> quantities =
-        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
@@ -89,11 +85,9 @@ public class PortfolioManagerTest {
   @Test
   public void ingest_trades_with_multiple_strike_prices() {
     final int expectedThetas = 4;
-    final List<ThetaTrade> thetas =
-        fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
+    final List<ThetaTrade> thetas = fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
 
-    final List<Integer> quantities =
-        thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
@@ -109,8 +103,7 @@ public class PortfolioManagerTest {
       sut.acceptPosition(security);
     }
 
-    Mockito.verify(mockTickManager, Mockito.timeout(5000).times(expected))
-        .addMonitor(thetaListCaptor.capture());
+    Mockito.verify(mockTickManager, Mockito.timeout(5000).times(expected)).addMonitor(thetaListCaptor.capture());
 
     return thetaListCaptor.getAllValues();
   }

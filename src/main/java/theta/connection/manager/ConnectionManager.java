@@ -11,8 +11,7 @@ import theta.ThetaUtil;
 import theta.api.ConnectionHandler;
 
 public class ConnectionManager implements Callable<ManagerState> {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
   private ManagerState managerState = ManagerState.SHUTDOWN;

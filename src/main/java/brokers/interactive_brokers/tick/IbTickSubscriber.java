@@ -14,8 +14,7 @@ import theta.api.TickSubscriber;
 import theta.tick.api.TickObserver;
 
 public class IbTickSubscriber implements TickSubscriber {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
   private final Map<String, IbTickHandler> ibTickHandlers = new HashMap<String, IbTickHandler>();

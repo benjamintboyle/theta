@@ -9,8 +9,7 @@ import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 
 public class ThetaSchedulersFactory {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final ExecutorService MANAGER_THREAD_POOL = Executors.newCachedThreadPool();
   private static final ExecutorService PROCESSING_THREAD_POOL = Executors.newWorkStealingPool();

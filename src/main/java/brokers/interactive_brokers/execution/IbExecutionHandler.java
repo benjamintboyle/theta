@@ -21,8 +21,7 @@ import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 
 public class IbExecutionHandler implements ExecutionHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
 
@@ -44,8 +43,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     }, BackpressureStrategy.BUFFER);
   }
 
-  private IOrderHandler getOrderHandlerCallback(FlowableEmitter<String> emitter,
-      ExecutableOrder order) {
+  private IOrderHandler getOrderHandlerCallback(FlowableEmitter<String> emitter, ExecutableOrder order) {
     return new IOrderHandler() {
 
       OrderState currentOrderState = null;
@@ -67,9 +65,8 @@ public class IbExecutionHandler implements ExecutionHandler {
       }
 
       @Override
-      public void orderStatus(OrderStatus status, double filled, double remaining,
-          double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId,
-          String whyHeld) {
+      public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
+          int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
         currentOrderStatus = status;
         this.filled = filled;
@@ -91,8 +88,8 @@ public class IbExecutionHandler implements ExecutionHandler {
 
       @Override
       public void handle(int errorCode, final String errorMsg) {
-        emitter.onNext("Message for Order Id: " + thetaToIbIdMap.get(order.getId()) + ", Ticker: "
-            + order.getTicker() + " - Error Code: " + errorCode + ", Error Msg: " + errorMsg);
+        emitter.onNext("Message for Order Id: " + thetaToIbIdMap.get(order.getId()) + ", Ticker: " + order.getTicker()
+            + " - Error Code: " + errorCode + ", Error Msg: " + errorMsg);
       }
 
       private void sendNext(String trigger) {
@@ -109,8 +106,8 @@ public class IbExecutionHandler implements ExecutionHandler {
 
         // Order Status
         builder.append(", Order Status: ");
-        builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining,
-            avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
+        builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining, avgFillPrice, permId,
+            parentId, lastFillPrice, clientId, whyHeld));
 
         // Order State
         builder.append(", Order State: ");

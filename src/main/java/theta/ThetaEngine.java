@@ -22,8 +22,7 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
   // private static final String GATEWAY_IP_ADDRESS = "172.17.0.3";
@@ -66,9 +65,9 @@ public class ThetaEngine {
 
   public void start() {
     ThetaEngine.logger.info("Connecting to Brokerage");
-    managerDisposables.add(Flowable.fromCallable(connectionManager)
-        .subscribeOn(ThetaSchedulersFactory.getManagerThread())
-        .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState)));
+    managerDisposables
+        .add(Flowable.fromCallable(connectionManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+            .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState)));
 
     try {
       Thread.sleep(1000);
@@ -78,12 +77,11 @@ public class ThetaEngine {
 
     if (connectionManager.isConnected()) {
       // Start manager threads
-      managerDisposables.add(Flowable.fromCallable(portfolioManager)
-          .subscribeOn(ThetaSchedulersFactory.getManagerThread())
-          .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
-      managerDisposables.add(
-          Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-              .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
+      managerDisposables
+          .add(Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+              .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
+      managerDisposables.add(Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+          .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
     }
 
     logger.info("Connected ThetaEngine has started all managers");
@@ -98,8 +96,7 @@ public class ThetaEngine {
   private void attachShutdownHook() {
     ThetaEngine.logger.info("Registering Shutdown Hook");
 
-    Runtime.getRuntime()
-        .addShutdownHook(new Thread(() -> ThetaEngine.logger.info("Executing Shutdown Hook")));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> ThetaEngine.logger.info("Executing Shutdown Hook")));
 
     ThetaEngine.logger.info("Shutdown Hook Registered");
   }
@@ -110,8 +107,7 @@ public class ThetaEngine {
     // Initialize API controller
     final InetSocketAddress brokerGatewaySocketAddress =
         new InetSocketAddress(BROKER_GATEWAY_ADDRESS, BROKER_GATEWAY_PORT);
-    final IbConnectionHandler ibConnectionHandler =
-        new IbConnectionHandler(brokerGatewaySocketAddress);
+    final IbConnectionHandler ibConnectionHandler = new IbConnectionHandler(brokerGatewaySocketAddress);
     final IbController ibController = ibConnectionHandler;
 
     // Brokerage specific handlers (wiring abstraction)

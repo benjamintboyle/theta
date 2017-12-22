@@ -9,8 +9,7 @@ import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.util.IbStringUtil;
 
 public class IbOrderHandler implements IOrderHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Override
   public void orderState(OrderState orderState) {
@@ -20,12 +19,11 @@ public class IbOrderHandler implements IOrderHandler {
   }
 
   @Override
-  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
-      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
+      int parentId, double lastFillPrice, int clientId, String whyHeld) {
     logger.info(
         "Order Status: {}, Filled: {}, Remaining: {}, Avg Price: {}, Perm Id: {}, Parent Id: {}, Last Fill Price: {}, Client Id: {}, Why Held: {}",
-        status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId,
-        whyHeld);
+        status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
   }
 
   @Override

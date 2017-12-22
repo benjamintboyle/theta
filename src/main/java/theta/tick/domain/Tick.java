@@ -6,16 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Tick {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Double price;
   private final String ticker;
   private final ZonedDateTime timestamp;
   private final TickType type;
 
-  public Tick(final String ticker, final Double price, final TickType type,
-      final ZonedDateTime timestamp) {
+  public Tick(final String ticker, final Double price, final TickType type, final ZonedDateTime timestamp) {
     this.ticker = ticker;
     this.price = price;
     this.type = type;
@@ -41,7 +39,6 @@ public class Tick {
 
   @Override
   public String toString() {
-    return "Tick [ticker=" + ticker + ", price=" + price + ", type=" + type + ", timestamp="
-        + timestamp + "]";
+    return "Tick [ticker=" + ticker + ", price=" + price + ", type=" + type + ", timestamp=" + timestamp + "]";
   }
 }

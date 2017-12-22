@@ -56,9 +56,9 @@ public class IntegrationTest {
       tickList.add(new Tick(ticker, strike - 0.01, tickType, ZonedDateTime.now()));
       /*
        * tickList.add(new Tick(ticker, strike, tickType, LocalDateTime.now())); tickList.add(new
-       * Tick(ticker, strike, tickType, LocalDateTime.now())); tickList.add(new Tick(ticker, strike
-       * + 0.01, tickType, LocalDateTime.now())); tickList.add(new Tick(ticker, strike + 0.01,
-       * tickType, LocalDateTime.now())); tickList.add(new Tick(ticker, strike - 0.01, tickType,
+       * Tick(ticker, strike, tickType, LocalDateTime.now())); tickList.add(new Tick(ticker, strike +
+       * 0.01, tickType, LocalDateTime.now())); tickList.add(new Tick(ticker, strike + 0.01, tickType,
+       * LocalDateTime.now())); tickList.add(new Tick(ticker, strike - 0.01, tickType,
        * LocalDateTime.now())); tickList.add(new Tick(ticker, strike - 0.01, tickType,
        * LocalDateTime.now())); tickList.add(new Tick(ticker, strike + 0.01, tickType,
        * LocalDateTime.now())); tickList.add(new Tick(ticker, strike + 0.01, tickType,
@@ -85,8 +85,7 @@ public class IntegrationTest {
     final List<Tick> zeroTickList = new ArrayList<Tick>();
 
     for (final ThetaTrade theta : thetaList) {
-      zeroTickList.add(
-          new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, ZonedDateTime.now()));
+      zeroTickList.add(new Tick(theta.getTicker(), theta.getStrikePrice(), TickType.LAST, ZonedDateTime.now()));
     }
     return zeroTickList;
   }
@@ -97,8 +96,7 @@ public class IntegrationTest {
     final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
     // Add all securities to be ingested to a list
-    final List<Security> listOfSecurities =
-        List.of(thetaTrade.getStock(), thetaTrade.getCall(), thetaTrade.getPut());
+    final List<Security> listOfSecurities = List.of(thetaTrade.getStock(), thetaTrade.getCall(), thetaTrade.getPut());
 
     // Send all securities in list for ingestion
     sendPositionListForIngestion(listOfSecurities);
