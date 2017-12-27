@@ -1,7 +1,7 @@
 package theta.domain;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,87 +11,39 @@ import theta.domain.api.SecurityType;
 public class Stock implements Security {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final Double averageTradePrice;
-  private String backingTicker = "";
-  private UUID id = UUID.randomUUID();
+  private final UUID id;
+  private final String ticker;
   private final Double quantity;
+  private final Double averageTradePrice;
+
   private final SecurityType type = SecurityType.STOCK;
 
-  public Stock(final UUID id, final String backingTicker, final Double quantity, final Double averageTradePrice) {
-    this.id = id;
-    this.backingTicker = backingTicker;
-    this.quantity = quantity;
-    this.averageTradePrice = averageTradePrice;
+  private Stock(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+
+    this.id = Objects.requireNonNullElse(id, UUID.randomUUID());
+    this.ticker = Objects.requireNonNull(ticker, "Ticker must not be null.");
+    this.quantity = Objects.requireNonNull(quantity, "Quantity must not be null.");
+    this.averageTradePrice = Objects.requireNonNull(averageTradePrice, "Average Price must not be null.");
+
     Stock.logger.info("Built Stock: {}", toString());
   }
 
-  // Combine two stocks if everything the same except quantity and average price
-  public static Optional<Stock> of(Stock stock1, Stock stock2) {
-
-    Optional<Stock> stock = Optional.empty();
-
-    if (stock1.getId().equals(stock2.getId())) {
-      if (stock1.getTicker().equals(stock2.getTicker())) {
-        stock = Optional.of(new Stock(stock1.getId(), stock1.getTicker(), stock1.getQuantity() + stock2.getQuantity(),
-            (stock1.getAverageTradePrice() + stock2.getAverageTradePrice()) / 2));
-      } else {
-        logger.warn("Stock Tickers do not match: {} {}", stock1, stock2);
-      }
-    } else {
-      logger.warn("Stock Ids do not match: {} {}", stock1, stock2);
-    }
-
-    return stock;
+  /**
+   * @deprecated Use non-id parametered version.
+   * 
+   * @param id
+   * @param ticker
+   * @param quantity
+   * @param averageTradePrice
+   * @return
+   */
+  @Deprecated
+  public static Stock of(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+    return new Stock(id, ticker, quantity, averageTradePrice);
   }
 
-  @Override
-  public boolean equals(final Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (this.getClass() != obj.getClass()) {
-      return false;
-    }
-    final Stock other = (Stock) obj;
-    if (averageTradePrice == null) {
-      if (other.averageTradePrice != null) {
-        return false;
-      }
-    } else if (!averageTradePrice.equals(other.averageTradePrice)) {
-      return false;
-    }
-    if (backingTicker == null) {
-      if (other.backingTicker != null) {
-        return false;
-      }
-    } else if (!backingTicker.equals(other.backingTicker)) {
-      return false;
-    }
-    if (id == null) {
-      if (other.id != null) {
-        return false;
-      }
-    } else if (!id.equals(other.id)) {
-      return false;
-    }
-    if (quantity == null) {
-      if (other.quantity != null) {
-        return false;
-      }
-    } else if (!quantity.equals(other.quantity)) {
-      return false;
-    }
-    if (type != other.type) {
-      return false;
-    }
-    return true;
-  }
-
-  public Double getAverageTradePrice() {
-    return averageTradePrice;
+  public static Stock of(final String ticker, final Double quantity, final Double averageTradePrice) {
+    return new Stock(UUID.randomUUID(), ticker, quantity, averageTradePrice);
   }
 
   @Override
@@ -101,7 +53,7 @@ public class Stock implements Security {
 
   @Override
   public Double getPrice() {
-    return getAverageTradePrice();
+    return averageTradePrice;
   }
 
   @Override
@@ -116,29 +68,43 @@ public class Stock implements Security {
 
   @Override
   public String getTicker() {
-    return backingTicker;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = (prime * result) + ((averageTradePrice == null) ? 0 : averageTradePrice.hashCode());
-    result = (prime * result) + ((backingTicker == null) ? 0 : backingTicker.hashCode());
-    result = (prime * result) + ((id == null) ? 0 : id.hashCode());
-    result = (prime * result) + ((quantity == null) ? 0 : quantity.hashCode());
-    result = (prime * result) + ((type == null) ? 0 : type.hashCode());
-    return result;
+    return ticker;
   }
 
   public Stock reversePosition() {
     Stock.logger.info("Building Reverse of Stock: {}", toString());
-    return new Stock(id, backingTicker, -1 * quantity, averageTradePrice);
+    return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+
+    boolean isEqual = false;
+
+    if (obj == this) {
+      isEqual = true;
+    }
+
+    if (obj instanceof Stock) {
+      final Stock other = (Stock) obj;
+
+      isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
+          && Objects.equals(getQuantity(), other.getQuantity()) && Objects.equals(getPrice(), other.getPrice())
+          && Objects.equals(getSecurityType(), other.getSecurityType());
+    }
+
+    return isEqual;
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), getTicker(), getQuantity(), getPrice(), getSecurityType());
   }
 
   @Override
   public String toString() {
-    return "Stock [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity=" + quantity
+    return "Stock [id=" + getId() + ", type=" + type + ", backingTicker=" + ticker + ", quantity=" + quantity
         + ", averageTradePrice=" + averageTradePrice + "]";
   }
 }

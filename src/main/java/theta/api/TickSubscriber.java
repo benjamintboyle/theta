@@ -3,7 +3,7 @@ package theta.api;
 import theta.tick.api.TickObserver;
 
 public interface TickSubscriber {
-  public TickHandler subscribeEquity(String ticker, TickObserver tickObserver);
+  public TickHandler subscribeTick(String ticker, TickObserver tickObserver);
 
-  public Boolean unsubscribeEquity(TickHandler tickHandler);
+  public Boolean unsubscribeTick(TickHandler tickHandler);
 }

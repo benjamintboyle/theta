@@ -1,6 +1,5 @@
 package theta.execution.domain;
 
-import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -15,8 +14,8 @@ import theta.execution.api.ExecutableOrder;
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ReverseStockOrderTest {
 
-  private final Stock longStock = new Stock(UUID.randomUUID(), "CHK", 100.0, 10.0);
-  private final Stock wrongQuantityStock = new Stock(UUID.randomUUID(), "CHK", 101.0, 10.0);
+  private final Stock longStock = Stock.of("CHK", 100.0, 10.0);
+  private final Stock wrongQuantityStock = Stock.of("CHK", 101.0, 10.0);
 
   private final ExecutableOrder sutLong = new ReverseStockOrder(longStock, ExecutionAction.BUY, ExecutionType.MARKET);
   private final ExecutableOrder sutQuantity =

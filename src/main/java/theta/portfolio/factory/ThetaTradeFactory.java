@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import theta.domain.Option;
 import theta.domain.ShortStraddle;
 import theta.domain.Stock;
+import theta.domain.StockUtil;
 import theta.domain.ThetaTrade;
 
 public class ThetaTradeFactory {
@@ -35,7 +36,7 @@ public class ThetaTradeFactory {
 
         // If stock quantity is greater than number of option contracts adjust, otherwise return
         // full stock quantity
-        final Stock adjustedStock = ThetaTradeFactory.adjustStockQuantity(stock, straddle);
+        final Stock adjustedStock = StockUtil.adjustStockQuantity(stock, straddle);
 
         // Build theta
         final Optional<ThetaTrade> theta = ThetaTrade.of(adjustedStock, straddle);
@@ -91,22 +92,5 @@ public class ThetaTradeFactory {
         .filter(
             stock -> (Math.abs(stock.getQuantity().intValue()) / 100) >= Math.abs(straddle.getQuantity().intValue()))
         .findFirst();
-  }
-
-  private static Stock adjustStockQuantity(Stock stock, ShortStraddle straddle) {
-    Stock adjustedStock = stock;
-
-    // If there is an exact quantity match for stocks
-    if (Math.abs(stock.getQuantity().intValue()) / 100 > Math.abs(straddle.getQuantity().intValue())) {
-      // If not exact match for quantity, then use only part of it to cover
-      final Double quantity =
-          stock.getQuantity() / Math.abs(stock.getQuantity()) * Math.abs(straddle.getQuantity()) * 100;
-      adjustedStock = new Stock(stock.getId(), stock.getTicker(), quantity, stock.getAverageTradePrice());
-    }
-
-    logger.debug("Stock adjusted from Initial: {}, to Adjusted: {}, based on Straddle: {}", stock, adjustedStock,
-        straddle);
-
-    return adjustedStock;
   }
 }

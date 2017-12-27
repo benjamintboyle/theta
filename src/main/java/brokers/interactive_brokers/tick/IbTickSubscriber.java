@@ -5,8 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.ib.client.Contract;
-import com.ib.client.Types.SecType;
+import com.ib.contracts.StkContract;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
@@ -25,13 +24,9 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public TickHandler subscribeEquity(String ticker, TickObserver tickObserver) {
+  public TickHandler subscribeTick(String ticker, TickObserver tickObserver) {
     logger.info("Subscribing to Equity: {}", ticker);
-    final Contract contract = new Contract();
-    contract.symbol(ticker);
-    contract.secType(SecType.STK);
-    contract.exchange("SMART");
-    contract.primaryExch("ISLAND");
+    final StkContract contract = new StkContract(ticker);
 
     final IbTickHandler ibTickHandler = new IbTickHandler(ticker, tickObserver);
     logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
@@ -44,7 +39,7 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public Boolean unsubscribeEquity(TickHandler tickHandler) {
+  public Boolean unsubscribeTick(TickHandler tickHandler) {
     logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
     ibController.getController().cancelTopMktData(ibTickHandlers.get(tickHandler.getTicker()));
 

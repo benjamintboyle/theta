@@ -77,14 +77,14 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
     logger.info("Execution Monitor was notified that Portfolio changed: {}", security.toString());
     Boolean activeTradeRemoved = Boolean.FALSE;
 
-    if (activeOrders.containsKey(security.getId())) {
+    if (activeOrders.containsKey(security.getId())
+        && activeOrders.get(security.getId()).getQuantity().equals(security.getQuantity())) {
+
       final ExecutableOrder executable = activeOrders.remove(security.getId());
 
       logger.info("Active Trade removed for Executable: {}", executable);
 
       activeTradeRemoved = Boolean.TRUE;
-    } else {
-      logger.debug("Existing position. Security not an active order: {}", security);
     }
 
     return activeTradeRemoved;

@@ -10,6 +10,7 @@ import com.ib.client.Contract;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
+import com.ib.contracts.StkContract;
 import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOrderUtil;
@@ -122,7 +123,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     logger.info("Executing order: {}", order.toString());
     final Order ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
 
-    final Contract ibContract = IbOrderUtil.buildStockOrderContract(order.getTicker());
+    final Contract ibContract = new StkContract(order.getTicker());
 
     ibController.getController().placeOrModifyOrder(ibContract, ibOrder, ibOrderHandler);
 

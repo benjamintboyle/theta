@@ -70,7 +70,7 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
 
     positionHandler.requestPositionsFromBrokerage();
 
-    while (status() == ManagerState.RUNNING) {
+    while (getState() == ManagerState.RUNNING) {
 
       Optional<Security> security = Optional.empty();
 
@@ -100,7 +100,7 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
 
     changeState(ManagerState.SHUTDOWN);
 
-    return status();
+    return getState();
   }
 
   @Override
@@ -118,24 +118,6 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
     logger.info("Providing Positions for: {}", ticker);
     return thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker))
         .collect(Collectors.toList());
-  }
-
-  private ManagerState changeState(ManagerState newState) {
-    final ManagerState oldState = status();
-
-    managerState = newState;
-
-    logger.info("Portfolio Manager transitioned from {} to {}", oldState, status());
-
-    return status();
-  }
-
-  public ManagerState status() {
-    return managerState;
-  }
-
-  public ManagerState shutdown() {
-    return changeState(ManagerState.STOPPING);
   }
 
   // Removes positions if security is contained within it
@@ -249,7 +231,7 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
       if (security.getSecurityType().equals(SecurityType.STOCK)) {
 
         securityWithQuantity =
-            Optional.of(new Stock(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
+            Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
       }
 
       if (security.getSecurityType().equals(SecurityType.CALL) || security.getSecurityType().equals(SecurityType.PUT)) {
@@ -284,5 +266,18 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
         .filter(security -> !securityThetaLink.containsKey(security.getId())).collect(Collectors.toList())) {
       logger.info("Current unprocessed security: {}", security);
     }
+  }
+
+  private void changeState(ManagerState state) {
+    logger.info("Portfolio Manager is transitioning from {} to {}", getState(), state);
+    managerState = state;
+  }
+
+  public ManagerState getState() {
+    return managerState;
+  }
+
+  public void shutdown() {
+    changeState(ManagerState.STOPPING);
   }
 }

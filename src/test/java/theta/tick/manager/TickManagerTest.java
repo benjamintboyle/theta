@@ -1,5 +1,6 @@
 package theta.tick.manager;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,9 +33,10 @@ import theta.tick.domain.TickType;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class TickManagerTest {
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private static Double aroundPricePlusMinus = 0.05;
 
-  private static final Logger logger = LoggerFactory.getLogger(TickManagerTest.class);
   private static Integer numberOfPriceTicks = 10000;
 
   @Mock
@@ -91,7 +93,7 @@ public class TickManagerTest {
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
     Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
-    Mockito.when(tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);
@@ -110,7 +112,7 @@ public class TickManagerTest {
 
     final List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
     Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-    Mockito.when(tickSubscriber.subscribeEquity(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);

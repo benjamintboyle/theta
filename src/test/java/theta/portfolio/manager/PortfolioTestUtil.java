@@ -56,7 +56,7 @@ public class PortfolioTestUtil {
 
       switch (securityType) {
         case "STOCK":
-          final Stock stock = new Stock(UUID.randomUUID(), ticker, quantity, price);
+          final Stock stock = Stock.of(ticker, quantity, price);
           logger.debug("Sending Stock: {}", stock);
           securityList.add(stock);
           break;

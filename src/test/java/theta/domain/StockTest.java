@@ -1,6 +1,5 @@
 package theta.domain;
 
-import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -10,11 +9,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class StockTest {
   public static Stock buildTestStock() {
-    return new Stock(UUID.randomUUID(), "CHK", Double.valueOf(100), 15.0);
+    return Stock.of("CHK", Double.valueOf(100), 15.0);
   }
 
   public static Stock buildTestStockShort() {
-    return new Stock(UUID.randomUUID(), "CHK", Double.valueOf(-100), 15.0);
+    return Stock.of("CHK", Double.valueOf(-100), 15.0);
   }
 
   @Test
@@ -35,7 +34,7 @@ public class StockTest {
   public void tradePriceTest() {
     final Stock stock = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(stock.getAverageTradePrice(), Matchers.is(Matchers.equalTo(15.0)));
+    MatcherAssert.assertThat(stock.getPrice(), Matchers.is(Matchers.equalTo(15.0)));
   }
 
   @Test

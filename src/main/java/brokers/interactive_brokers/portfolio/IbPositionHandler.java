@@ -53,7 +53,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     switch (contract.secType()) {
       case STK:
-        final Stock stock = new Stock(generateId(contract.conid()), contract.symbol(), position, avgCost);
+        final Stock stock = Stock.of(generateId(contract.conid()), contract.symbol(), position, avgCost);
         portfolioObserver.acceptPosition(stock);
 
         break;
