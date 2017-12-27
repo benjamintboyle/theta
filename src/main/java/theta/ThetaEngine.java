@@ -25,12 +25,17 @@ public class ThetaEngine implements Callable<String> {
   // Entry point for application
   public static void main(final String[] args) {
 
+    System.out.println("Startup ThetaEngine");
     logger.info("Starting ThetaEngine...");
 
     // Create Theta Engine
     final ThetaEngine thetaEngine = new ThetaEngine();
 
-    logger.info(thetaEngine.call());
+    final String status = thetaEngine.call();
+    logger.info(status);
+
+    System.out.println("ThetaEngine main thread shutdown. Status: " + status);
+
   }
 
   public ThetaEngine() {
@@ -70,9 +75,14 @@ public class ThetaEngine implements Callable<String> {
   }
 
   public void shutdown() {
+
     if (!managerDisposables.isDisposed()) {
+      logger.info("Disposing of {} Managers", managerDisposables.size());
       managerDisposables.dispose();
+    } else {
+      logger.info("Managers already disposed.");
     }
+
   }
 
   private void attachShutdownHook() {
