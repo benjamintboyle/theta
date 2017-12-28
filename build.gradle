@@ -34,3 +34,5 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '4.4.1'
 }
+
+distZip.enabled = false
