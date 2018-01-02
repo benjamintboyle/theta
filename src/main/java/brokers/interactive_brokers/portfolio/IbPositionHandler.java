@@ -2,6 +2,7 @@ package brokers.interactive_brokers.portfolio;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import com.ib.controller.ApiController.IPositionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOptionUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
+import io.reactivex.subjects.PublishSubject;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -27,6 +29,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   private final IbController controller;
   private PortfolioObserver portfolioObserver;
+
+  private final PublishSubject<ZonedDateTime> positionEndTime = PublishSubject.create();
 
   public IbPositionHandler(IbController controller) {
     logger.info("Starting Interactive Brokers Position Handler");
@@ -90,6 +94,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void positionEnd() {
+    positionEndTime.onNext(ZonedDateTime.now());
     logger.info("Received Position End notification");
   }
 
@@ -103,6 +108,16 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   public void requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
 
+    final ZonedDateTime timeBeforeRequest = ZonedDateTime.now();
+
     controller.getController().reqPositions(this);
+
+    waitPositionEndNotification(timeBeforeRequest);
+  }
+
+  private void waitPositionEndNotification(ZonedDateTime timeBeforeRequest) {
+    logger.info("Waiting for Position End notification");
+
+    positionEndTime.subscribe(notification -> logger.info("Last Position End: {}", notification));
   }
 }

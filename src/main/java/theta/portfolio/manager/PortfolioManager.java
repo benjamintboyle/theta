@@ -66,9 +66,9 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
   public ManagerState call() {
     ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    changeState(ManagerState.RUNNING);
-
     positionHandler.requestPositionsFromBrokerage();
+
+    changeState(ManagerState.RUNNING);
 
     while (getState() == ManagerState.RUNNING) {
 
@@ -88,13 +88,17 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
         removePositionIfExists(unboxedSecurity);
 
         if (unboxedSecurity.getQuantity() != 0) {
-
-          processPosition(unboxedSecurity);
-
+          processPosition(unboxedSecurity.getTicker());
+          executionMonitor.portfolioChange(unboxedSecurity);
         } else {
           securityIdMap.remove(unboxedSecurity.getId());
           logger.info("Newly received Security not processed due to 0 quantity: {}", unboxedSecurity);
         }
+      }
+
+      // Log positions if queue is empty
+      if (inputQueue.size() == 0) {
+        logPositions();
       }
     }
 
@@ -146,14 +150,14 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
     }
   }
 
-  private void processPosition(Security security) {
+  private void processPosition(String ticker) {
 
     // Calculate unassigned call, put, stock
-    final List<Stock> unassignedStocks = getUnassignedOfSecurity(security.getTicker(), SecurityType.STOCK).stream()
+    final List<Stock> unassignedStocks = getUnassignedOfSecurity(ticker, SecurityType.STOCK).stream()
         .map(stock -> (Stock) stock).collect(Collectors.toList());
-    final List<Option> unassignedCalls = getUnassignedOfSecurity(security.getTicker(), SecurityType.CALL).stream()
+    final List<Option> unassignedCalls = getUnassignedOfSecurity(ticker, SecurityType.CALL).stream()
         .map(call -> (Option) call).collect(Collectors.toList());
-    final List<Option> unassignedPuts = getUnassignedOfSecurity(security.getTicker(), SecurityType.PUT).stream()
+    final List<Option> unassignedPuts = getUnassignedOfSecurity(ticker, SecurityType.PUT).stream()
         .map(put -> (Option) put).collect(Collectors.toList());
 
     List<ThetaTrade> thetas = new ArrayList<>();
@@ -169,8 +173,6 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
       monitor.addMonitor(theta);
     }
 
-    logPositions();
-    executionMonitor.portfolioChange(security);
   }
 
   private List<Security> getUnassignedOfSecurity(String ticker, SecurityType securityType) {

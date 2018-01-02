@@ -66,9 +66,21 @@ public class ThetaEngine implements Callable<String> {
       managerDisposables
           .add(Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
               .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
+
+      // Wait for portfolio processing
+      try {
+        Thread.sleep(2000);
+      } catch (final InterruptedException e) {
+        logger.error("Connection check was interupted", e);
+      }
+
       // Tick Manager
       managerDisposables.add(Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
           .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
+    } else {
+
+      logger.error("ConnectionManager not connected");
+      shutdown();
     }
 
     return "ThetaEngine completed startup";
