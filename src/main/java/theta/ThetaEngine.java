@@ -52,17 +52,27 @@ public class ThetaEngine implements Callable<String> {
   public String call() {
 
     // Connection Manager
-    managerDisposables
-        .add(Flowable.fromCallable(connectionManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-            .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState)));
+    final Disposable connectionManagerDisposable =
+        Flowable.fromCallable(connectionManager).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe(
 
-    final Disposable disposable = connectionManager.waitUntil(ConnectionState.CONNECTED).subscribe(
+            endState -> logger.info("ConnectionManager state: {}", endState),
+
+            error -> {
+              logger.error("Connection Error. Shutting down.", error);
+              shutdown();
+            });
+
+    managerDisposables.add(connectionManagerDisposable);
+
+    final Disposable connectionStatusDisposable = connectionManager.waitUntil(ConnectionState.CONNECTED).subscribe(
 
         connectedTime -> {
           // Portfolio Manager
-          managerDisposables
-              .add(Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-                  .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
+          final Disposable portfolioManagerDisposable =
+              Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+                  .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState));
+
+          managerDisposables.add(portfolioManagerDisposable);
 
           // Wait for portfolio processing
           try {
@@ -72,28 +82,26 @@ public class ThetaEngine implements Callable<String> {
           }
 
           // Tick Manager
-          managerDisposables
-              .add(Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-                  .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
+          final Disposable tickManagerDisposable =
+              Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+                  .subscribe((endState) -> logger.info("TickManager state: {}", endState));
+
+          managerDisposables.add(tickManagerDisposable);
         },
 
         connectionError -> logger.error("Connection Manager Error", connectionError)
 
     );
 
-    managerDisposables.add(disposable);
+    managerDisposables.add(connectionStatusDisposable);
 
     return "ThetaEngine completed startup";
   }
 
   public void shutdown() {
 
-    if (!managerDisposables.isDisposed()) {
-      logger.info("Disposing of {} Managers", managerDisposables.size());
-      managerDisposables.dispose();
-    } else {
-      logger.info("Managers already disposed.");
-    }
+    logger.info("Disposing of {} Managers", managerDisposables.size());
+    managerDisposables.dispose();
 
   }
 

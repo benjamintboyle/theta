@@ -9,9 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ManagerState;
 import theta.ThetaSchedulersFactory;
 import theta.api.ExecutionHandler;
+import theta.domain.ManagerState;
+import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.api.Security;
 import theta.execution.api.ExecutableOrder;
@@ -28,7 +29,7 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
   private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-  private ManagerState managerState = ManagerState.SHUTDOWN;
+  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
 
   public ExecutionManager(ExecutionHandler executionHandler) {
     logger.info("Starting Execution Manager");
@@ -91,16 +92,11 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   }
 
   public void shutdown() {
-    changeState(ManagerState.STOPPING);
+    getStatus().changeState(ManagerState.STOPPING);
     compositeDisposable.dispose();
   }
 
-  public ManagerState getState() {
-    return managerState;
-  }
-
-  public void changeState(ManagerState state) {
-    logger.info("Execution Manager is transitioning from {} to {}", getState(), state);
-    managerState = state;
+  public ManagerStatus getStatus() {
+    return managerStatus;
   }
 }

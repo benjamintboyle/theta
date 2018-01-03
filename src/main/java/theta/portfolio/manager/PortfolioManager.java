@@ -15,9 +15,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.ManagerState;
 import theta.ThetaUtil;
 import theta.api.PositionHandler;
+import theta.domain.ManagerState;
+import theta.domain.ManagerStatus;
 import theta.domain.Option;
 import theta.domain.Stock;
 import theta.domain.ThetaTrade;
@@ -29,7 +30,7 @@ import theta.portfolio.api.PositionProvider;
 import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
-public class PortfolioManager implements Callable<ManagerState>, PortfolioObserver, PositionProvider {
+public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObserver, PositionProvider {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
@@ -48,11 +49,11 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
   // Queue of newly received position updates
   private final BlockingQueue<Security> inputQueue = new LinkedBlockingQueue<>();
 
-  private ManagerState managerState = ManagerState.SHUTDOWN;
+  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
 
   public PortfolioManager(PositionHandler positionHandler) {
     logger.info("Starting Portfolio Manager");
-    changeState(ManagerState.STARTING);
+    getStatus().changeState(ManagerState.STARTING);
     this.positionHandler = positionHandler;
     this.positionHandler.subscribePositions(this);
   }
@@ -63,14 +64,14 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
   }
 
   @Override
-  public ManagerState call() {
+  public ManagerStatus call() {
     ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
     positionHandler.requestPositionsFromBrokerage();
 
-    changeState(ManagerState.RUNNING);
+    getStatus().changeState(ManagerState.RUNNING);
 
-    while (getState() == ManagerState.RUNNING) {
+    while (getStatus().getState() == ManagerState.RUNNING) {
 
       Optional<Security> security = Optional.empty();
 
@@ -102,9 +103,9 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
       }
     }
 
-    changeState(ManagerState.SHUTDOWN);
+    getStatus().changeState(ManagerState.SHUTDOWN);
 
-    return getState();
+    return getStatus();
   }
 
   @Override
@@ -270,16 +271,12 @@ public class PortfolioManager implements Callable<ManagerState>, PortfolioObserv
     }
   }
 
-  private void changeState(ManagerState state) {
-    logger.info("Portfolio Manager is transitioning from {} to {}", getState(), state);
-    managerState = state;
-  }
-
-  public ManagerState getState() {
-    return managerState;
-  }
-
   public void shutdown() {
-    changeState(ManagerState.STOPPING);
+    getStatus().changeState(ManagerState.STOPPING);
   }
+
+  public ManagerStatus getStatus() {
+    return managerStatus;
+  }
+
 }

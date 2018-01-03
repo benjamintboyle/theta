@@ -13,10 +13,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.ManagerState;
 import theta.ThetaUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.domain.ManagerState;
+import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
 import theta.domain.ThetaTrade;
@@ -29,14 +30,14 @@ import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 import theta.tick.processor.TickProcessor;
 
-public class TickManager implements Callable<ManagerState>, TickMonitor, TickObserver {
+public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickObserver {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
   private PositionProvider positionProvider;
   private Executor executor;
 
-  private ManagerState managerState = ManagerState.SHUTDOWN;
+  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
 
   private final BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
   private final Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
@@ -45,16 +46,16 @@ public class TickManager implements Callable<ManagerState>, TickMonitor, TickObs
     logger.info("Starting Tick Manager");
     this.tickSubscriber = Objects.requireNonNull(tickSubscriber);
 
-    changeState(ManagerState.STARTING);
+    getStatus().changeState(ManagerState.STARTING);
   }
 
   @Override
-  public ManagerState call() {
+  public ManagerStatus call() {
     ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    changeState(ManagerState.RUNNING);
+    getStatus().changeState(ManagerState.RUNNING);
 
-    while (getState() == ManagerState.RUNNING) {
+    while (getStatus().getState() == ManagerState.RUNNING) {
 
       Optional<Tick> optionalTick = Optional.empty();
 
@@ -73,9 +74,9 @@ public class TickManager implements Callable<ManagerState>, TickMonitor, TickObs
       optionalTick.ifPresent(tick -> processTick(tick));
     }
 
-    changeState(ManagerState.SHUTDOWN);
+    getStatus().changeState(ManagerState.SHUTDOWN);
 
-    return getState();
+    return getStatus();
   }
 
   private Tick getLastTick() throws InterruptedException {
@@ -173,17 +174,12 @@ public class TickManager implements Callable<ManagerState>, TickMonitor, TickObs
     }
   }
 
-  private void changeState(ManagerState state) {
-    logger.info("Tick Manager is transitioning from {} to {}", getState(), state);
-    managerState = state;
-  }
-
-  public ManagerState getState() {
-    return managerState;
+  public ManagerStatus getStatus() {
+    return managerStatus;
   }
 
   public void shutdown() {
-    changeState(ManagerState.STOPPING);
+    getStatus().changeState(ManagerState.STOPPING);
   }
 
   public void registerExecutor(Executor executor) {

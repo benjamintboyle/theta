@@ -8,32 +8,33 @@ import org.slf4j.LoggerFactory;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ManagerState;
 import theta.ThetaUtil;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.ConnectionState;
+import theta.domain.ManagerState;
+import theta.domain.ManagerStatus;
 
-public class ConnectionManager implements Callable<ManagerState> {
+public class ConnectionManager implements Callable<ManagerStatus> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
-  private ManagerState managerState = ManagerState.SHUTDOWN;
+  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
 
   private final CompositeDisposable connectionDisposables = new CompositeDisposable();
 
   public ConnectionManager(ConnectionHandler connectionHandler) {
     logger.info("Starting Connection Manager");
     this.connectionHandler = connectionHandler;
-    changeState(ManagerState.STARTING);
+    getManagerStatus().changeState(ManagerState.STARTING);
   }
 
   @Override
-  public ManagerState call() throws Exception {
+  public ManagerStatus call() throws Exception {
     ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
     connect();
 
-    return getState();
+    return getManagerStatus();
   }
 
   public void connect() {
@@ -42,7 +43,7 @@ public class ConnectionManager implements Callable<ManagerState> {
 
         connectTime -> {
           logger.info("ConnectionManager received CONNECTED confirmation at {}", connectTime);
-          changeState(ManagerState.RUNNING);
+          getManagerStatus().changeState(ManagerState.RUNNING);
         },
 
         error -> logger.error("Issue establishing connection.", error)
@@ -54,7 +55,7 @@ public class ConnectionManager implements Callable<ManagerState> {
 
   public void shutdown() {
     logger.info("Shutting down 'Connection Manager' subsystem");
-    changeState(ManagerState.STOPPING);
+    getManagerStatus().changeState(ManagerState.STOPPING);
     connectionHandler.disconnect();
     connectionDisposables.dispose();
   }
@@ -63,13 +64,7 @@ public class ConnectionManager implements Callable<ManagerState> {
     return connectionHandler.waitUntil(waitUntilState);
   }
 
-  private void changeState(ManagerState state) {
-    logger.info("Connection Manager is transitioning from {} to {}", getState(), state);
-    managerState = state;
+  public ManagerStatus getManagerStatus() {
+    return managerStatus;
   }
-
-  public ManagerState getState() {
-    return managerState;
-  }
-
 }
