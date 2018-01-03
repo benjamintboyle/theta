@@ -61,14 +61,18 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
 
-    return Single.create(source -> getConnectionStatus().filter(status -> status.getState().equals(waitUntilState))
-        .firstOrError().timeout(timeout.getSeconds(), TimeUnit.SECONDS).subscribe(
+    return Single.create(
 
-            status -> source.onSuccess(status.getTime()),
+        source -> {
+          final Disposable disposable = getConnectionStatus().filter(status -> status.getState().equals(waitUntilState))
+              .firstOrError().timeout(timeout.getSeconds(), TimeUnit.SECONDS).subscribe(
 
-            error -> source.onError(error)
+                  status -> source.onSuccess(status.getTime()),
 
-    ));
+                  error -> source.onError(error));
+
+          callbackDisposables.add(disposable);
+        });
   }
 
   public void shutdown() {

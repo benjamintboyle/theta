@@ -37,7 +37,8 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickOb
   private PositionProvider positionProvider;
   private Executor executor;
 
-  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
+  private final ManagerStatus managerStatus =
+      ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   private final BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
   private final Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();

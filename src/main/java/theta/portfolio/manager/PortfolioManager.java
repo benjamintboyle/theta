@@ -15,6 +15,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import theta.ThetaUtil;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
@@ -49,7 +52,10 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   // Queue of newly received position updates
   private final BlockingQueue<Security> inputQueue = new LinkedBlockingQueue<>();
 
-  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
+  private final ManagerStatus managerStatus =
+      ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
+
+  private final CompositeDisposable portfolioDisposables = new CompositeDisposable();
 
   public PortfolioManager(PositionHandler positionHandler) {
     logger.info("Starting Portfolio Manager");
@@ -58,54 +64,61 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
     this.positionHandler.subscribePositions(this);
   }
 
-  public PortfolioManager(PositionHandler positionHandler, TickMonitor monitor) {
-    this(positionHandler);
-    this.monitor = monitor;
-  }
-
   @Override
   public ManagerStatus call() {
     ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    positionHandler.requestPositionsFromBrokerage();
+    final Disposable positionRequestDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
 
-    getStatus().changeState(ManagerState.RUNNING);
+        () -> {
+          getStatus().changeState(ManagerState.RUNNING);
 
-    while (getStatus().getState() == ManagerState.RUNNING) {
+          while (getStatus().getState() == ManagerState.RUNNING) {
 
-      Optional<Security> security = Optional.empty();
+            Optional<Security> security = Optional.empty();
 
-      try {
-        security = Optional.of(inputQueue.take());
-      } catch (final InterruptedException e) {
-        logger.error("Interupted while waiting for security", e);
-      }
+            try {
+              security = Optional.of(inputQueue.take());
+            } catch (final InterruptedException e) {
+              logger.error("Interupted while waiting for security", e);
+            }
 
-      if (security.isPresent()) {
-        final Security unboxedSecurity = security.get();
+            if (security.isPresent()) {
+              final Security unboxedSecurity = security.get();
 
-        securityIdMap.put(unboxedSecurity.getId(), unboxedSecurity);
+              securityIdMap.put(unboxedSecurity.getId(), unboxedSecurity);
 
-        removePositionIfExists(unboxedSecurity);
+              removePositionIfExists(unboxedSecurity);
 
-        if (unboxedSecurity.getQuantity() != 0) {
-          processPosition(unboxedSecurity.getTicker());
-          executionMonitor.portfolioChange(unboxedSecurity);
-        } else {
-          securityIdMap.remove(unboxedSecurity.getId());
-          logger.info("Newly received Security not processed due to 0 quantity: {}", unboxedSecurity);
-        }
-      }
+              if (unboxedSecurity.getQuantity() != 0) {
+                processPosition(unboxedSecurity.getTicker());
+                executionMonitor.portfolioChange(unboxedSecurity);
+              } else {
+                securityIdMap.remove(unboxedSecurity.getId());
+                logger.info("Newly received Security not processed due to 0 quantity: {}", unboxedSecurity);
+              }
+            }
 
-      // Log positions if queue is empty
-      if (inputQueue.size() == 0) {
-        logPositions();
-      }
-    }
+            // Log positions if queue is empty
+            if (inputQueue.size() == 0) {
+              logPositions();
+            }
+          }
 
-    getStatus().changeState(ManagerState.SHUTDOWN);
+          getStatus().changeState(ManagerState.SHUTDOWN);
+        },
+
+        error -> logger.error("Issue while waiting for Positions", error)
+
+    );
+
+    portfolioDisposables.add(positionRequestDisposable);
 
     return getStatus();
+  }
+
+  public Completable getPositionEnd() {
+    return positionHandler.getPositionEnd();
   }
 
   @Override
@@ -273,6 +286,7 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
+    portfolioDisposables.dispose();
   }
 
   public ManagerStatus getStatus() {

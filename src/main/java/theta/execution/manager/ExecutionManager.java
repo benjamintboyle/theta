@@ -29,7 +29,8 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
 
   private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
+  private final ManagerStatus managerStatus =
+      ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   public ExecutionManager(ExecutionHandler executionHandler) {
     logger.info("Starting Execution Manager");

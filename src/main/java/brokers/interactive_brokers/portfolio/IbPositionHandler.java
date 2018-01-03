@@ -14,7 +14,11 @@ import com.ib.controller.ApiController.IPositionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOptionUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -30,7 +34,9 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private final IbController controller;
   private PortfolioObserver portfolioObserver;
 
-  private final PublishSubject<ZonedDateTime> positionEndTime = PublishSubject.create();
+  private final Subject<ZonedDateTime> positionEndTime = PublishSubject.create();
+
+  private final CompositeDisposable positionHandlerDisposables = new CompositeDisposable();
 
   public IbPositionHandler(IbController controller) {
     logger.info("Starting Interactive Brokers Position Handler");
@@ -50,7 +56,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   @Override
-  public synchronized void position(String account, Contract contract, double position, double avgCost) {
+  public void position(String account, Contract contract, double position, double avgCost) {
     logger.info(
         "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
         account, position, avgCost, IbStringUtil.toStringContract(contract));
@@ -105,19 +111,35 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   @Override
-  public void requestPositionsFromBrokerage() {
+  public Completable requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
 
-    final ZonedDateTime timeBeforeRequest = ZonedDateTime.now();
+    final Completable requestComplete = getPositionEnd();
 
     controller.getController().reqPositions(this);
 
-    waitPositionEndNotification(timeBeforeRequest);
+    return requestComplete;
   }
 
-  private void waitPositionEndNotification(ZonedDateTime timeBeforeRequest) {
-    logger.info("Waiting for Position End notification");
+  public Completable getPositionEnd() {
+    return Completable.create(
 
-    positionEndTime.subscribe(notification -> logger.info("Last Position End: {}", notification));
+        source -> {
+          final Disposable positionEndDisposable = positionEndTime.firstOrError().subscribe(
+
+              positionEndTime -> source.onComplete(),
+
+              error -> {
+                logger.error("Error waiting for Position End", error);
+                source.onError(error);
+              });
+
+          positionHandlerDisposables.add(positionEndDisposable);
+        });
   }
+
+  public void shutdown() {
+    positionHandlerDisposables.dispose();
+  }
+
 }

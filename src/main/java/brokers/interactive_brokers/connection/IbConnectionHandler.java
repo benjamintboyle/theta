@@ -12,6 +12,7 @@ import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.IbLogger;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.BrokerageAccount;
 import theta.connection.domain.ConnectionState;
@@ -46,11 +47,20 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
     logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client 0",
         brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort());
 
-    // Paper Trading port = 7497; Operational Trading port = 7496
-    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), 0,
-        null);
+    return Single.create(
 
-    return waitUntil(ConnectionState.CONNECTED);
+        source -> {
+          final Disposable disposable = waitUntil(ConnectionState.CONNECTED).subscribe(
+
+              connectionTime -> source.onSuccess(connectionTime),
+
+              error -> logger.error("Error while connecting", error));
+
+          handlerDisposables.add(disposable);
+
+          getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), 0,
+              null);
+        });
   }
 
   @Override

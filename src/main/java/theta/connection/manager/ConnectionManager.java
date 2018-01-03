@@ -18,7 +18,8 @@ public class ConnectionManager implements Callable<ManagerStatus> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
-  private final ManagerStatus managerStatus = ManagerStatus.of(ManagerState.SHUTDOWN);
+  private final ManagerStatus managerStatus =
+      ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   private final CompositeDisposable connectionDisposables = new CompositeDisposable();
 
