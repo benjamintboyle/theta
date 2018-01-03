@@ -1,9 +1,13 @@
 package theta.api;
 
+import java.time.ZonedDateTime;
+import io.reactivex.Single;
+import theta.connection.domain.ConnectionState;
+
 public interface ConnectionHandler {
-  public Boolean connect();
+  public Single<ZonedDateTime> connect();
 
-  public Boolean disconnect();
+  public Single<ZonedDateTime> disconnect();
 
-  public Boolean isConnected();
+  public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState);
 }

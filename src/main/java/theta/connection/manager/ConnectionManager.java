@@ -1,14 +1,17 @@
 package theta.connection.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import theta.ManagerState;
 import theta.ThetaUtil;
 import theta.api.ConnectionHandler;
+import theta.connection.domain.ConnectionState;
 
 public class ConnectionManager implements Callable<ManagerState> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -16,13 +19,12 @@ public class ConnectionManager implements Callable<ManagerState> {
 
   private ManagerState managerState = ManagerState.SHUTDOWN;
 
-  private static long CONNECTION_CHECK_TIMEOUT_SECONDS = 5;
-  private static long CONNECTION_CHECK_REPEAT_MILLI = 1000;
+  private final CompositeDisposable connectionDisposables = new CompositeDisposable();
 
   public ConnectionManager(ConnectionHandler connectionHandler) {
     logger.info("Starting Connection Manager");
     this.connectionHandler = connectionHandler;
-    managerState = ManagerState.STARTING;
+    changeState(ManagerState.STARTING);
   }
 
   @Override
@@ -31,48 +33,43 @@ public class ConnectionManager implements Callable<ManagerState> {
 
     connect();
 
-    return managerState;
+    return getState();
   }
 
   public void connect() {
     logger.info("Connecting to Broker servers...");
-    connectionHandler.connect();
-    managerState = ManagerState.RUNNING;
+    final Disposable disposable = connectionHandler.connect().subscribe(
+
+        connectTime -> {
+          logger.info("ConnectionManager received CONNECTED confirmation at {}", connectTime);
+          changeState(ManagerState.RUNNING);
+        },
+
+        error -> logger.error("Issue establishing connection.", error)
+
+    );
+
+    connectionDisposables.add(disposable);
   }
 
   public void shutdown() {
     logger.info("Shutting down 'Connection Manager' subsystem");
-    managerState = ManagerState.STOPPING;
+    changeState(ManagerState.STOPPING);
     connectionHandler.disconnect();
+    connectionDisposables.dispose();
   }
 
-  // TODO: Convert to Flowable
-  public Boolean isConnected() {
-    final Instant timeout = Instant.now();
-
-    // If state is STARTING or STOPPING, then check every 5 milliseconds for 1 second
-    while ((managerState == ManagerState.STARTING || managerState == ManagerState.STOPPING)
-        && timeout.plusSeconds(CONNECTION_CHECK_TIMEOUT_SECONDS).isBefore(Instant.now())) {
-
-      logger.info("ConnectionManager is {}. Checking again in 5 milliseconds...", managerState);
-
-      try {
-        Thread.sleep(CONNECTION_CHECK_REPEAT_MILLI);
-      } catch (final InterruptedException e) {
-        logger.error("Connection check was interupted", e);
-      }
-    }
-
-    return connectionHandler.isConnected();
+  public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
+    return connectionHandler.waitUntil(waitUntilState);
   }
 
-  public Flowable<ManagerState> isConnectedFlowable() {
-
-
-    return null;
+  private void changeState(ManagerState state) {
+    logger.info("Connection Manager is transitioning from {} to {}", getState(), state);
+    managerState = state;
   }
 
   public ManagerState getState() {
     return managerState;
   }
+
 }

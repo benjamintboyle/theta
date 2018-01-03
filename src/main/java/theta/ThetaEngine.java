@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import theta.connection.domain.ConnectionState;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
@@ -54,34 +56,32 @@ public class ThetaEngine implements Callable<String> {
         .add(Flowable.fromCallable(connectionManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
             .subscribe((endState) -> logger.info("ConnectionManager state: {}", endState)));
 
-    try {
-      Thread.sleep(1000);
-    } catch (final InterruptedException e) {
-      logger.error("Connection check was interupted", e);
-    }
+    final Disposable disposable = connectionManager.waitUntil(ConnectionState.CONNECTED).subscribe(
 
-    if (connectionManager.isConnected()) {
+        connectedTime -> {
+          // Portfolio Manager
+          managerDisposables
+              .add(Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+                  .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
 
-      // Portfolio Manager
-      managerDisposables
-          .add(Flowable.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-              .subscribe((endState) -> logger.info("PortfolioManager state: {}", endState)));
+          // Wait for portfolio processing
+          try {
+            Thread.sleep(2000);
+          } catch (final InterruptedException e) {
+            logger.error("Connection check was interupted", e);
+          }
 
-      // Wait for portfolio processing
-      try {
-        Thread.sleep(2000);
-      } catch (final InterruptedException e) {
-        logger.error("Connection check was interupted", e);
-      }
+          // Tick Manager
+          managerDisposables
+              .add(Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
+                  .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
+        },
 
-      // Tick Manager
-      managerDisposables.add(Flowable.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread())
-          .subscribe((endState) -> logger.info("TickManager state: {}", endState)));
-    } else {
+        connectionError -> logger.error("Connection Manager Error", connectionError)
 
-      logger.error("ConnectionManager not connected");
-      shutdown();
-    }
+    );
+
+    managerDisposables.add(disposable);
 
     return "ThetaEngine completed startup";
   }
