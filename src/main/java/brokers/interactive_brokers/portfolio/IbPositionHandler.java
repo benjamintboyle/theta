@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -17,7 +18,7 @@ import brokers.interactive_brokers.util.IbStringUtil;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 import theta.api.PositionHandler;
 import theta.domain.Option;
@@ -34,9 +35,12 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private final IbController controller;
   private PortfolioObserver portfolioObserver;
 
-  private final Subject<ZonedDateTime> positionEndTime = PublishSubject.create();
+  private final Subject<ZonedDateTime> positionEndTime = BehaviorSubject.create();
 
   private final CompositeDisposable positionHandlerDisposables = new CompositeDisposable();
+
+  // TODO: Probably needs to be handled better
+  private static final long TIMEOUT_SECONDS = 10;
 
   public IbPositionHandler(IbController controller) {
     logger.info("Starting Interactive Brokers Position Handler");
@@ -57,7 +61,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void position(String account, Contract contract, double position, double avgCost) {
-    logger.info(
+    logger.debug(
         "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
         account, position, avgCost, IbStringUtil.toStringContract(contract));
 
@@ -110,17 +114,41 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     portfolioObserver = observer;
   }
 
+  // TODO: Should not have to account for timeout
   @Override
   public Completable requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
 
-    final Completable requestComplete = getPositionEnd();
+    return Completable.create(
 
-    controller.getController().reqPositions(this);
+        source -> {
+          final Disposable positionEndDisposable = positionEndTime.firstOrError().subscribe(
 
-    return requestComplete;
+              positionEndTime -> {
+                logger.debug("Received Position Request End Notification");
+                source.onComplete();
+              },
+
+              error -> {
+                logger.error("Error waiting for Position End", error);
+                source.onError(error);
+              });
+
+          positionHandlerDisposables.add(positionEndDisposable);
+
+          controller.getController().reqPositions(this);
+        }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
   }
 
+  @Override
+  public void requestPositionsFromBrokerageTemp() {
+    logger.info("Requesting Positions from Interactive Brokers");
+
+    controller.getController().reqPositions(this);
+  }
+
+  // TODO: Should not have to account for timeout
+  @Override
   public Completable getPositionEnd() {
     return Completable.create(
 
@@ -135,11 +163,15 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
               });
 
           positionHandlerDisposables.add(positionEndDisposable);
-        });
+        }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
   }
 
   public void shutdown() {
-    positionHandlerDisposables.dispose();
+    if (positionHandlerDisposables.isDisposed()) {
+      positionHandlerDisposables.dispose();
+    } else {
+      logger.warn("Tried to dispose of already disposed Position Handler Disposables");
+    }
   }
 
 }

@@ -25,12 +25,12 @@ public class Stock implements Security {
     this.quantity = Objects.requireNonNull(quantity, "Quantity must not be null.");
     this.averageTradePrice = Objects.requireNonNull(averageTradePrice, "Average Price must not be null.");
 
-    Stock.logger.info("Built Stock: {}", toString());
+    logger.debug("Built {}", toString());
   }
 
   /**
    * @deprecated Use non-id parametered version.
-   * 
+   *
    * @param id
    * @param ticker
    * @param quantity
@@ -72,7 +72,7 @@ public class Stock implements Security {
   }
 
   public Stock reversePosition() {
-    Stock.logger.info("Building Reverse of Stock: {}", toString());
+    logger.info("Building Reverse of Stock: {}", toString());
     return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
   }
 

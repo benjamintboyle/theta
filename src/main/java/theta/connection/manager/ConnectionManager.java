@@ -2,19 +2,16 @@ package theta.connection.manager;
 
 import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import theta.ThetaUtil;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.ConnectionState;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 
-public class ConnectionManager implements Callable<ManagerStatus> {
+public class ConnectionManager {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
@@ -24,34 +21,18 @@ public class ConnectionManager implements Callable<ManagerStatus> {
   private final CompositeDisposable connectionDisposables = new CompositeDisposable();
 
   public ConnectionManager(ConnectionHandler connectionHandler) {
-    logger.info("Starting Connection Manager");
     this.connectionHandler = connectionHandler;
-    getManagerStatus().changeState(ManagerState.STARTING);
+    getManagerStatus().changeState(ManagerState.RUNNING);
   }
 
-  @Override
-  public ManagerStatus call() throws Exception {
-    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
-
-    connect();
-
-    return getManagerStatus();
-  }
-
-  public void connect() {
+  public Single<ZonedDateTime> connect() {
     logger.info("Connecting to Broker servers...");
-    final Disposable disposable = connectionHandler.connect().subscribe(
-
-        connectTime -> {
-          logger.info("ConnectionManager received CONNECTED confirmation at {}", connectTime);
-          getManagerStatus().changeState(ManagerState.RUNNING);
-        },
-
-        error -> logger.error("Issue establishing connection.", error)
-
-    );
-
-    connectionDisposables.add(disposable);
+    // TODO: Not the correct solution
+    if (connectionHandler != null) {
+      return connectionHandler.connect();
+    } else {
+      return Single.error(new IllegalArgumentException());
+    }
   }
 
   public void shutdown() {
@@ -68,4 +49,5 @@ public class ConnectionManager implements Callable<ManagerStatus> {
   public ManagerStatus getManagerStatus() {
     return managerStatus;
   }
+
 }

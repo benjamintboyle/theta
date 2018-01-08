@@ -27,7 +27,7 @@ import theta.domain.ThetaTrade;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
-import theta.tick.api.TickObserver;
+import theta.tick.api.TickConsumer;
 import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 
@@ -93,7 +93,7 @@ public class TickManagerTest {
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
     Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
-    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickConsumer.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);
@@ -112,7 +112,7 @@ public class TickManagerTest {
 
     final List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
     Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickObserver.class)))
+    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickConsumer.class)))
         .thenReturn(handler);
 
     sut.addMonitor(trade);

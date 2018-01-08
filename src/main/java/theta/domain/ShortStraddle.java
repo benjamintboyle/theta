@@ -30,7 +30,7 @@ public class ShortStraddle {
       straddle = Optional.of(new ShortStraddle(call, put));
     }
 
-    logger.info("Successfully built straddle: {}", straddle);
+    logger.debug("Built {}", straddle);
 
     return straddle;
   }

@@ -20,6 +20,8 @@ import theta.connection.domain.ConnectionState;
 public class IbConnectionHandler implements IbController, ConnectionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final int CLIENT_ID = 0;
+
   private static final long CONNECTION_TIMEOUT_SECONDS = 2;
 
   private static final IbConnectionHandlerCallback CALLBACK =
@@ -44,22 +46,25 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Override
   public Single<ZonedDateTime> connect() {
 
-    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client 0",
-        brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort());
+    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
+        brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), CLIENT_ID);
 
     return Single.create(
 
         source -> {
           final Disposable disposable = waitUntil(ConnectionState.CONNECTED).subscribe(
 
-              connectionTime -> source.onSuccess(connectionTime),
+              connectionTime -> {
+                source.onSuccess(connectionTime);
+              },
 
-              error -> logger.error("Error while connecting", error));
-
+              error -> {
+                logger.error("Error while connecting", error);
+              });
           handlerDisposables.add(disposable);
 
-          getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), 0,
-              null);
+          getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(),
+              CLIENT_ID, null);
         });
   }
 

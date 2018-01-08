@@ -100,8 +100,9 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
   }
 
   @Override
-  public void error(Exception e) {
-    logger.error("Interactive Brokers Error - ", e);
+  public void error(Exception exception) {
+    logger.error("Interactive Brokers Error - ", exception);
+    connectionStatus.onError(exception);
   }
 
   @Override

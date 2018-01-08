@@ -14,12 +14,12 @@ import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
 import theta.api.TickHandler;
 import theta.tick.api.PriceLevel;
-import theta.tick.api.TickObserver;
+import theta.tick.api.TickConsumer;
 
-public class IbTickHandler implements ITopMktDataHandler, TickHandler {
+public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final TickObserver tickObserver;
+  private final TickConsumer tickConsumer;
 
   private final String ticker;
   private Double bidPrice = Double.MIN_VALUE;
@@ -43,9 +43,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private final Set<Double> fallsBelow = new HashSet<Double>();
   private final Set<Double> risesAbove = new HashSet<Double>();
 
-  public IbTickHandler(String ticker, TickObserver tickObserver) {
+  public IbLastTickHandler(String ticker, TickConsumer tickConsumer) {
     this.ticker = ticker;
-    this.tickObserver = tickObserver;
+    this.tickConsumer = tickConsumer;
     logger.info("Built Interactive Brokers Tick Handler for: {}", ticker);
   }
 
@@ -153,7 +153,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   private void publishTickNotification() {
-    tickObserver.acceptTick(ticker);
+    tickConsumer.acceptTick(ticker);
   }
 
   @Override
@@ -228,24 +228,24 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public Integer addPriceLevel(PriceLevel priceLevel) {
-    logger.info("Adding Price Level {} to Tick Handler: {}", priceLevel, ticker);
-    if (!priceLevel.getTicker().equals(ticker)) {
-      logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), ticker);
-    }
 
-    switch (priceLevel.tradeIf()) {
-      case FALLS_BELOW:
-        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
-            priceLevel);
-        fallsBelow.add(priceLevel.getStrikePrice());
-        break;
-      case RISES_ABOVE:
-        logger.info("Adding {} ${} price level monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
-            priceLevel);
-        risesAbove.add(priceLevel.getStrikePrice());
-        break;
-      default:
-        logger.error("Unknown Price Direction: {}", priceLevel.tradeIf());
+    if (priceLevel.getTicker().equals(ticker)) {
+
+      logger.info("Adding Price Level: {} ${} to Monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+          priceLevel.getTicker());
+
+      switch (priceLevel.tradeIf()) {
+        case FALLS_BELOW:
+          fallsBelow.add(priceLevel.getStrikePrice());
+          break;
+        case RISES_ABOVE:
+          risesAbove.add(priceLevel.getStrikePrice());
+          break;
+        default:
+          logger.error("Unknown Price Direction: {} for Price Level: {}", priceLevel.tradeIf(), priceLevel);
+      }
+    } else {
+      logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), ticker);
     }
 
     logPriceLevels();
@@ -260,17 +260,20 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor", priceLevel.getTicker(), ticker);
     }
 
+    logger.info("Removing Price Level {} ${} from Monitor: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+        priceLevel.getTicker());
+
     switch (priceLevel.tradeIf()) {
       case FALLS_BELOW:
-        logger.info("Removing FALLS_BELOW price level: {}", priceLevel);
         if (!fallsBelow.remove(priceLevel.getStrikePrice())) {
-          logger.warn("No Price Level to remove for: {}", priceLevel);
+          logger.warn("No Price Level to remove for {} ${} from Monitor: {}", priceLevel.tradeIf(),
+              priceLevel.getStrikePrice(), priceLevel.getTicker());
         }
         break;
       case RISES_ABOVE:
-        logger.info("Removing RISES_ABOVE price level: {}", priceLevel);
         if (!risesAbove.remove(priceLevel.getStrikePrice())) {
-          logger.warn("No Price Level to remove for: {}", priceLevel);
+          logger.warn("No Price Level to remove for {} ${} from Monitor: {}", priceLevel.tradeIf(),
+              priceLevel.getStrikePrice(), priceLevel.getTicker());
         }
         break;
       default:

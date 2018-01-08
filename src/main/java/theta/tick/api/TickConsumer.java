@@ -1,5 +1,5 @@
 package theta.tick.api;
 
-public interface TickObserver {
+public interface TickConsumer {
   public void acceptTick(String ticker);
 }

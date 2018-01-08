@@ -58,7 +58,6 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   private final CompositeDisposable portfolioDisposables = new CompositeDisposable();
 
   public PortfolioManager(PositionHandler positionHandler) {
-    logger.info("Starting Portfolio Manager");
     getStatus().changeState(ManagerState.STARTING);
     this.positionHandler = positionHandler;
     this.positionHandler.subscribePositions(this);
@@ -66,55 +65,71 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
 
   @Override
   public ManagerStatus call() {
-    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-    final Disposable positionRequestDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
+    // final Disposable positionRequestDisposable =
+    // positionHandler.requestPositionsFromBrokerage().subscribe(
+    final Disposable positionRequestDisposable = getPositionEnd().subscribe(
 
         () -> {
-          getStatus().changeState(ManagerState.RUNNING);
+          ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-          while (getStatus().getState() == ManagerState.RUNNING) {
-
-            Optional<Security> security = Optional.empty();
-
-            try {
-              security = Optional.of(inputQueue.take());
-            } catch (final InterruptedException e) {
-              logger.error("Interupted while waiting for security", e);
-            }
-
-            if (security.isPresent()) {
-              final Security unboxedSecurity = security.get();
-
-              securityIdMap.put(unboxedSecurity.getId(), unboxedSecurity);
-
-              removePositionIfExists(unboxedSecurity);
-
-              if (unboxedSecurity.getQuantity() != 0) {
-                processPosition(unboxedSecurity.getTicker());
-                executionMonitor.portfolioChange(unboxedSecurity);
-              } else {
-                securityIdMap.remove(unboxedSecurity.getId());
-                logger.info("Newly received Security not processed due to 0 quantity: {}", unboxedSecurity);
-              }
-            }
-
-            // Log positions if queue is empty
-            if (inputQueue.size() == 0) {
-              logPositions();
-            }
-          }
+          mainLoop();
 
           getStatus().changeState(ManagerState.SHUTDOWN);
         },
 
-        error -> logger.error("Issue while waiting for Positions", error)
-
-    );
+        error -> logger.warn("Issue while waiting for Positions", error));
 
     portfolioDisposables.add(positionRequestDisposable);
 
+    getStatus().changeState(ManagerState.RUNNING);
+
+    // positionHandler.requestPositionsFromBrokerageTemp();
+    // mainLoop();
+
     return getStatus();
+  }
+
+  private void mainLoop() {
+
+    while (getStatus().getState() == ManagerState.RUNNING) {
+
+      // Blocks until position available
+      final Security security = getNextPosition();
+
+      executionMonitor.portfolioChange(security);
+
+      removePositionIfExists(security);
+
+      if (security.getQuantity() != 0) {
+        securityIdMap.put(security.getId(), security);
+        processPosition(security.getTicker());
+      } else {
+        securityIdMap.remove(security.getId());
+        logger.info("Newly received Security not processed due to 0 quantity: {}", security);
+      }
+
+      // Log positions if queue is empty
+      if (inputQueue.size() == 0) {
+        logPositions();
+      }
+    }
+  }
+
+  private Security getNextPosition() {
+    Security security = null;
+
+    if (inputQueue.size() == 0) {
+      logger.info("Waiting for next position from brokerage.");
+    }
+
+    try {
+      security = inputQueue.take();
+    } catch (final InterruptedException e) {
+      logger.error("Interupted while waiting for security", e);
+    }
+
+    return security;
   }
 
   public Completable getPositionEnd() {
