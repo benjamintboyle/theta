@@ -39,7 +39,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   private final CompositeDisposable positionHandlerDisposables = new CompositeDisposable();
 
-  // TODO: Probably needs to be handled better
+  // TODO: Move to properties file
   private static final long TIMEOUT_SECONDS = 10;
 
   public IbPositionHandler(IbController controller) {
@@ -114,7 +114,6 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     portfolioObserver = observer;
   }
 
-  // TODO: Should not have to account for timeout
   @Override
   public Completable requestPositionsFromBrokerage() {
     logger.info("Requesting Positions from Interactive Brokers");
@@ -137,17 +136,10 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
           positionHandlerDisposables.add(positionEndDisposable);
 
           controller.getController().reqPositions(this);
+
         }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
   }
 
-  @Override
-  public void requestPositionsFromBrokerageTemp() {
-    logger.info("Requesting Positions from Interactive Brokers");
-
-    controller.getController().reqPositions(this);
-  }
-
-  // TODO: Should not have to account for timeout
   @Override
   public Completable getPositionEnd() {
     return Completable.create(
@@ -163,6 +155,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
               });
 
           positionHandlerDisposables.add(positionEndDisposable);
+
         }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
   }
 

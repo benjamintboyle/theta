@@ -9,7 +9,4 @@ public interface PositionHandler {
   public Completable requestPositionsFromBrokerage();
 
   public Completable getPositionEnd();
-
-  // REMOVE: TEMP FOR TESTING
-  public void requestPositionsFromBrokerageTemp();
 }

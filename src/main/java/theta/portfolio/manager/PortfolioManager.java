@@ -66,9 +66,9 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   @Override
   public ManagerStatus call() {
 
-    // final Disposable positionRequestDisposable =
-    // positionHandler.requestPositionsFromBrokerage().subscribe(
-    final Disposable positionRequestDisposable = getPositionEnd().subscribe(
+    logger.debug("In Portfolio call function");
+
+    final Disposable positionRequestDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
 
         () -> {
           ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -91,6 +91,8 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   }
 
   private void mainLoop() {
+
+    logger.debug("In main Portfolio loop");
 
     while (getStatus().getState() == ManagerState.RUNNING) {
 
