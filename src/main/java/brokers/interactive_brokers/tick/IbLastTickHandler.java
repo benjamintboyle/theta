@@ -22,6 +22,7 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   private final TickConsumer tickConsumer;
 
   private final String ticker;
+
   private Double bidPrice = Double.MIN_VALUE;
   private Double askPrice = Double.MIN_VALUE;
   private Double lastPrice = Double.MIN_VALUE;

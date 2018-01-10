@@ -2,9 +2,7 @@ package theta.tick.manager;
 
 import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -41,7 +39,6 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   private final BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
-  private final Map<String, TickHandler> tickHandlers = new HashMap<String, TickHandler>();
 
   public TickManager(TickSubscriber tickSubscriber) {
     getStatus().changeState(ManagerState.STARTING);
@@ -80,7 +77,7 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
       logger.error("Interupted while waiting for tick", e);
     }
 
-    final Optional<TickHandler> optionalTickHandler = Optional.ofNullable(tickHandlers.get(ticker));
+    final Optional<TickHandler> optionalTickHandler = tickSubscriber.getHandler(ticker);
 
     if (optionalTickHandler.isPresent()) {
       final TickHandler tickHandler = optionalTickHandler.get();
@@ -111,19 +108,21 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
   public void addMonitor(PriceLevel priceLevel) {
 
     final String ticker = priceLevel.getTicker();
+    Optional<TickHandler> tickHandler = tickSubscriber.getHandler(ticker);
 
-    if (!tickHandlers.containsKey(ticker)) {
-
+    if (!tickHandler.isPresent()) {
       logger.info("Adding Monitor for {}", ticker);
-      final TickHandler tickHandler = tickSubscriber.subscribeTick(ticker, this);
-      tickHandlers.put(ticker, tickHandler);
+
+      tickHandler = Optional.ofNullable(tickSubscriber.subscribeTick(ticker, this));
     } else {
       logger.debug("Monitor exists for {}", ticker);
     }
 
-    logger.info("Current Monitors: {}", tickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
-
-    tickHandlers.get(ticker).addPriceLevel(priceLevel);
+    if (tickHandler.isPresent()) {
+      tickHandler.get().addPriceLevel(priceLevel);
+    } else {
+      logger.error("Tick Handler not subscribed for {}", ticker);
+    }
   }
 
   @Override
@@ -131,15 +130,14 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
 
     Integer priceLevelsMonitored = 0;
 
-    if (tickHandlers.containsKey(priceLevel.getTicker())) {
-      final TickHandler tickHandler = tickHandlers.get(priceLevel.getTicker());
+    final Optional<TickHandler> tickHandler = tickSubscriber.getHandler(priceLevel.getTicker());
 
-      priceLevelsMonitored = tickHandler.removePriceLevel(priceLevel);
+    if (tickHandler.isPresent()) {
+      priceLevelsMonitored = tickHandler.get().removePriceLevel(priceLevel);
 
       if (priceLevelsMonitored == 0) {
         logger.info("Deleting Tick Monitor for: {}", priceLevel.getTicker());
-        tickSubscriber.unsubscribeTick(tickHandler);
-        tickHandlers.remove(priceLevel.getTicker());
+        tickSubscriber.unsubscribeTick(tickHandler.get());
         tickQueue.remove(priceLevel.getTicker());
       }
     } else {
