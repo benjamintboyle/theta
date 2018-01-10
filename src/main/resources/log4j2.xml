@@ -27,7 +27,7 @@
 		<Appender type="RollingFile" name="BrokerLogFile" fileName="logs/RawBroker.log"
 			filePattern="logs/$${date:yyyy-MM}/%d{yyyy-MM-dd}_%i_RawBroker.log.gz">
 			<Layout type="PatternLayout">
-				<Pattern>%m</Pattern>
+				<Pattern>%highlight{%d %p [%t] - %m%n}</Pattern>
 			</Layout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"

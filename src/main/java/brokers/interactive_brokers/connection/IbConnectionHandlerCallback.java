@@ -63,13 +63,13 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
     return Single.create(
 
-        source -> {
+        emitter -> {
           final Disposable disposable = getConnectionStatus().filter(status -> status.getState().equals(waitUntilState))
               .firstOrError().timeout(timeout.getSeconds(), TimeUnit.SECONDS).subscribe(
 
-                  status -> source.onSuccess(status.getTime()),
+                  status -> emitter.onSuccess(status.getTime()),
 
-                  error -> source.onError(error));
+                  error -> emitter.onError(error));
 
           callbackDisposables.add(disposable);
         });

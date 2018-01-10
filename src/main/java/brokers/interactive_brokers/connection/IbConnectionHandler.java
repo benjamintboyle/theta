@@ -26,7 +26,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
 
   private static final IbConnectionHandlerCallback CALLBACK =
       new IbConnectionHandlerCallback(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS));
-  private final ApiController ibController = new ApiController(CALLBACK, new IbLogger(), new IbLogger());
+  private final ApiController ibController = new ApiController(CALLBACK, new IbLogger("Input"), new IbLogger("Output"));
 
   private final CompositeDisposable handlerDisposables = new CompositeDisposable();
 
@@ -51,15 +51,16 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
 
     return Single.create(
 
-        source -> {
+        emitter -> {
           final Disposable disposable = waitUntil(ConnectionState.CONNECTED).subscribe(
 
               connectionTime -> {
-                source.onSuccess(connectionTime);
+                emitter.onSuccess(connectionTime);
               },
 
               error -> {
                 logger.error("Error while connecting", error);
+                emitter.onError(error);
               });
           handlerDisposables.add(disposable);
 

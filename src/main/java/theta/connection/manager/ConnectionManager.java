@@ -2,6 +2,7 @@ package theta.connection.manager;
 
 import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Single;
@@ -11,7 +12,7 @@ import theta.connection.domain.ConnectionState;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 
-public class ConnectionManager {
+public class ConnectionManager implements Callable<ManagerStatus> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ConnectionHandler connectionHandler;
 
@@ -25,14 +26,15 @@ public class ConnectionManager {
     getManagerStatus().changeState(ManagerState.RUNNING);
   }
 
+  @Override
+  public ManagerStatus call() {
+    return getManagerStatus();
+  }
+
   public Single<ZonedDateTime> connect() {
     logger.info("Connecting to Broker servers...");
-    // TODO: Not the correct solution
-    if (connectionHandler != null) {
-      return connectionHandler.connect();
-    } else {
-      return Single.error(new IllegalArgumentException());
-    }
+
+    return connectionHandler.connect();
   }
 
   public void shutdown() {

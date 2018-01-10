@@ -110,17 +110,20 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
   @Override
   public void addMonitor(PriceLevel priceLevel) {
 
-    if (!tickHandlers.containsKey(priceLevel.getTicker())) {
-      logger.info("Adding Monitor for {}", priceLevel.getTicker());
-      final TickHandler tickHandler = tickSubscriber.subscribeTick(priceLevel.getTicker(), this);
-      tickHandlers.put(priceLevel.getTicker(), tickHandler);
+    final String ticker = priceLevel.getTicker();
+
+    if (!tickHandlers.containsKey(ticker)) {
+
+      logger.info("Adding Monitor for {}", ticker);
+      final TickHandler tickHandler = tickSubscriber.subscribeTick(ticker, this);
+      tickHandlers.put(ticker, tickHandler);
     } else {
-      logger.debug("Monitor exists for {}", priceLevel.getTicker());
+      logger.debug("Monitor exists for {}", ticker);
     }
 
     logger.info("Current Monitors: {}", tickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
-    tickHandlers.get(priceLevel.getTicker()).addPriceLevel(priceLevel);
+    tickHandlers.get(ticker).addPriceLevel(priceLevel);
   }
 
   @Override

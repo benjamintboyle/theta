@@ -70,6 +70,12 @@ public class ThetaEngine implements Callable<String> {
     if (!managerDisposables.isDisposed()) {
       logger.info("Disposing of {} Managers", managerDisposables.size());
       managerDisposables.dispose();
+
+      logger.info("Calling shutdown for all managers.");
+      connectionManager.shutdown();
+      portfolioManager.shutdown();
+      tickManager.shutdown();
+      executionManager.shutdown();
     } else {
       logger.warn("Tried to dispose of already disposed of Manager Disposable");
     }
@@ -169,7 +175,7 @@ public class ThetaEngine implements Callable<String> {
 
   private Disposable startTickManager() {
 
-    return Single.fromCallable(tickManager).subscribe(
+    return Single.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe(
 
         endState -> {
           logger.info("{}", endState);

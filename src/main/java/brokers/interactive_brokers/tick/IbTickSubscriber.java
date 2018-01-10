@@ -1,11 +1,10 @@
 package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.contracts.StkContract;
+import com.ib.controller.ApiController.ITopMktDataHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
@@ -16,7 +15,6 @@ public class IbTickSubscriber implements TickSubscriber {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-  private final Map<String, IbLastTickHandler> ibTickHandlers = new HashMap<String, IbLastTickHandler>();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -25,6 +23,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
   @Override
   public TickHandler subscribeTick(String ticker, TickConsumer tickConsumer) {
+
     logger.info("Subscribing to Equity: {}", ticker);
     final StkContract contract = new StkContract(ticker);
 
@@ -33,16 +32,15 @@ public class IbTickSubscriber implements TickSubscriber {
         IbStringUtil.toStringContract(contract));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
-    ibTickHandlers.put(ticker, ibTickHandler);
-
     return ibTickHandler;
   }
 
   @Override
-  public Boolean unsubscribeTick(TickHandler tickHandler) {
-    logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
-    ibController.getController().cancelTopMktData(ibTickHandlers.get(tickHandler.getTicker()));
+  public void unsubscribeTick(TickHandler tickHandler) {
 
-    return Boolean.TRUE;
+    logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
+
+    // TODO: Needs better checking of cast or just better solution
+    ibController.getController().cancelTopMktData((ITopMktDataHandler) tickHandler);
   }
 }

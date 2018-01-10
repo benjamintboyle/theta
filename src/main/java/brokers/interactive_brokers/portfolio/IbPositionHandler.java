@@ -104,8 +104,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void positionEnd() {
-    positionEndTime.onNext(ZonedDateTime.now());
     logger.info("Received Position End notification");
+    positionEndTime.onNext(ZonedDateTime.now());
   }
 
   @Override
