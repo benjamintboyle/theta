@@ -1,2 +1,0 @@
-include ":interactive-brokers-api"
-project(":interactive-brokers-api").projectDir = file("../interactive-brokers-api")

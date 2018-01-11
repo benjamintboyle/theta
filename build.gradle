@@ -5,7 +5,8 @@ apply plugin: 'eclipse'
 mainClassName = "theta.ThetaEngine"
 
 group = 'theta'
-version = '0.2'
+// Removed (possibly temporarily) so distribution isn't always changing filename
+// version = '0.2'
 
 repositories {
     jcenter()
@@ -23,7 +24,7 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '+'
     implementation group: 'io.reactivex.rxjava2', name: 'rxjava', version: '+'
 
-    implementation project(':interactive-brokers-api')
+    implementation files('libs/interactive-brokers-api-9.72.18.jar')
 
     // Test code dependencies
     testImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '+'

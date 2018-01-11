@@ -1,6 +1,9 @@
 package theta;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,13 @@ import theta.tick.manager.TickManager;
 public class ThetaEngine implements Callable<String> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
+  private static final String BROKER_GATEWAY_ADDRESS = "172.17.0.2";
+  // private static final String BROKER_GATEWAY_ADDRESS =
+  // InetAddress.getLoopbackAddress().getHostAddress();
+  // Paper Trading port = 7497; Operational Trading port = 7496
+  private static final int BROKER_GATEWAY_PORT = 7497;
+
   // Theta managers
   private final ConnectionManager connectionManager;
   private final PortfolioManager portfolioManager;
@@ -23,15 +33,20 @@ public class ThetaEngine implements Callable<String> {
   private final CompositeDisposable managerDisposables = new CompositeDisposable();
 
   // Entry point for application
-  public static void main(final String[] args) {
+  public static void main(final String[] args) throws UnknownHostException {
 
     System.out.print("Starting ThetaEngine... ");
     logger.info("Starting ThetaEngine...");
 
+    // Initialize API controller
+    final InetSocketAddress brokerGatewaySocketAddress =
+        new InetSocketAddress(InetAddress.getByName(BROKER_GATEWAY_ADDRESS), BROKER_GATEWAY_PORT);
+
     // Create Theta Engine
     final ThetaEngine thetaEngine =
-        new ThetaEngine(ThetaManagerFactory.buildConnectionManager(), ThetaManagerFactory.buildPortfolioManager(),
-            ThetaManagerFactory.buildTickManager(), ThetaManagerFactory.buildExecutionManager());
+        new ThetaEngine(ThetaManagerFactory.buildConnectionManager(brokerGatewaySocketAddress),
+            ThetaManagerFactory.buildPortfolioManager(), ThetaManagerFactory.buildTickManager(),
+            ThetaManagerFactory.buildExecutionManager());
 
     final String status = thetaEngine.call();
     logger.info(status);
