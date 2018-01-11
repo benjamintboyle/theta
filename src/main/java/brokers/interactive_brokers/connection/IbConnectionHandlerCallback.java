@@ -10,10 +10,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.controller.ApiController.IConnectionHandler;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 import theta.connection.domain.BrokerageAccount;
@@ -36,43 +34,16 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
     this.timeout = timeout;
   }
 
-  public Observable<ConnectionStatus> getConnectionStatus() {
-    return connectionStatus;
-  }
-
   public Single<List<BrokerageAccount>> getAccountList() {
 
-    return Single.create(source -> {
-      final Disposable disposable = waitUntil(ConnectionState.CONNECTED).subscribe(
-
-          timeConnected -> {
-            logger.info("As of {}, Account List: {}", timeConnected, accountList);
-            source.onSuccess(accountList);
-          },
-
-          error -> logger.error("Issue with getting Account List", error)
-
-      );
-
-      callbackDisposables.add(disposable);
-
-    });
+    return waitUntil(ConnectionState.CONNECTED).map(time -> accountList);
   }
 
   public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
 
-    return Single.create(
-
-        emitter -> {
-          final Disposable disposable = getConnectionStatus().filter(status -> status.getState().equals(waitUntilState))
-              .firstOrError().timeout(timeout.getSeconds(), TimeUnit.SECONDS).subscribe(
-
-                  status -> emitter.onSuccess(status.getTime()),
-
-                  error -> emitter.onError(error));
-
-          callbackDisposables.add(disposable);
-        });
+    return connectionStatus.filter(status -> status.getState().equals(waitUntilState))
+        .map(connectionStatus -> connectionStatus.getTime()).firstOrError()
+        .timeout(timeout.getSeconds(), TimeUnit.SECONDS);
   }
 
   public void shutdown() {

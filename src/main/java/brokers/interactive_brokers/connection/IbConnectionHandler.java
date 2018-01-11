@@ -12,7 +12,6 @@ import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.IbLogger;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.BrokerageAccount;
 import theta.connection.domain.ConnectionState;
@@ -22,7 +21,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
 
   private static final int CLIENT_ID = 0;
 
-  private static final long CONNECTION_TIMEOUT_SECONDS = 2;
+  private static final long CONNECTION_TIMEOUT_SECONDS = 3;
 
   private static final IbConnectionHandlerCallback CALLBACK =
       new IbConnectionHandlerCallback(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS));
@@ -49,24 +48,10 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
     logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
         brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), CLIENT_ID);
 
-    return Single.create(
+    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(),
+        CLIENT_ID, null);
 
-        emitter -> {
-          final Disposable disposable = waitUntil(ConnectionState.CONNECTED).subscribe(
-
-              connectionTime -> {
-                emitter.onSuccess(connectionTime);
-              },
-
-              error -> {
-                logger.error("Error while connecting", error);
-                emitter.onError(error);
-              });
-          handlerDisposables.add(disposable);
-
-          getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(),
-              CLIENT_ID, null);
-        });
+    return waitUntil(ConnectionState.CONNECTED);
   }
 
   @Override
@@ -75,6 +60,8 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
     logger.info("Disconnecting...");
 
     getController().disconnect();
+
+    shutdown();
 
     return waitUntil(ConnectionState.DISCONNECTED);
   }

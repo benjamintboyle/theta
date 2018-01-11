@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Flowable;
 import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.ThetaTrade;
@@ -50,7 +49,7 @@ public class PortfolioManagerTest {
     sut.registerTickMonitor(mockTickManager);
     sut.registerExecutionMonitor(mockExecutionMonitor);
 
-    Flowable.fromCallable(sut).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe();
+    sut.startPositionProcessing().subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe();
   }
 
   @After

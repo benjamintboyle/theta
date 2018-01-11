@@ -4,10 +4,8 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.connection.domain.ConnectionState;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
@@ -59,23 +57,56 @@ public class ThetaEngine implements Callable<String> {
   @Override
   public String call() {
 
-    final Disposable connectionDisposable = startConnectionManager();
-    managerDisposables.add(connectionDisposable);
+    final Disposable portfolioManagerDisposable = startPortfolioManager();
+    managerDisposables.add(portfolioManagerDisposable);
+
+    final Disposable tickManagerDisposable = startTickManager();
+    managerDisposables.add(tickManagerDisposable);
 
     return "Completed startup";
+  }
+
+  private Disposable startPortfolioManager() {
+
+    return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
+
+        () -> {
+          logger.info("Portfolio Manager has Shutdown");
+        },
+
+        error -> {
+          logger.error("Portfolio Manager Error", error);
+          shutdown();
+        });
+  }
+
+  private Disposable startTickManager() {
+
+    return portfolioManager.getPositionEnd().observeOn(ThetaSchedulersFactory.getManagerThread())
+        .andThen(tickManager.startTickProcessing()).subscribe(
+
+            () -> {
+              logger.info("Tick Manager has Shutdown");
+            },
+
+            error -> {
+              logger.error("Tick Manager Error", error);
+              shutdown();
+            });
   }
 
   public void shutdown() {
 
     if (!managerDisposables.isDisposed()) {
-      logger.info("Disposing of {} Managers", managerDisposables.size());
-      managerDisposables.dispose();
 
       logger.info("Calling shutdown for all managers.");
       connectionManager.shutdown();
       portfolioManager.shutdown();
       tickManager.shutdown();
       executionManager.shutdown();
+
+      logger.info("Disposing of {} Managers", managerDisposables.size());
+      managerDisposables.dispose();
     } else {
       logger.warn("Tried to dispose of already disposed of Manager Disposable");
     }
@@ -106,84 +137,4 @@ public class ThetaEngine implements Callable<String> {
     logger.info("Manager Cross-Registration Complete");
   }
 
-  private Disposable startConnectionManager() {
-
-    return connectionManager.connect().subscribe(
-
-        connectTime -> {
-          logger.info("ConnectionManager received CONNECTED confirmation at {}", connectTime);
-
-          final Disposable connectionStatusDisposable = startPortfolioAndTickManagers();
-          managerDisposables.add(connectionStatusDisposable);
-        },
-
-        error -> {
-          logger.error("Issue establishing connection.", error);
-        });
-  }
-
-  private Disposable startPortfolioAndTickManagers() {
-
-    final Disposable connectionStatusDisposable = connectionManager.waitUntil(ConnectionState.CONNECTED).subscribe(
-
-        connectedTime -> {
-
-          logger.info("Connected at {}. Starting remaining managers.", connectedTime);
-
-          final Disposable positionEndDisposable = portfolioManager.getPositionEnd().subscribe(
-
-              () -> {
-                // Tick Manager
-                final Disposable tickManagerDisposable = startTickManager();
-                managerDisposables.add(tickManagerDisposable);
-              },
-
-              error -> {
-                logger.error("Error waiting for Position End", error);
-                shutdown();
-              });
-          managerDisposables.add(positionEndDisposable);
-
-          // Portfolio Manager
-          final Disposable portfolioManagerDisposable = startPortfolioManager();
-          managerDisposables.add(portfolioManagerDisposable);
-        },
-
-        connectionError -> {
-          logger.error("Connection Manager Error", connectionError);
-          shutdown();
-        }
-
-    );
-
-    return connectionStatusDisposable;
-  }
-
-  private Disposable startPortfolioManager() {
-
-    return Single.fromCallable(portfolioManager).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe(
-
-        endState -> {
-          logger.info("{}", endState);
-        },
-
-        error -> {
-          logger.error("Portfolio Manager Error", error);
-          shutdown();
-        });
-  }
-
-  private Disposable startTickManager() {
-
-    return Single.fromCallable(tickManager).subscribeOn(ThetaSchedulersFactory.getManagerThread()).subscribe(
-
-        endState -> {
-          logger.info("{}", endState);
-        },
-
-        error -> {
-          logger.error("Tick Manager Error", error);
-          shutdown();
-        });
-  }
 }

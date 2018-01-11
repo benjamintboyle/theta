@@ -9,16 +9,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ThetaUtil;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -28,12 +24,11 @@ import theta.domain.ThetaTrade;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutionMonitor;
-import theta.portfolio.api.PortfolioObserver;
 import theta.portfolio.api.PositionProvider;
 import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
-public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObserver, PositionProvider {
+public class PortfolioManager implements PositionProvider {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
@@ -49,9 +44,6 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   // Securities to theta trade map
   private final Map<UUID, Set<UUID>> securityThetaLink = new HashMap<>();
 
-  // Queue of newly received position updates
-  private final BlockingQueue<Security> inputQueue = new LinkedBlockingQueue<>();
-
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
@@ -60,92 +52,49 @@ public class PortfolioManager implements Callable<ManagerStatus>, PortfolioObser
   public PortfolioManager(PositionHandler positionHandler) {
     getStatus().changeState(ManagerState.STARTING);
     this.positionHandler = positionHandler;
-    this.positionHandler.subscribePositions(this);
   }
 
-  @Override
-  public ManagerStatus call() {
-
-    logger.debug("In Portfolio call function");
-
-    final Disposable positionRequestDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
-
-        () -> {
-          ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
-
-          mainLoop();
-
-          getStatus().changeState(ManagerState.SHUTDOWN);
-        },
-
-        error -> logger.warn("Issue while waiting for Positions", error));
-
-    portfolioDisposables.add(positionRequestDisposable);
+  public Completable startPositionProcessing() {
 
     getStatus().changeState(ManagerState.RUNNING);
 
-    // positionHandler.requestPositionsFromBrokerageTemp();
-    // mainLoop();
+    return Completable.create(emitter -> {
+      final Disposable requestPositionDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
 
-    return getStatus();
-  }
+          security -> {
 
-  private void mainLoop() {
+            executionMonitor.portfolioChange(security);
 
-    logger.debug("In main Portfolio loop");
+            removePositionIfExists(security);
 
-    while (getStatus().getState() == ManagerState.RUNNING) {
+            if (security.getQuantity() != 0) {
+              securityIdMap.put(security.getId(), security);
+              processPosition(security.getTicker());
+            } else {
+              securityIdMap.remove(security.getId());
+              logger.info("Newly received Security not processed due to 0 quantity: {}", security);
+            }
 
-      // Blocks until position available
-      final Security security = getNextPosition();
+            // Log positions if queue is empty
+            logPositions();
+          },
 
-      executionMonitor.portfolioChange(security);
+          exception -> {
+            logger.error("Issue with Received Positions from Brokerage", exception);
+            emitter.onError(exception);
+          },
 
-      removePositionIfExists(security);
+          () -> {
+            getStatus().changeState(ManagerState.SHUTDOWN);
+            emitter.onComplete();
+          });
 
-      if (security.getQuantity() != 0) {
-        securityIdMap.put(security.getId(), security);
-        processPosition(security.getTicker());
-      } else {
-        securityIdMap.remove(security.getId());
-        logger.info("Newly received Security not processed due to 0 quantity: {}", security);
-      }
-
-      // Log positions if queue is empty
-      if (inputQueue.size() == 0) {
-        logPositions();
-      }
-    }
-  }
-
-  private Security getNextPosition() {
-    Security security = null;
-
-    if (inputQueue.size() == 0) {
-      logger.info("Waiting for next position from brokerage.");
-    }
-
-    try {
-      security = inputQueue.take();
-    } catch (final InterruptedException e) {
-      logger.error("Interupted while waiting for security", e);
-    }
-
-    return security;
+      portfolioDisposables.add(requestPositionDisposable);
+    });
   }
 
   public Completable getPositionEnd() {
     return positionHandler.getPositionEnd();
-  }
-
-  @Override
-  public void acceptPosition(Security security) {
-    logger.info("Received Position update: {}", security);
-    try {
-      inputQueue.put(security);
-    } catch (final InterruptedException e) {
-      logger.error("Interupted before security could be added", e);
-    }
   }
 
   @Override

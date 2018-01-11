@@ -15,16 +15,18 @@ import com.ib.controller.ApiController.IPositionHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOptionUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
+import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
-import theta.portfolio.api.PortfolioObserver;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -33,14 +35,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private final Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
 
   private final IbController controller;
-  private PortfolioObserver portfolioObserver;
 
-  private final Subject<ZonedDateTime> positionEndTime = BehaviorSubject.create();
+  private final Subject<Security> subjectPositions = ReplaySubject.create();
+  private final Subject<ZonedDateTime> subjectPositionEndTime = BehaviorSubject.create();
 
   private final CompositeDisposable positionHandlerDisposables = new CompositeDisposable();
 
   // TODO: Move to properties file
-  private static final long TIMEOUT_SECONDS = 10;
+  private static final long TIMEOUT_SECONDS = 3;
 
   public IbPositionHandler(IbController controller) {
     logger.info("Starting Interactive Brokers Position Handler");
@@ -60,6 +62,21 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   @Override
+  public Flowable<Security> requestPositionsFromBrokerage() {
+
+    logger.info("Requesting Positions from Interactive Brokers");
+
+    controller.getController().reqPositions(this);
+
+    return subjectPositions.toFlowable(BackpressureStrategy.BUFFER);
+  }
+
+  @Override
+  public Completable getPositionEnd() {
+    return subjectPositionEndTime.firstOrError().toCompletable().timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+  }
+
+  @Override
   public void position(String account, Contract contract, double position, double avgCost) {
     logger.debug(
         "Handler has received position from Brokers servers: Account: {}, Position: {}, Average Cost: {}, Contract: [{}]",
@@ -68,7 +85,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     switch (contract.secType()) {
       case STK:
         final Stock stock = Stock.of(generateId(contract.conid()), contract.symbol(), position, avgCost);
-        portfolioObserver.acceptPosition(stock);
+        subjectPositions.onNext(stock);
 
         break;
       case OPT:
@@ -91,7 +108,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         if (optionalExpiration.isPresent()) {
           final Option option = new Option(generateId(contract.conid()), securityType, contract.symbol(), position,
               contract.strike(), optionalExpiration.get(), avgCost);
-          portfolioObserver.acceptPosition(option);
+          subjectPositions.onNext(option);
         } else {
           logger.error("Invalid Option Expiration for Contract: ", IbStringUtil.toStringContract(contract));
         }
@@ -105,58 +122,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void positionEnd() {
     logger.info("Received Position End notification");
-    positionEndTime.onNext(ZonedDateTime.now());
-  }
-
-  @Override
-  public void subscribePositions(PortfolioObserver observer) {
-    logger.info("Portfolio Manager is observing Handler");
-    portfolioObserver = observer;
-  }
-
-  @Override
-  public Completable requestPositionsFromBrokerage() {
-    logger.info("Requesting Positions from Interactive Brokers");
-
-    return Completable.create(
-
-        source -> {
-          final Disposable positionEndDisposable = positionEndTime.firstOrError().subscribe(
-
-              positionEndTime -> {
-                logger.debug("Received Position Request End Notification");
-                source.onComplete();
-              },
-
-              error -> {
-                logger.error("Error waiting for Position End", error);
-                source.onError(error);
-              });
-
-          positionHandlerDisposables.add(positionEndDisposable);
-
-          controller.getController().reqPositions(this);
-
-        }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
-  }
-
-  @Override
-  public Completable getPositionEnd() {
-    return Completable.create(
-
-        source -> {
-          final Disposable positionEndDisposable = positionEndTime.firstOrError().subscribe(
-
-              positionEndTime -> source.onComplete(),
-
-              error -> {
-                logger.error("Error waiting for Position End", error);
-                source.onError(error);
-              });
-
-          positionHandlerDisposables.add(positionEndDisposable);
-
-        }).timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete();
+    subjectPositionEndTime.onNext(ZonedDateTime.now());
   }
 
   public void shutdown() {

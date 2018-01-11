@@ -21,14 +21,23 @@ public class IbHandlerFactory {
   }
 
   public static PositionHandler buildPortfolioHandler() {
+    if (ibConnectionHandler == null) {
+      throw new IllegalArgumentException("IbConnectionHandler is null.");
+    }
     return new IbPositionHandler(ibConnectionHandler);
   }
 
   public static TickSubscriber buildTickSubscriber() {
+    if (ibConnectionHandler == null) {
+      throw new IllegalArgumentException("IbConnectionHandler is null.");
+    }
     return new IbTickSubscriber(ibConnectionHandler);
   }
 
   public static ExecutionHandler buildExecutionHandler() {
+    if (ibConnectionHandler == null) {
+      throw new IllegalArgumentException("IbConnectionHandler is null.");
+    }
     return new IbExecutionHandler(ibConnectionHandler);
   }
 }

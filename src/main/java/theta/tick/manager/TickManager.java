@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.Completable;
 import theta.ThetaUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
@@ -28,7 +28,7 @@ import theta.tick.domain.Tick;
 import theta.tick.domain.TickType;
 import theta.tick.processor.TickProcessor;
 
-public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickConsumer {
+public class TickManager implements TickMonitor, TickConsumer {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
@@ -45,24 +45,27 @@ public class TickManager implements Callable<ManagerStatus>, TickMonitor, TickCo
     this.tickSubscriber = Objects.requireNonNull(tickSubscriber);
   }
 
-  @Override
-  public ManagerStatus call() {
-    ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
+  public Completable startTickProcessing() {
 
-    getStatus().changeState(ManagerState.RUNNING);
+    logger.debug("Entered TickProcessing");
 
-    while (getStatus().getState() == ManagerState.RUNNING) {
+    return Completable.create(emitter -> {
 
-      // Blocks until tick available
-      logger.info("Waiting for next tick across strike price.");
-      final Tick tick = getLastTick();
+      ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
-      processTick(tick);
-    }
+      getStatus().changeState(ManagerState.RUNNING);
 
-    getStatus().changeState(ManagerState.SHUTDOWN);
+      while (getStatus().getState() == ManagerState.RUNNING) {
 
-    return getStatus();
+        // Blocks until tick available
+        logger.info("Waiting for next tick across strike price.");
+        final Tick tick = getLastTick();
+
+        processTick(tick);
+      }
+
+      getStatus().changeState(ManagerState.SHUTDOWN);
+    });
   }
 
   private Tick getLastTick() {
