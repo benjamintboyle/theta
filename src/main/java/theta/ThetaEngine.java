@@ -21,8 +21,9 @@ public class ThetaEngine implements Callable<String> {
   private static final String BROKER_GATEWAY_ADDRESS = "172.17.0.2";
   // private static final String BROKER_GATEWAY_ADDRESS =
   // InetAddress.getLoopbackAddress().getHostAddress();
-  // Paper Trading port = 7497; Operational Trading port = 7496
-  private static final int BROKER_GATEWAY_PORT = 7497;
+  // TWS Paper Trading port = 7497; Operational = 7496; Gateway Operational: 4001, Paper: 4002
+  private static final int BROKER_GATEWAY_PORT = 4002;
+  // private static final int BROKER_GATEWAY_PORT = 7497;
 
   // Theta managers
   private final ConnectionManager connectionManager;
