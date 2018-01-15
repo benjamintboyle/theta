@@ -229,6 +229,10 @@ public class PortfolioManager implements PositionProvider {
     return securityWithQuantity;
   }
 
+  public ManagerStatus getStatus() {
+    return managerStatus;
+  }
+
   public void registerTickMonitor(TickMonitor monitor) {
     logger.info("Registering Tick Monitor with Portfolio Manager");
     this.monitor = monitor;
@@ -240,23 +244,14 @@ public class PortfolioManager implements PositionProvider {
   }
 
   public void logPositions() {
-    for (final ThetaTrade position : thetaIdMap.values()) {
-      logger.info("Current position: {}", position);
-    }
+    PositionLogger.logThetaPositions(thetaIdMap.values());
 
-    for (final Security security : securityIdMap.values().stream()
-        .filter(security -> !securityThetaLink.containsKey(security.getId())).collect(Collectors.toList())) {
-      logger.info("Current unprocessed security: {}", security);
-    }
+    PositionLogger.logUnmatchedPositions(securityIdMap.values(), securityThetaLink.keySet());
   }
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
     portfolioDisposables.dispose();
-  }
-
-  public ManagerStatus getStatus() {
-    return managerStatus;
   }
 
 }
