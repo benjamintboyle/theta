@@ -10,7 +10,8 @@ import theta.domain.api.SecurityType;
 
 public class ShortStraddle {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Option call;
   private final Option put;
@@ -107,7 +108,8 @@ public class ShortStraddle {
 
     // Quantity must be less than 0 (becasue it is a SHORT straddle)
     if (call.getQuantity() >= 0 || put.getQuantity() >= 0) {
-      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage, call, put);
+      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage, call,
+          put);
       isValidShortStraddle = false;
     }
 
@@ -130,12 +132,15 @@ public class ShortStraddle {
   public String toString() {
     final StringBuilder builder = new StringBuilder();
 
-    builder.append("Short Straddle ");
-    builder.append(getId());
-    builder.append(" - Call: ");
+    builder.append("Short Straddle - ");
+
+    builder.append("Call: ");
     builder.append(getCall());
     builder.append(", Put: ");
     builder.append(getPut());
+
+    builder.append(", Id: ");
+    builder.append(getId());
 
     return builder.toString();
   }

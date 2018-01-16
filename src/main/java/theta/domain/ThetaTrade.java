@@ -12,7 +12,8 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
 public class ThetaTrade implements PriceLevel {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
   private final Stock stock;
@@ -53,9 +54,9 @@ public class ThetaTrade implements PriceLevel {
   }
 
   /**
-   * Gets the number of ThetaTrade "contracts". One ThetaTrade "contract" contains a call, a put, and
-   * 100 stock. This quantity is negative or positive based on if the stock is long or short. Note,
-   * for ThetaTrades the call and put options are both short.
+   * Gets the number of ThetaTrade "contracts". One ThetaTrade "contract" contains a call, a put,
+   * and 100 stock. This quantity is negative or positive based on if the stock is long or short.
+   * Note, for ThetaTrades the call and put options are both short.
    *
    * @return
    */
@@ -97,8 +98,8 @@ public class ThetaTrade implements PriceLevel {
         securityOfType = getPut();
         break;
       default:
-        final IllegalArgumentException illegalArgumentException =
-            new IllegalArgumentException(securityType + " is an invalid security type for this object.");
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+            securityType + " is an invalid security type for this object.");
         logger.error("Unknown Security Type: {}", securityType, illegalArgumentException);
         throw illegalArgumentException;
     }
@@ -132,8 +133,31 @@ public class ThetaTrade implements PriceLevel {
 
   @Override
   public String toString() {
-    return "ThetaTrade [id=" + getId() + ", type=" + getSecurityType() + ", quantity=" + getQuantity() + ", stock="
-        + getStock() + ", call=" + getCall() + ", put=" + getPut() + "]";
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("ThetaTrade [");
+
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+    builder.append(", Quantity: ");
+    builder.append(getQuantity());
+    builder.append(", Security Type: ");
+    builder.append(getSecurityType());
+    builder.append(", Id: ");
+    builder.append(getId());
+
+    builder.append(", ");
+    builder.append(getStock().toString());
+
+    builder.append(", ");
+    builder.append(getCall().toString());
+
+    builder.append(", ");
+    builder.append(getPut().toString());
+
+    builder.append("]");
+
+    return builder.toString();
   }
 
   @Override
@@ -150,7 +174,8 @@ public class ThetaTrade implements PriceLevel {
     if (obj instanceof ThetaTrade) {
       final ThetaTrade other = (ThetaTrade) obj;
 
-      return Objects.equals(getStock(), other.getStock()) && Objects.equals(getStraddle(), other.getStraddle());
+      return Objects.equals(getStock(), other.getStock())
+          && Objects.equals(getStraddle(), other.getStraddle());
     }
 
     return false;
@@ -163,11 +188,12 @@ public class ThetaTrade implements PriceLevel {
     // All same ticker
     if (stock.getTicker().equals(straddle.getTicker())) {
       // If stock quantities are multiple of 100 to options
-      if (Math.abs(stock.getQuantity().intValue() / 100) == Math.abs(straddle.getQuantity().intValue())) {
+      if (Math.abs(stock.getQuantity().intValue() / 100) == Math
+          .abs(straddle.getQuantity().intValue())) {
         isValid = true;
       } else {
-        logger.error("Stock is not 100 times quantity of option quantity: {}, {}", stock.getQuantity(),
-            straddle.getQuantity());
+        logger.error("Stock is not 100 times quantity of option quantity: {}, {}",
+            stock.getQuantity(), straddle.getQuantity());
       }
     } else {
       logger.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);

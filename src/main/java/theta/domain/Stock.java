@@ -9,7 +9,8 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Stock implements Security {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
   private final String ticker;
@@ -18,12 +19,14 @@ public class Stock implements Security {
 
   private final SecurityType type = SecurityType.STOCK;
 
-  private Stock(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+  private Stock(final UUID id, final String ticker, final Double quantity,
+      final Double averageTradePrice) {
 
     this.id = Objects.requireNonNullElse(id, UUID.randomUUID());
     this.ticker = Objects.requireNonNull(ticker, "Ticker must not be null.");
     this.quantity = Objects.requireNonNull(quantity, "Quantity must not be null.");
-    this.averageTradePrice = Objects.requireNonNull(averageTradePrice, "Average Price must not be null.");
+    this.averageTradePrice =
+        Objects.requireNonNull(averageTradePrice, "Average Price must not be null.");
 
     logger.debug("Built {}", toString());
   }
@@ -38,11 +41,13 @@ public class Stock implements Security {
    * @return
    */
   @Deprecated
-  public static Stock of(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+  public static Stock of(final UUID id, final String ticker, final Double quantity,
+      final Double averageTradePrice) {
     return new Stock(id, ticker, quantity, averageTradePrice);
   }
 
-  public static Stock of(final String ticker, final Double quantity, final Double averageTradePrice) {
+  public static Stock of(final String ticker, final Double quantity,
+      final Double averageTradePrice) {
     return new Stock(UUID.randomUUID(), ticker, quantity, averageTradePrice);
   }
 
@@ -88,9 +93,11 @@ public class Stock implements Security {
     if (obj instanceof Stock) {
       final Stock other = (Stock) obj;
 
-      isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
-          && Objects.equals(getQuantity(), other.getQuantity()) && Objects.equals(getPrice(), other.getPrice())
-          && Objects.equals(getSecurityType(), other.getSecurityType());
+      isEqual =
+          Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
+              && Objects.equals(getQuantity(), other.getQuantity())
+              && Objects.equals(getPrice(), other.getPrice())
+              && Objects.equals(getSecurityType(), other.getSecurityType());
     }
 
     return isEqual;
@@ -104,7 +111,23 @@ public class Stock implements Security {
 
   @Override
   public String toString() {
-    return "Stock [id=" + getId() + ", type=" + type + ", backingTicker=" + ticker + ", quantity=" + quantity
-        + ", averageTradePrice=" + averageTradePrice + "]";
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Stock [");
+
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+    builder.append(", Type: ");
+    builder.append(getSecurityType());
+    builder.append(", Quantity: ");
+    builder.append(getQuantity());
+    builder.append(", Price: ");
+    builder.append(getPrice());
+    builder.append(", Id: ");
+    builder.append(getId());
+
+    builder.append("]");
+
+    return builder.toString();
   }
 }

@@ -9,7 +9,8 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Option implements Security {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private UUID id = UUID.randomUUID();
   private final SecurityType type;
@@ -19,8 +20,8 @@ public class Option implements Security {
   private final LocalDate expiration;
   private final Double averageTradePrice;
 
-  public Option(UUID id, SecurityType type, String backingTicker, Double quantity, Double strikePrice,
-      LocalDate expiration, Double averageTradePrice) {
+  public Option(UUID id, SecurityType type, String backingTicker, Double quantity,
+      Double strikePrice, LocalDate expiration, Double averageTradePrice) {
 
     this.id = id;
     this.type = type;
@@ -72,9 +73,29 @@ public class Option implements Security {
 
   @Override
   public String toString() {
-    return "Option [id=" + id + ", type=" + type + ", backingTicker=" + backingTicker + ", quantity=" + quantity
-        + ", strikePrice=" + strikePrice + ", expiration=" + expiration + ", averageTradePrice=" + averageTradePrice
-        + "]";
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Option [");
+
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+    builder.append(", Type: ");
+    builder.append(getSecurityType());
+    builder.append(", Quantity: ");
+    builder.append(getQuantity());
+    builder.append(", Strike Price: ");
+    builder.append(getPrice());
+    builder.append(", Expiration: ");
+    builder.append(getExpiration());
+    builder.append(", Average Price: ");
+    builder.append(getAverageTradePrice());
+    builder.append(", Id: ");
+    builder.append(getId());
+
+    builder.append("]");
+
+    return builder.toString();
   }
 
   @Override
