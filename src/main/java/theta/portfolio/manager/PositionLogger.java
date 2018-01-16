@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.Option;
 import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
@@ -27,6 +28,23 @@ public class PositionLogger {
     }
   };
 
+  private static Comparator<Security> byOptionExpiration = (s1, s2) -> {
+    if (s1 instanceof Option && s2 instanceof Option) {
+      Option o1 = (Option) s1;
+      Option o2 = (Option) s2;
+
+      if (o1.getExpiration().isAfter(o2.getExpiration())) {
+        return 1;
+      } else if (o2.getExpiration().isAfter(o1.getExpiration())) {
+        return -1;
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  };
+
   private static Comparator<Security> byPrice = Comparator.comparing(Security::getPrice);
 
   private static Comparator<Security> byCallIsGreaterThanPut = (s1, s2) -> {
@@ -41,8 +59,8 @@ public class PositionLogger {
   };
 
   public static void logThetaPositions(Collection<Theta> thetas) {
-    for (final Theta position : thetas.stream()
-        .sorted(Comparator.comparing(Theta::getTicker)).collect(Collectors.toList())) {
+    for (final Theta position : thetas.stream().sorted(Comparator.comparing(Theta::getTicker))
+        .collect(Collectors.toList())) {
       logger.info("Current position: {}", position);
     }
   }
@@ -51,8 +69,9 @@ public class PositionLogger {
       Collection<UUID> matchedPositionIds) {
     for (final Security security : allSecurities.stream()
         .filter(security -> !matchedPositionIds.contains(security.getId()))
-        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions).thenComparing(byPrice)
-            .thenComparing(byCallIsGreaterThanPut))
+        .sorted(
+            byTicker.thenComparing(byStockIsGreaterThanOptions).thenComparing(byOptionExpiration)
+                .thenComparing(byPrice).thenComparing(byCallIsGreaterThanPut))
         .collect(Collectors.toList())) {
       logger.info("Current unprocessed security: {}", security);
     }
