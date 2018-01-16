@@ -11,7 +11,8 @@ import io.reactivex.Emitter;
 import theta.execution.api.ExecutableOrder;
 
 public class IbOrderHandler implements IOrderHandler {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutableOrder order;
   private final Emitter<String> emitter;
@@ -34,19 +35,20 @@ public class IbOrderHandler implements IOrderHandler {
 
   @Override
   public void orderState(OrderState orderState) {
-    logger.debug("Received OrderState: {}", orderState);
+    logger.debug("Received OrderState: {}", IbStringUtil.toStringOrderState(orderState));
     currentOrderState = orderState;
 
     sendNext("OrderState received: {}" + currentOrderState);
   }
 
   @Override
-  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
-      int parentId, double lastFillPrice, int clientId, String whyHeld) {
+  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
+      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
     logger.debug(
         "Received OrderStatus: Status: {}, Filled: {}, Remaining: {}, Average Fill Price: {}, Perm Id: {}, Parent Id: {}, Last Fill Price: {}, Client Id: {}, Why Held: {}",
-        status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+        status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId,
+        whyHeld);
 
     sendNext("OrderStatus");
   }
@@ -72,8 +74,8 @@ public class IbOrderHandler implements IOrderHandler {
 
     // Order Status
     builder.append(", Order Status: ");
-    builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining, avgFillPrice, permId,
-        parentId, lastFillPrice, clientId, whyHeld));
+    builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining,
+        avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
 
     // Order State
     builder.append(", Order State: ");
