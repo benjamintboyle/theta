@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.tick.api.PriceLevelDirection;
 import theta.tick.domain.Tick;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
-public class TickProcessor implements Function<ThetaTrade, List<ThetaTrade>> {
+public class TickProcessor implements Function<Theta, List<Theta>> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Tick tick;
@@ -21,13 +21,13 @@ public class TickProcessor implements Function<ThetaTrade, List<ThetaTrade>> {
   }
 
   @Override
-  public List<ThetaTrade> apply(ThetaTrade theta) {
+  public List<Theta> apply(Theta theta) {
     return processTick(theta);
   }
 
-  private List<ThetaTrade> processTick(ThetaTrade theta) {
+  private List<Theta> processTick(Theta theta) {
 
-    final List<ThetaTrade> tradesToReverse = new ArrayList<>();
+    final List<Theta> tradesToReverse = new ArrayList<>();
 
     logger.info("Checking Tick against position: {}", theta.toString());
 

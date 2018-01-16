@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.domain.ExecutionAction;
 import theta.execution.domain.ExecutionType;
@@ -33,7 +33,7 @@ public class ExecutableOrderFactory {
     return Optional.ofNullable(order);
   }
 
-  public static Optional<ExecutableOrder> reverseStockPosition(ThetaTrade trade) {
+  public static Optional<ExecutableOrder> reverseStockPosition(Theta trade) {
     logger.info("Reversing Theta Trade: {}", trade);
 
     return ExecutableOrderFactory.reverseStockPosition(trade.getStock());

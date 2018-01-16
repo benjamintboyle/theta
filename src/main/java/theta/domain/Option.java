@@ -76,12 +76,11 @@ public class Option implements Security {
 
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Option [");
+    builder.append(getSecurityType());
+    builder.append(" [");
 
     builder.append("Ticker: ");
     builder.append(getTicker());
-    builder.append(", Type: ");
-    builder.append(getSecurityType());
     builder.append(", Quantity: ");
     builder.append(getQuantity());
     builder.append(", Strike Price: ");

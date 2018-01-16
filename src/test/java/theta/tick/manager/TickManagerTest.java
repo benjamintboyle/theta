@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.Stock;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
@@ -72,7 +72,7 @@ public class TickManagerTest {
     return priceTransitions;
   }
 
-  private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final ThetaTrade theta) {
+  private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final Theta theta) {
     final ArrayList<Tick> priceTicks = new ArrayList<Tick>();
 
     for (Integer i = 0; i < numberOfTicks; i++) {
@@ -89,7 +89,7 @@ public class TickManagerTest {
   @Ignore
   @Test
   public void test_add_and_delete_monitor() {
-    final ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta trade = ThetaTradeTest.buildTestThetaTrade();
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
     Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
@@ -107,10 +107,10 @@ public class TickManagerTest {
   @Ignore
   @Test
   public void test_ticks_around_strike_price() {
-    final ThetaTrade trade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta trade = ThetaTradeTest.buildTestThetaTrade();
     TickManagerTest.logger.debug("Trade initialized: {}", trade);
 
-    final List<ThetaTrade> tradeToReturn = Arrays.asList(trade);
+    final List<Theta> tradeToReturn = Arrays.asList(trade);
     Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
     Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickConsumer.class)))
         .thenReturn(handler);

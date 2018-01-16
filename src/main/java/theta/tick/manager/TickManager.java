@@ -18,7 +18,7 @@ import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.PriceLevel;
@@ -157,16 +157,16 @@ public class TickManager implements TickMonitor, TickConsumer {
       logger.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);
     }
 
-    final List<ThetaTrade> tradesToCheck = positionProvider.providePositions(tick.getTicker());
+    final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
     logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
     final TickProcessor thetaTickProcessor = new TickProcessor(tick);
 
-    final List<ThetaTrade> stocksToReverse =
+    final List<Theta> stocksToReverse =
         tradesToCheck.stream().map(thetaTickProcessor).flatMap(List::stream).collect(Collectors.toList());
 
-    for (final ThetaTrade theta : stocksToReverse) {
+    for (final Theta theta : stocksToReverse) {
       deleteMonitor(theta);
     }
 

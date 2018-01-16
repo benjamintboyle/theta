@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.execution.api.ExecutionMonitor;
 import theta.tick.api.TickMonitor;
@@ -30,7 +30,7 @@ public class PortfolioManagerTest {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Captor
-  ArgumentCaptor<ThetaTrade> thetaListCaptor;
+  ArgumentCaptor<Theta> thetaListCaptor;
 
   @Mock
   private PositionHandler mockPositionHandler;
@@ -60,9 +60,9 @@ public class PortfolioManagerTest {
   @Test
   public void ingest_trades_in_order() {
     final int expectedThetas = 6;
-    final List<ThetaTrade> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
+    final List<Theta> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
@@ -72,9 +72,9 @@ public class PortfolioManagerTest {
   @Test
   public void ingest_trades_out_of_order() {
     final int expectedThetas = 6;
-    final List<ThetaTrade> thetas = fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
+    final List<Theta> thetas = fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
@@ -84,16 +84,16 @@ public class PortfolioManagerTest {
   @Test
   public void ingest_trades_with_multiple_strike_prices() {
     final int expectedThetas = 4;
-    final List<ThetaTrade> thetas = fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
+    final List<Theta> thetas = fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(ThetaTrade::getQuantity).collect(Collectors.toList());
+    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
         IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(1, 2, 2, 5).toArray()));
   }
 
-  private List<ThetaTrade> fileIngestHelper(final String filename, int expected) {
+  private List<Theta> fileIngestHelper(final String filename, int expected) {
     final List<Security> securitiesList = PortfolioTestUtil.readInputFile(filename);
 
     for (final Security security : securitiesList) {

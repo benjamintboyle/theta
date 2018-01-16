@@ -11,15 +11,15 @@ import theta.domain.Option;
 import theta.domain.ShortStraddle;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 
 public class ThetaTradeFactory {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static List<ThetaTrade> processThetaTrade(List<Stock> stockList, List<Option> callList, List<Option> putList) {
+  public static List<Theta> processThetaTrade(List<Stock> stockList, List<Option> callList, List<Option> putList) {
 
-    final List<ThetaTrade> thetas = new ArrayList<>();
+    final List<Theta> thetas = new ArrayList<>();
 
     logger.debug("Processing theta with Stocks: {}, Calls: {}, Puts: {}", stockList, callList, putList);
 
@@ -39,7 +39,7 @@ public class ThetaTradeFactory {
         final Stock adjustedStock = StockUtil.adjustStockQuantity(stock, straddle);
 
         // Build theta
-        final Optional<ThetaTrade> theta = ThetaTrade.of(adjustedStock, straddle);
+        final Optional<Theta> theta = Theta.of(adjustedStock, straddle);
 
         // Successfully created and added theta to list
         if (theta.isPresent()) {

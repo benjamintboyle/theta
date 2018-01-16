@@ -32,11 +32,11 @@ public class StockUtil {
     return stock;
   }
 
-  public static List<Stock> consolidateStock(List<ThetaTrade> thetasToConvert) {
+  public static List<Stock> consolidateStock(List<Theta> thetasToConvert) {
 
     final Map<UUID, Stock> thetasToReverse = new HashMap<>();
 
-    for (final ThetaTrade theta : thetasToConvert) {
+    for (final Theta theta : thetasToConvert) {
       if (thetasToReverse.containsKey(theta.getStock().getId())) {
         final Optional<Stock> combinedStock =
             StockUtil.of(thetasToReverse.get(theta.getStock().getId()), theta.getStock());

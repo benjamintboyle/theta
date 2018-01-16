@@ -132,15 +132,17 @@ public class ShortStraddle {
   public String toString() {
     final StringBuilder builder = new StringBuilder();
 
-    builder.append("Short Straddle - ");
+    builder.append(getSecurityType());
+    builder.append(" [ ");
 
-    builder.append("Call: ");
     builder.append(getCall());
-    builder.append(", Put: ");
+    builder.append(", ");
     builder.append(getPut());
 
     builder.append(", Id: ");
     builder.append(getId());
+
+    builder.append("]");
 
     return builder.toString();
   }

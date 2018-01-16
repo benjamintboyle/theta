@@ -20,7 +20,7 @@ import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Option;
 import theta.domain.Stock;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutionMonitor;
@@ -36,7 +36,7 @@ public class PortfolioManager implements PositionProvider {
   private ExecutionMonitor executionMonitor;
 
   // Currently active theta trades
-  private final Map<UUID, ThetaTrade> thetaIdMap = new HashMap<>();
+  private final Map<UUID, Theta> thetaIdMap = new HashMap<>();
 
   // Internal Id to Security map
   private final Map<UUID, Security> securityIdMap = new HashMap<>();
@@ -98,7 +98,7 @@ public class PortfolioManager implements PositionProvider {
   }
 
   @Override
-  public List<ThetaTrade> providePositions(String ticker) {
+  public List<Theta> providePositions(String ticker) {
     logger.info("Providing Positions for: {}", ticker);
     return thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker))
         .collect(Collectors.toList());
@@ -110,7 +110,7 @@ public class PortfolioManager implements PositionProvider {
     final Optional<Set<UUID>> thetaIds = Optional.ofNullable(securityThetaLink.remove(security.getId()));
 
     for (final UUID thetaId : thetaIds.orElse(Set.of())) {
-      final Optional<ThetaTrade> optionalTheta = Optional.ofNullable(thetaIdMap.remove(thetaId));
+      final Optional<Theta> optionalTheta = Optional.ofNullable(thetaIdMap.remove(thetaId));
 
       optionalTheta.ifPresent(theta -> {
         // Remove link/map for call and put and stock associated with ThetaTrade
@@ -140,13 +140,13 @@ public class PortfolioManager implements PositionProvider {
     final List<Option> unassignedPuts = getUnassignedOfSecurity(ticker, SecurityType.PUT).stream()
         .map(put -> (Option) put).collect(Collectors.toList());
 
-    List<ThetaTrade> thetas = new ArrayList<>();
+    List<Theta> thetas = new ArrayList<>();
 
     if (unassignedStocks.size() > 0 && unassignedCalls.size() > 0 && unassignedPuts.size() > 0) {
       thetas = ThetaTradeFactory.processThetaTrade(unassignedStocks, unassignedCalls, unassignedPuts);
     }
 
-    for (final ThetaTrade theta : thetas) {
+    for (final Theta theta : thetas) {
 
       updateSecurityMaps(theta);
 
@@ -187,7 +187,7 @@ public class PortfolioManager implements PositionProvider {
     return unassignedSecurities;
   }
 
-  private void updateSecurityMaps(ThetaTrade theta) {
+  private void updateSecurityMaps(Theta theta) {
 
     thetaIdMap.put(theta.getId(), theta);
 

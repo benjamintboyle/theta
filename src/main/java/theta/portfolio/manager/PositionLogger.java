@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.ThetaTrade;
+import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
@@ -40,9 +40,9 @@ public class PositionLogger {
     }
   };
 
-  public static void logThetaPositions(Collection<ThetaTrade> thetas) {
-    for (final ThetaTrade position : thetas.stream()
-        .sorted(Comparator.comparing(ThetaTrade::getTicker)).collect(Collectors.toList())) {
+  public static void logThetaPositions(Collection<Theta> thetas) {
+    for (final Theta position : thetas.stream()
+        .sorted(Comparator.comparing(Theta::getTicker)).collect(Collectors.toList())) {
       logger.info("Current position: {}", position);
     }
   }

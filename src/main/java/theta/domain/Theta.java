@@ -11,7 +11,7 @@ import theta.domain.api.SecurityType;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
-public class ThetaTrade implements PriceLevel {
+public class Theta implements PriceLevel {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -19,31 +19,31 @@ public class ThetaTrade implements PriceLevel {
   private final Stock stock;
   private final ShortStraddle straddle;
 
-  private ThetaTrade(Stock stock, ShortStraddle straddle) {
+  private Theta(Stock stock, ShortStraddle straddle) {
     this.stock = stock;
     this.straddle = straddle;
     logger.info("Built Theta: {}", this);
   }
 
-  public static Optional<ThetaTrade> of(Stock stock, Option call, Option put) {
+  public static Optional<Theta> of(Stock stock, Option call, Option put) {
 
     final Optional<ShortStraddle> straddle = ShortStraddle.of(call, put);
 
-    Optional<ThetaTrade> theta = Optional.empty();
+    Optional<Theta> theta = Optional.empty();
 
     if (straddle.isPresent()) {
-      theta = ThetaTrade.of(stock, straddle.get());
+      theta = Theta.of(stock, straddle.get());
     }
 
     return theta;
   }
 
-  public static Optional<ThetaTrade> of(Stock stock, ShortStraddle straddle) {
+  public static Optional<Theta> of(Stock stock, ShortStraddle straddle) {
 
-    Optional<ThetaTrade> theta = Optional.empty();
+    Optional<Theta> theta = Optional.empty();
 
-    if (ThetaTrade.isValidCoveredStraddle(stock, straddle)) {
-      theta = Optional.of(new ThetaTrade(stock, straddle));
+    if (Theta.isValidCoveredStraddle(stock, straddle)) {
+      theta = Optional.of(new Theta(stock, straddle));
     }
 
     return theta;
@@ -135,14 +135,13 @@ public class ThetaTrade implements PriceLevel {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("ThetaTrade [");
+    builder.append(getSecurityType());
+    builder.append(" [");
 
     builder.append("Ticker: ");
     builder.append(getTicker());
     builder.append(", Quantity: ");
     builder.append(getQuantity());
-    builder.append(", Security Type: ");
-    builder.append(getSecurityType());
     builder.append(", Id: ");
     builder.append(getId());
 
@@ -171,8 +170,8 @@ public class ThetaTrade implements PriceLevel {
       return true;
     }
 
-    if (obj instanceof ThetaTrade) {
-      final ThetaTrade other = (ThetaTrade) obj;
+    if (obj instanceof Theta) {
+      final Theta other = (Theta) obj;
 
       return Objects.equals(getStock(), other.getStock())
           && Objects.equals(getStraddle(), other.getStraddle());

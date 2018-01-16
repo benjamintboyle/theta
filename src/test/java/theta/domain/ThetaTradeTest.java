@@ -9,22 +9,22 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ThetaTradeTest {
-  public static ThetaTrade buildTestThetaTrade() {
+  public static Theta buildTestThetaTrade() {
     final Stock stock = StockTest.buildTestStock();
     final Option call = OptionTest.buildTestShortCallOption();
     final Option put = OptionTest.buildTestShortPutOption();
 
-    final ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
+    final Theta trade = Theta.of(stock, call, put).get();
 
     return trade;
   }
 
-  public static ThetaTrade buildTestShortThetaTrade() {
+  public static Theta buildTestShortThetaTrade() {
     final Stock stock = StockTest.buildTestStockShort();
     final Option call = OptionTest.buildTestShortCallOption();
     final Option put = OptionTest.buildTestShortPutOption();
 
-    final ThetaTrade trade = ThetaTrade.of(stock, call, put).get();
+    final Theta trade = Theta.of(stock, call, put).get();
 
     return trade;
   }
@@ -32,7 +32,7 @@ public class ThetaTradeTest {
   @Ignore
   @Test
   public void equityThetaTradeTest() {
-    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
     MatcherAssert.assertThat(thetaTrade.getStock(), Matchers.is(Matchers.equalTo(StockTest.buildTestStock())));
   }
@@ -40,7 +40,7 @@ public class ThetaTradeTest {
   @Ignore
   @Test
   public void callThetaTradeTest() {
-    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
     MatcherAssert.assertThat(thetaTrade.getCall(),
         Matchers.is(Matchers.equalTo(OptionTest.buildTestShortCallOption())));
@@ -49,7 +49,7 @@ public class ThetaTradeTest {
   @Ignore
   @Test
   public void putThetaTradeTest() {
-    final ThetaTrade thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
 
     MatcherAssert.assertThat(thetaTrade.getPut(), Matchers.is(Matchers.equalTo(OptionTest.buildTestShortPutOption())));
   }

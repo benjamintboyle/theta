@@ -113,12 +113,11 @@ public class Stock implements Security {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Stock [");
+    builder.append(getSecurityType());
+    builder.append(" [");
 
     builder.append("Ticker: ");
     builder.append(getTicker());
-    builder.append(", Type: ");
-    builder.append(getSecurityType());
     builder.append(", Quantity: ");
     builder.append(getQuantity());
     builder.append(", Price: ");
