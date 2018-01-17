@@ -9,14 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine implements Callable<String> {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
   private static final String BROKER_GATEWAY_ADDRESS = "172.17.0.2";
@@ -56,8 +56,8 @@ public class ThetaEngine implements Callable<String> {
     System.out.println(status);
   }
 
-  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager,
-      TickManager tickManager, ExecutionManager executionManager) {
+  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
+      ExecutionManager executionManager) {
 
     this.connectionManager = connectionManager;
     this.portfolioManager = portfolioManager;
@@ -85,17 +85,16 @@ public class ThetaEngine implements Callable<String> {
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect().toCompletable()
-        .andThen(portfolioManager.startPositionProcessing()).subscribe(
+    return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
 
-            () -> {
-              logger.info("Portfolio Manager has Shutdown");
-            },
+        () -> {
+          logger.info("Portfolio Manager has Shutdown");
+        },
 
-            error -> {
-              logger.error("Portfolio Manager Error", error);
-              shutdown();
-            });
+        error -> {
+          logger.error("Portfolio Manager Error", error);
+          shutdown();
+        });
   }
 
   private Disposable startTickManager() {
@@ -122,6 +121,8 @@ public class ThetaEngine implements Callable<String> {
       portfolioManager.shutdown();
       tickManager.shutdown();
       executionManager.shutdown();
+
+      Schedulers.shutdown();
 
       logger.info("Disposing of {} Managers", managerDisposables.size());
       managerDisposables.dispose();
