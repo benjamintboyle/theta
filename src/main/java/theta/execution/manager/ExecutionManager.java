@@ -21,7 +21,8 @@ import theta.execution.api.Executor;
 import theta.execution.factory.ExecutableOrderFactory;
 
 public class ExecutionManager implements Executor, ExecutionMonitor {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
 
@@ -41,7 +42,8 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   public void reverseTrade(Stock stock) {
     logger.info("Reversing Trade: {}", stock.toString());
 
-    final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory.reverseStockPosition(stock);
+    final Optional<ExecutableOrder> validatedOrder =
+        ExecutableOrderFactory.reverseStockPosition(stock);
 
     validatedOrder.ifPresent(order -> executeOrder(order));
   }
@@ -49,10 +51,15 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   private void executeOrder(ExecutableOrder order) {
     if (addActiveTrade(order)) {
       logger.info("Executing order: {}", order);
-      final Disposable disposableExecutionHandler = executionHandler.executeStockEquityMarketOrder(order)
-          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(message -> logger.info(message),
-              error -> logger.error("Order Handler encountered an error", error),
-              () -> logger.info("Order successfully filled: {}", order));
+      final Disposable disposableExecutionHandler =
+          executionHandler.executeStockEquityMarketOrder(order)
+              .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
+
+                  message -> logger.info(message),
+
+                  error -> logger.error("Order Handler encountered an error", error),
+
+                  () -> logger.info("Order successfully filled: {}", order));
 
       compositeDisposable.add(disposableExecutionHandler);
     } else {

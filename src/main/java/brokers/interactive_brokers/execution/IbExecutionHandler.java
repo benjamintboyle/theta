@@ -18,7 +18,8 @@ import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 
 public class IbExecutionHandler implements ExecutionHandler {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
 
@@ -38,8 +39,10 @@ public class IbExecutionHandler implements ExecutionHandler {
     }, BackpressureStrategy.BUFFER);
   }
 
-  private Boolean executeOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
+  private void executeOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
+
     logger.info("Executing order: {}", order.toString());
+
     final Order ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
 
     final Contract ibContract = new StkContract(order.getTicker());
@@ -49,7 +52,5 @@ public class IbExecutionHandler implements ExecutionHandler {
     thetaToIbIdMap.put(order.getId(), Integer.valueOf(ibOrder.orderId()));
 
     logger.info("Order " + thetaToIbIdMap.get(order.getId()) + " sent to Broker Servers.");
-
-    return Boolean.TRUE;
   }
 }

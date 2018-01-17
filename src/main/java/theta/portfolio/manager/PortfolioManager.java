@@ -65,6 +65,7 @@ public class PortfolioManager implements PositionProvider {
 
               security -> {
 
+                // TODO: Implementation is not ideal
                 executionMonitor.portfolioChange(security);
 
                 removePositionIfExists(security);

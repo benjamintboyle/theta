@@ -38,7 +38,7 @@ public class IbOrderHandler implements IOrderHandler {
     logger.debug("Received OrderState: {}", IbStringUtil.toStringOrderState(orderState));
     currentOrderState = orderState;
 
-    sendNext("OrderState received: {}" + currentOrderState);
+    sendNext("OrderState received: {}" + IbStringUtil.toStringOrderState(currentOrderState));
   }
 
   @Override
@@ -55,9 +55,7 @@ public class IbOrderHandler implements IOrderHandler {
 
   @Override
   public void handle(int errorCode, final String errorMsg) {
-    // emitter.onNext("Message for Order Id: " + thetaToIbIdMap.get(order.getId()) + ", Ticker: " +
-    // order.getTicker()
-    // + " - Error Code: " + errorCode + ", Error Msg: " + errorMsg);
+    logger.error("Order Handler Errror, Error Code: {}, Message: []", errorCode, errorMsg);
   }
 
   private void sendNext(String trigger) {
