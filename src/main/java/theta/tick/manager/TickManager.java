@@ -121,7 +121,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
     final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
-    if (tradesToCheck.size() == 0) {
+    if (tradesToCheck.size() > 0) {
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
       final TickProcessor thetaTickProcessor = new TickProcessor(tick);
