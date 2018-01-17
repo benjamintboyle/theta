@@ -15,7 +15,8 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 public class ThetaEngine implements Callable<String> {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
   private static final String BROKER_GATEWAY_ADDRESS = "172.17.0.2";
@@ -55,8 +56,8 @@ public class ThetaEngine implements Callable<String> {
     System.out.println(status);
   }
 
-  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
-      ExecutionManager executionManager) {
+  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager,
+      TickManager tickManager, ExecutionManager executionManager) {
 
     this.connectionManager = connectionManager;
     this.portfolioManager = portfolioManager;
@@ -84,16 +85,17 @@ public class ThetaEngine implements Callable<String> {
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
+    return connectionManager.connect().toCompletable()
+        .andThen(portfolioManager.startPositionProcessing()).subscribe(
 
-        () -> {
-          logger.info("Portfolio Manager has Shutdown");
-        },
+            () -> {
+              logger.info("Portfolio Manager has Shutdown");
+            },
 
-        error -> {
-          logger.error("Portfolio Manager Error", error);
-          shutdown();
-        });
+            error -> {
+              logger.error("Portfolio Manager Error", error);
+              shutdown();
+            });
   }
 
   private Disposable startTickManager() {
@@ -145,7 +147,6 @@ public class ThetaEngine implements Callable<String> {
     logger.info("Starting Manager Cross-Registration");
 
     portfolioManager.registerTickMonitor(tickManager);
-    portfolioManager.registerExecutionMonitor(executionManager);
 
     tickManager.registerPositionProvider(portfolioManager);
     tickManager.registerExecutor(executionManager);

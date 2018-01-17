@@ -33,7 +33,8 @@ public class ThetaEngineTest {
 
   @Before
   public void setup() {
-    sut = new ThetaEngine(mockConnectionManager, mockPortfolioManager, mockTickManager, mockExecutionManager);
+    sut = new ThetaEngine(mockConnectionManager, mockPortfolioManager, mockTickManager,
+        mockExecutionManager);
   }
 
   @Test
@@ -58,7 +59,6 @@ public class ThetaEngineTest {
     sut.call();
 
     Mockito.verify(mockPortfolioManager).registerTickMonitor(mockTickManager);
-    Mockito.verify(mockPortfolioManager).registerExecutionMonitor(mockExecutionManager);
 
     Mockito.verify(mockTickManager).registerPositionProvider(mockPortfolioManager);
     Mockito.verify(mockTickManager).registerExecutor(mockExecutionManager);

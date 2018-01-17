@@ -14,13 +14,11 @@ import theta.api.ExecutionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Stock;
-import theta.domain.api.Security;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.api.ExecutionMonitor;
 import theta.execution.api.Executor;
 import theta.execution.factory.ExecutableOrderFactory;
 
-public class ExecutionManager implements Executor, ExecutionMonitor {
+public class ExecutionManager implements Executor {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -49,54 +47,55 @@ public class ExecutionManager implements Executor, ExecutionMonitor {
   }
 
   private void executeOrder(ExecutableOrder order) {
-    if (addActiveTrade(order)) {
+    if (!activeOrderExists(order)) {
       logger.info("Executing order: {}", order);
       final Disposable disposableExecutionHandler =
           executionHandler.executeStockEquityMarketOrder(order)
               .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
 
-                  message -> logger.info(message),
+                  message -> {
+                    logger.info(message);
+                  },
 
-                  error -> logger.error("Order Handler encountered an error", error),
+                  // TODO: Should probably send cancel request here?
+                  error -> {
+                    logger.error("Order Handler encountered an error", error);
+                  },
 
-                  () -> logger.info("Order successfully filled: {}", order));
+                  () -> {
+                    logger.info("Order successfully filled: {}", order);
+                    Optional<ExecutableOrder> filledOrder =
+                        Optional.ofNullable(activeOrders.remove(order.getId()));
+
+                    if (filledOrder.isPresent()) {
+                      logger.info("Order removed from active orders list: {}", order);
+                    } else {
+                      logger.warn(
+                          "Received filled order notification for which there is no Active Order record: {}",
+                          order);
+                    }
+                  });
 
       compositeDisposable.add(disposableExecutionHandler);
     } else {
-      logger.error("Order will not be executed: {}", order);
+      logger.error("Existing order. Order will not be executed: {}", order);
     }
   }
 
-  private Boolean addActiveTrade(ExecutableOrder order) {
+  private boolean activeOrderExists(ExecutableOrder order) {
     logger.info("Adding Active Trade: {} to Execution Monitor", order);
-    Boolean isTradeUnique = Boolean.FALSE;
 
-    if (!activeOrders.containsKey(order.getId())) {
+    Optional<ExecutableOrder> currentActiveOrder =
+        Optional.ofNullable(activeOrders.get(order.getId()));
+
+    if (!currentActiveOrder.isPresent()) {
       activeOrders.put(order.getId(), order);
-      isTradeUnique = Boolean.TRUE;
     } else {
-      logger.warn("Order already placed for: {}", order);
+      logger.warn("Active Order exists for {}, Active Order: {}, New Order Request: ",
+          currentActiveOrder.get(), order);
     }
 
-    return isTradeUnique;
-  }
-
-  @Override
-  public Boolean portfolioChange(Security security) {
-    logger.info("Execution Monitor was notified that Portfolio changed: {}", security.toString());
-    Boolean activeTradeRemoved = Boolean.FALSE;
-
-    if (activeOrders.containsKey(security.getId())
-        && activeOrders.get(security.getId()).getQuantity().equals(security.getQuantity())) {
-
-      final ExecutableOrder executable = activeOrders.remove(security.getId());
-
-      logger.info("Active Trade removed for Executable: {}", executable);
-
-      activeTradeRemoved = Boolean.TRUE;
-    }
-
-    return activeTradeRemoved;
+    return currentActiveOrder.isPresent();
   }
 
   public void shutdown() {

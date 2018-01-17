@@ -51,6 +51,11 @@ public class IbOrderHandler implements IOrderHandler {
         whyHeld);
 
     sendNext("OrderStatus");
+
+    if (status == OrderStatus.Filled && remaining == 0) {
+      logger.debug("Sending complete for order: {}", order);
+      emitter.onComplete();
+    }
   }
 
   @Override

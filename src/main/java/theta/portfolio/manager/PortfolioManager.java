@@ -23,7 +23,6 @@ import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
-import theta.execution.api.ExecutionMonitor;
 import theta.portfolio.api.PositionProvider;
 import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
@@ -34,7 +33,6 @@ public class PortfolioManager implements PositionProvider {
 
   private final PositionHandler positionHandler;
   private TickMonitor monitor;
-  private ExecutionMonitor executionMonitor;
 
   // Currently active theta trades
   private final Map<UUID, Theta> thetaIdMap = new HashMap<>();
@@ -64,9 +62,6 @@ public class PortfolioManager implements PositionProvider {
           positionHandler.requestPositionsFromBrokerage().subscribe(
 
               security -> {
-
-                // TODO: Implementation is not ideal
-                executionMonitor.portfolioChange(security);
 
                 removePositionIfExists(security);
 
@@ -248,11 +243,6 @@ public class PortfolioManager implements PositionProvider {
   public void registerTickMonitor(TickMonitor monitor) {
     logger.info("Registering Tick Monitor with Portfolio Manager");
     this.monitor = monitor;
-  }
-
-  public void registerExecutionMonitor(ExecutionMonitor executionMonitor) {
-    logger.info("Registering Execution Monitor with Portfolio Manager");
-    this.executionMonitor = executionMonitor;
   }
 
   public void logPositions() {
