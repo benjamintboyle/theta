@@ -1,10 +1,10 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.disposables.CompositeDisposable;
@@ -19,12 +19,11 @@ import theta.execution.api.Executor;
 import theta.execution.factory.ExecutableOrderFactory;
 
 public class ExecutionManager implements Executor {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
 
-  private final Map<UUID, ExecutableOrder> activeOrders = new HashMap<UUID, ExecutableOrder>();
+  private final Map<UUID, ExecutableOrder> activeOrders = new ConcurrentHashMap<>();
 
   private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -40,41 +39,39 @@ public class ExecutionManager implements Executor {
   public void reverseTrade(Stock stock) {
     logger.info("Reversing Trade: {}", stock.toString());
 
-    final Optional<ExecutableOrder> validatedOrder =
-        ExecutableOrderFactory.reverseStockPosition(stock);
+    final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock);
 
     validatedOrder.ifPresent(order -> executeOrder(order));
   }
 
   private void executeOrder(ExecutableOrder order) {
     if (!activeOrderExists(order)) {
+
       logger.info("Executing order: {}", order);
-      final Disposable disposableExecutionHandler =
-          executionHandler.executeMarketStockOrder(order)
-              .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
 
-                  message -> {
-                    logger.info(message);
-                  },
+      final Disposable disposableExecutionHandler = executionHandler.executeMarketStockOrder(order)
+          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
 
-                  // TODO: Should probably send cancel request here?
-                  error -> {
-                    logger.error("Order Handler encountered an error", error);
-                  },
+              message -> {
+                logger.info(message);
+              },
 
-                  () -> {
-                    logger.info("Order successfully filled: {}", order);
-                    Optional<ExecutableOrder> filledOrder =
-                        Optional.ofNullable(activeOrders.remove(order.getId()));
+              // TODO: Should probably send cancel request here?
+              error -> {
+                logger.error("Order Handler encountered an error", error);
+              },
 
-                    if (filledOrder.isPresent()) {
-                      logger.info("Order removed from active orders list: {}", order);
-                    } else {
-                      logger.warn(
-                          "Received filled order notification for which there is no Active Order record: {}",
-                          order);
-                    }
-                  });
+              () -> {
+                logger.info("Order successfully filled: {}", order);
+                Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
+
+                if (filledOrder.isPresent()) {
+                  logger.info("Order removed from active orders list: {}", order);
+                } else {
+                  logger.warn("Received filled order notification for which there is no Active Order record: {}",
+                      order);
+                }
+              });
 
       compositeDisposable.add(disposableExecutionHandler);
     } else {
@@ -85,14 +82,12 @@ public class ExecutionManager implements Executor {
   private boolean activeOrderExists(ExecutableOrder order) {
     logger.info("Adding Active Trade: {} to Execution Monitor", order);
 
-    Optional<ExecutableOrder> currentActiveOrder =
-        Optional.ofNullable(activeOrders.get(order.getId()));
+    Optional<ExecutableOrder> currentActiveOrder = Optional.ofNullable(activeOrders.get(order.getId()));
 
     if (!currentActiveOrder.isPresent()) {
       activeOrders.put(order.getId(), order);
     } else {
-      logger.warn("Active Order exists for {}, Active Order: {}, New Order Request: ",
-          currentActiveOrder.get(), order);
+      logger.warn("Active Order exists for {}, Active Order: {}, New Order Request: ", currentActiveOrder.get(), order);
     }
 
     return currentActiveOrder.isPresent();

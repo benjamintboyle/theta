@@ -14,7 +14,7 @@ import theta.execution.domain.ReverseStockOrder;
 public class ExecutableOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Optional<ExecutableOrder> reverseStockPosition(Stock stock) {
+  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock) {
     logger.info("Reversing Stock Position: {}", stock);
 
     ExecutionAction action = ExecutionAction.BUY;
@@ -33,9 +33,9 @@ public class ExecutableOrderFactory {
     return Optional.ofNullable(order);
   }
 
-  public static Optional<ExecutableOrder> reverseStockPosition(Theta trade) {
+  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Theta trade) {
     logger.info("Reversing Theta Trade: {}", trade);
 
-    return ExecutableOrderFactory.reverseStockPosition(trade.getStock());
+    return ExecutableOrderFactory.reverseAndValidateStockPositionOrder(trade.getStock());
   }
 }

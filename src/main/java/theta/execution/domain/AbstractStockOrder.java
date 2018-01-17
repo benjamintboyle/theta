@@ -1,6 +1,7 @@
 package theta.execution.domain;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +10,12 @@ import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
 
 public abstract class AbstractStockOrder implements ExecutableOrder {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Stock stock;
   private final ExecutionAction action;
   private final ExecutionType executionType;
+  private Optional<Integer> brokerId = Optional.empty();
 
   public AbstractStockOrder(Stock stock, ExecutionAction action, ExecutionType executionType) {
     this.stock = stock;
@@ -26,6 +27,16 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   @Override
   public UUID getId() {
     return getStock().getId();
+  }
+
+  @Override
+  public Optional<Integer> getBrokerId() {
+    return brokerId;
+  }
+
+  @Override
+  public void setBrokerId(Integer brokerId) {
+    this.brokerId = Optional.ofNullable(brokerId);
   }
 
   @Override
@@ -76,7 +87,8 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
     builder.append(getExecutionType());
     builder.append(", Id: ");
     builder.append(getId());
-
+    builder.append(", Broker Id: ");
+    builder.append(getBrokerId());
 
     builder.append("]");
 

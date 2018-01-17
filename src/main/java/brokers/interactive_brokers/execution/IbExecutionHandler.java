@@ -1,9 +1,6 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -12,18 +9,16 @@ import com.ib.contracts.StkContract;
 import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOrderUtil;
+import brokers.interactive_brokers.util.IbStringUtil;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 
 public class IbExecutionHandler implements ExecutionHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-
-  private final Map<UUID, Integer> thetaToIbIdMap = new HashMap<>();
 
   public IbExecutionHandler(IbController ibController) {
     logger.info("Starting Interactive Brokers Execution Handler");
@@ -41,7 +36,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   private void executeOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
 
-    logger.info("Executing order: {}", order.toString());
+    logger.info("Executing order: {}", order);
 
     final Order ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
 
@@ -49,8 +44,14 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     ibController.getController().placeOrModifyOrder(ibContract, ibOrder, ibOrderHandler);
 
-    thetaToIbIdMap.put(order.getId(), Integer.valueOf(ibOrder.orderId()));
+    order.setBrokerId(ibOrder.orderId());
 
-    logger.info("Order " + thetaToIbIdMap.get(order.getId()) + " sent to Broker Servers.");
+    if (order.getBrokerId().isPresent()) {
+      logger.debug("Order #{} sent to Broker Servers for Order: {}", order.getBrokerId().get(), order);
+    } else {
+      logger.warn(
+          "Order Id not set for Order. May indicate an internal error. ExecutableOrder: {}, IB Contract: {}, IB Order: {}",
+          order, IbStringUtil.toStringContract(ibContract), IbStringUtil.toStringOrder(ibOrder));
+    }
   }
 }

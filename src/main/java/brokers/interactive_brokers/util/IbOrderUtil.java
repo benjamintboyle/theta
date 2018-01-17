@@ -8,9 +8,10 @@ import com.ib.client.OrderType;
 import com.ib.client.Types.Action;
 
 public class IbOrderUtil {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Order buildMarketOrder(Double quantity) {
+  public static Order buildMarketOrder(double quantity) {
     final Order ibOrder = new Order();
 
     if (quantity > 0) {
