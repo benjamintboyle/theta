@@ -140,6 +140,9 @@ public class TickManager implements TickMonitor, TickConsumer {
       logger.warn("Unsubscribing Tick Monitor for {}. Received 0 Positions from Position Provider for Tick: {}",
           tick.getTicker(), tick);
 
+      for (PriceLevel priceLevel : tickSubscriber.getPriceLevelsMonitored(tick.getTicker())) {
+        tickSubscriber.removePriceLevelMonitor(priceLevel);
+      }
     }
   }
 

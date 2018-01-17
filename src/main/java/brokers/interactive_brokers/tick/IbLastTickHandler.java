@@ -5,15 +5,19 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.TickType;
 import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
+import brokers.interactive_brokers.tick.domain.IbPriceLevel;
 import theta.api.TickHandler;
 import theta.tick.api.PriceLevel;
+import theta.tick.api.PriceLevelDirection;
 import theta.tick.api.TickConsumer;
 
 public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
@@ -306,7 +310,23 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
     return fallsBelow.size() + risesAbove.size();
   }
 
+  @Override
+  public List<PriceLevel> getPriceLevelsMonitored(String ticker) {
+    List<PriceLevel> priceLevels = new ArrayList<>();
+
+    for (Double price : fallsBelow) {
+      priceLevels.add(new IbPriceLevel(ticker, price, PriceLevelDirection.FALLS_BELOW));
+    }
+
+    for (Double price : risesAbove) {
+      priceLevels.add(new IbPriceLevel(ticker, price, PriceLevelDirection.RISES_ABOVE));
+    }
+
+    return priceLevels;
+  }
+
   private void logPriceLevels() {
     logger.info("Price Levels for '{}': FALLS_BELOW={}, RISES_ABOVE={}", ticker, fallsBelow, risesAbove);
   }
+
 }

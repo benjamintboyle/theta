@@ -2,13 +2,13 @@ package theta.portfolio.manager;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +28,19 @@ import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
 public class PortfolioManager implements PositionProvider {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
   private TickMonitor monitor;
 
   // Currently active theta trades
-  private final Map<UUID, Theta> thetaIdMap = new HashMap<>();
+  private final Map<UUID, Theta> thetaIdMap = new ConcurrentHashMap<>();
 
   // Internal Id to Security map
-  private final Map<UUID, Security> securityIdMap = new HashMap<>();
+  private final Map<UUID, Security> securityIdMap = new ConcurrentHashMap<>();
 
   // Securities to theta trade map
-  private final Map<UUID, Set<UUID>> securityThetaLink = new HashMap<>();
+  private final Map<UUID, Set<UUID>> securityThetaLink = new ConcurrentHashMap<>();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
@@ -58,34 +57,33 @@ public class PortfolioManager implements PositionProvider {
     getStatus().changeState(ManagerState.RUNNING);
 
     return Completable.create(emitter -> {
-      final Disposable requestPositionDisposable =
-          positionHandler.requestPositionsFromBrokerage().subscribe(
+      final Disposable requestPositionDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
 
-              security -> {
+          security -> {
 
-                removePositionIfExists(security);
+            removePositionIfExists(security);
 
-                if (security.getQuantity() != 0) {
-                  securityIdMap.put(security.getId(), security);
-                  processPosition(security.getTicker());
-                } else {
-                  securityIdMap.remove(security.getId());
-                  logger.info("Security not processed due to 0 quantity: {}", security);
-                }
+            if (security.getQuantity() != 0) {
+              securityIdMap.put(security.getId(), security);
+              processPosition(security.getTicker());
+            } else {
+              securityIdMap.remove(security.getId());
+              logger.info("Security not processed due to 0 quantity: {}", security);
+            }
 
-                // Log positions if queue is empty
-                logPositions();
-              },
+            // Log positions if queue is empty
+            logPositions();
+          },
 
-              exception -> {
-                logger.error("Issue with Received Positions from Brokerage", exception);
-                emitter.onError(exception);
-              },
+          exception -> {
+            logger.error("Issue with Received Positions from Brokerage", exception);
+            emitter.onError(exception);
+          },
 
-              () -> {
-                getStatus().changeState(ManagerState.SHUTDOWN);
-                emitter.onComplete();
-              });
+          () -> {
+            getStatus().changeState(ManagerState.SHUTDOWN);
+            emitter.onComplete();
+          });
 
       portfolioDisposables.add(requestPositionDisposable);
     });
@@ -97,16 +95,18 @@ public class PortfolioManager implements PositionProvider {
 
   @Override
   public List<Theta> providePositions(String ticker) {
-    logger.info("Providing Positions for: {}", ticker);
-    return thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker))
-        .collect(Collectors.toList());
+
+    List<Theta> positionsToProvide = thetaIdMap.values().stream()
+        .filter(position -> position.getTicker().equals(ticker)).collect(Collectors.toList());
+
+    logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
+    return positionsToProvide;
   }
 
   // Removes positions if security is contained within it
   private void removePositionIfExists(Security security) {
 
-    final Optional<Set<UUID>> thetaIds =
-        Optional.ofNullable(securityThetaLink.remove(security.getId()));
+    final Optional<Set<UUID>> thetaIds = Optional.ofNullable(securityThetaLink.remove(security.getId()));
 
     for (final UUID thetaId : thetaIds.orElse(Set.of())) {
       final Optional<Theta> optionalTheta = Optional.ofNullable(thetaIdMap.remove(thetaId));
@@ -119,8 +119,8 @@ public class PortfolioManager implements PositionProvider {
 
         logger.info("Removed theta trade: {}, based on security: {}", theta, security);
 
-        if (!thetaIdMap.values().stream()
-            .filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny().isPresent()) {
+        if (!thetaIdMap.values().stream().filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny()
+            .isPresent()) {
 
           logger.info("No more theta positions for {}, removing monitor.", theta.getTicker());
           monitor.deleteMonitor(theta);
@@ -132,8 +132,8 @@ public class PortfolioManager implements PositionProvider {
   private void processPosition(String ticker) {
 
     // Calculate unassigned call, put, stock
-    final List<Stock> unassignedStocks = getUnassignedOfSecurity(ticker, SecurityType.STOCK)
-        .stream().map(stock -> (Stock) stock).collect(Collectors.toList());
+    final List<Stock> unassignedStocks = getUnassignedOfSecurity(ticker, SecurityType.STOCK).stream()
+        .map(stock -> (Stock) stock).collect(Collectors.toList());
     final List<Option> unassignedCalls = getUnassignedOfSecurity(ticker, SecurityType.CALL).stream()
         .map(call -> (Option) call).collect(Collectors.toList());
     final List<Option> unassignedPuts = getUnassignedOfSecurity(ticker, SecurityType.PUT).stream()
@@ -142,8 +142,7 @@ public class PortfolioManager implements PositionProvider {
     List<Theta> thetas = new ArrayList<>();
 
     if (unassignedStocks.size() > 0 && unassignedCalls.size() > 0 && unassignedPuts.size() > 0) {
-      thetas =
-          ThetaTradeFactory.processThetaTrade(unassignedStocks, unassignedCalls, unassignedPuts);
+      thetas = ThetaTradeFactory.processThetaTrade(unassignedStocks, unassignedCalls, unassignedPuts);
     }
 
     for (final Theta theta : thetas) {
@@ -159,15 +158,14 @@ public class PortfolioManager implements PositionProvider {
     final List<UUID> allIdsOfSecurity =
         securityIdMap.values().stream().filter(otherSecurity -> otherSecurity.getQuantity() != 0)
             .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
-            .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType))
-            .map(Security::getId).collect(Collectors.toList());
+            .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType)).map(Security::getId)
+            .collect(Collectors.toList());
 
     final Map<UUID, Double> assignedCountMap =
         thetaIdMap.values().stream().map(theta -> theta.getSecurityOfType(securityType))
             .filter(otherSecurity -> allIdsOfSecurity.stream()
                 .anyMatch(allSecurity -> otherSecurity.getId().equals(allSecurity)))
-            .collect(Collectors.groupingBy(Security::getId,
-                Collectors.summingDouble(Security::getQuantity)));
+            .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
 
 
     final List<Security> unassignedSecurities = new ArrayList<>();
@@ -175,11 +173,10 @@ public class PortfolioManager implements PositionProvider {
     for (final UUID securityId : allIdsOfSecurity) {
       final Security security = securityIdMap.get(securityId);
 
-      final double assignedQuantity = Optional.ofNullable(assignedCountMap.get(security.getId()))
-          .orElse(Double.valueOf(0)).doubleValue();
+      final double assignedQuantity =
+          Optional.ofNullable(assignedCountMap.get(security.getId())).orElse(Double.valueOf(0)).doubleValue();
 
-      final Optional<Security> securityWithAdjustedQuantity =
-          getSecurityWithQuantity(security, assignedQuantity);
+      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, assignedQuantity);
 
       if (securityWithAdjustedQuantity.isPresent()) {
         unassignedSecurities.add(securityWithAdjustedQuantity.get());
@@ -193,18 +190,15 @@ public class PortfolioManager implements PositionProvider {
 
     thetaIdMap.put(theta.getId(), theta);
 
-    final Set<UUID> stockThetaIds =
-        securityThetaLink.getOrDefault(theta.getStock().getId(), new HashSet<>());
+    final Set<UUID> stockThetaIds = securityThetaLink.getOrDefault(theta.getStock().getId(), new HashSet<>());
     stockThetaIds.add(theta.getId());
     securityThetaLink.put(theta.getStock().getId(), stockThetaIds);
 
-    final Set<UUID> callThetaIds =
-        securityThetaLink.getOrDefault(theta.getCall().getId(), new HashSet<>());
+    final Set<UUID> callThetaIds = securityThetaLink.getOrDefault(theta.getCall().getId(), new HashSet<>());
     callThetaIds.add(theta.getId());
     securityThetaLink.put(theta.getCall().getId(), callThetaIds);
 
-    final Set<UUID> putThetaIds =
-        securityThetaLink.getOrDefault(theta.getPut().getId(), new HashSet<>());
+    final Set<UUID> putThetaIds = securityThetaLink.getOrDefault(theta.getPut().getId(), new HashSet<>());
     putThetaIds.add(theta.getId());
     securityThetaLink.put(theta.getPut().getId(), putThetaIds);
   }
@@ -217,19 +211,17 @@ public class PortfolioManager implements PositionProvider {
     if (unassignedQuantity != 0) {
       if (security.getSecurityType().equals(SecurityType.STOCK)) {
 
-        securityWithQuantity = Optional.of(Stock.of(security.getId(), security.getTicker(),
-            unassignedQuantity, security.getPrice()));
+        securityWithQuantity =
+            Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
       }
 
-      if (security.getSecurityType().equals(SecurityType.CALL)
-          || security.getSecurityType().equals(SecurityType.PUT)) {
+      if (security.getSecurityType().equals(SecurityType.CALL) || security.getSecurityType().equals(SecurityType.PUT)) {
 
         final Option inputOption = (Option) security;
 
-        securityWithQuantity =
-            Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
-                inputOption.getTicker(), unassignedQuantity, inputOption.getStrikePrice(),
-                inputOption.getExpiration(), inputOption.getAverageTradePrice()));
+        securityWithQuantity = Optional.of(
+            new Option(inputOption.getId(), inputOption.getSecurityType(), inputOption.getTicker(), unassignedQuantity,
+                inputOption.getStrikePrice(), inputOption.getExpiration(), inputOption.getAverageTradePrice()));
       }
     }
 

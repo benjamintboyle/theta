@@ -1,6 +1,8 @@
 package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,6 +64,21 @@ public class IbTickSubscriber implements TickSubscriber {
     }
 
     return remainingPriceLevels;
+  }
+
+  @Override
+  public List<PriceLevel> getPriceLevelsMonitored(String ticker) {
+
+    List<PriceLevel> priceLevels = new ArrayList<>();
+    Optional<TickHandler> optionalTickHandler = getHandler(ticker);
+
+    if (optionalTickHandler.isPresent()) {
+      priceLevels = optionalTickHandler.get().getPriceLevelsMonitored(ticker);
+    } else {
+      logger.warn("No Tick Handler or Price Levels for {}", ticker);
+    }
+
+    return priceLevels;
   }
 
   @Override
