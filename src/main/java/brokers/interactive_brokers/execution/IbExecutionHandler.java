@@ -31,7 +31,7 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<String> executeStockEquityMarketOrder(ExecutableOrder order) {
+  public Flowable<String> executeMarketStockOrder(ExecutableOrder order) {
     return Flowable.create(emitter -> {
 
       executeOrder(order, new IbOrderHandler(order, emitter));

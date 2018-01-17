@@ -9,7 +9,8 @@ import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
 
 public abstract class AbstractStockOrder implements ExecutableOrder {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Stock stock;
   private final ExecutionAction action;
@@ -19,7 +20,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
     this.stock = stock;
     this.action = action;
     this.executionType = executionType;
-    logger.info("Built Equity Order: {}", toString());
+    logger.info("Built Stock Order: {}", toString());
   }
 
   @Override
@@ -58,8 +59,27 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
 
   @Override
   public String toString() {
-    return "EquityOrder [id=" + getId() + ", securityType=" + getSecurityType() + ", ticker=" + getTicker()
-        + ", quantity=" + getQuantity() + ", action=" + getExecutionAction() + ", executionType=" + getExecutionType()
-        + "]";
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Stock Order [");
+
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+    builder.append("Action: ");
+    builder.append(getExecutionAction());
+    builder.append(", Quantity: ");
+    builder.append(getQuantity());
+    builder.append(", Security Type: ");
+    builder.append(getSecurityType());
+    builder.append(", Execution Type: ");
+    builder.append(getExecutionType());
+    builder.append(", Id: ");
+    builder.append(getId());
+
+
+    builder.append("]");
+
+    return builder.toString();
   }
 }

@@ -4,5 +4,5 @@ import io.reactivex.Flowable;
 import theta.execution.api.ExecutableOrder;
 
 public interface ExecutionHandler {
-  public Flowable<String> executeStockEquityMarketOrder(ExecutableOrder order);
+  public Flowable<String> executeMarketStockOrder(ExecutableOrder order);
 }

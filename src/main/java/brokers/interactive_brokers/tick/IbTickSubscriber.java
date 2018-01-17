@@ -15,10 +15,12 @@ import theta.api.TickSubscriber;
 import theta.tick.api.TickConsumer;
 
 public class IbTickSubscriber implements TickSubscriber {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-  private final Map<String, IbLastTickHandler> ibTickHandlers = new HashMap<String, IbLastTickHandler>();
+  private final Map<String, IbLastTickHandler> ibTickHandlers =
+      new HashMap<String, IbLastTickHandler>();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -28,7 +30,7 @@ public class IbTickSubscriber implements TickSubscriber {
   @Override
   public TickHandler subscribeTick(String ticker, TickConsumer tickConsumer) {
 
-    logger.info("Subscribing to Equity: {}", ticker);
+    logger.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker);
 
     final IbLastTickHandler ibTickHandler = new IbLastTickHandler(ticker, tickConsumer);
@@ -38,7 +40,8 @@ public class IbTickSubscriber implements TickSubscriber {
         IbStringUtil.toStringContract(contract));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
-    logger.info("Current Monitors: {}", ibTickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
+    logger.info("Current Monitors: {}",
+        ibTickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
     return ibTickHandler;
   }

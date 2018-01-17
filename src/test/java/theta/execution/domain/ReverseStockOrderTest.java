@@ -24,23 +24,23 @@ public class ReverseStockOrderTest {
 
   @Test
   public void validateLongToLongFailureTest() {
-    final Stock equity = StockTest.buildTestStock();
+    final Stock stock = StockTest.buildTestStock();
 
-    MatcherAssert.assertThat(sutLong.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutLong.validate(stock), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 
   @Test
   public void validateLongToShortTest() {
-    final Stock equity = StockTest.buildTestStockShort();
+    final Stock stock = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(sutLong.validate(equity), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
+    MatcherAssert.assertThat(sutLong.validate(stock), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
   }
 
   @Test
   public void validateQuantityFailure() {
-    final Stock equity = StockTest.buildTestStockShort();
+    final Stock stock = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(sutQuantity.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutQuantity.validate(stock), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 
   @Test
@@ -73,15 +73,15 @@ public class ReverseStockOrderTest {
 
   @Test
   public void validateShortToLongTest() {
-    final Stock equity = StockTest.buildTestStock();
+    final Stock stock = StockTest.buildTestStock();
 
-    MatcherAssert.assertThat(sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
+    MatcherAssert.assertThat(sutShort.validate(stock), Matchers.is(Matchers.equalTo(Boolean.TRUE)));
   }
 
   @Test
   public void validateShortToShortFailureTest() {
-    final Stock equity = StockTest.buildTestStockShort();
+    final Stock stock = StockTest.buildTestStockShort();
 
-    MatcherAssert.assertThat(sutShort.validate(equity), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
+    MatcherAssert.assertThat(sutShort.validate(stock), Matchers.is(Matchers.equalTo(Boolean.FALSE)));
   }
 }

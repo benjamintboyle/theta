@@ -50,7 +50,7 @@ public class ExecutionManager implements Executor {
     if (!activeOrderExists(order)) {
       logger.info("Executing order: {}", order);
       final Disposable disposableExecutionHandler =
-          executionHandler.executeStockEquityMarketOrder(order)
+          executionHandler.executeMarketStockOrder(order)
               .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
 
                   message -> {
