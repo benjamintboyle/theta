@@ -1,9 +1,9 @@
 package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,15 +12,16 @@ import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.tick.api.PriceLevel;
 import theta.tick.api.TickConsumer;
+import theta.tick.domain.Tick;
+import theta.tick.domain.TickType;
 
 public class IbTickSubscriber implements TickSubscriber {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-  private final Map<String, IbLastTickHandler> ibTickHandlers =
-      new HashMap<String, IbLastTickHandler>();
+  private final Map<String, IbLastTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -28,7 +29,59 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public TickHandler subscribeTick(String ticker, TickConsumer tickConsumer) {
+  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickConsumer tickConsumer) {
+    Integer remainingPriceLevels = 0;
+
+    Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
+
+    if (ibLastTickHandler.isPresent()) {
+      ibLastTickHandler.get().addPriceLevelMonitor(priceLevel, tickConsumer);
+    } else {
+      subscribeTick(priceLevel.getTicker(), tickConsumer);
+      remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickConsumer);
+    }
+
+    return remainingPriceLevels;
+  }
+
+  @Override
+  public Integer removePriceLevelMonitor(PriceLevel priceLevel) {
+
+    Integer remainingPriceLevels = 0;
+
+    Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
+
+    if (ibLastTickHandler.isPresent()) {
+      remainingPriceLevels = ibLastTickHandler.get().removePriceLevelMonitor(priceLevel);
+
+      if (remainingPriceLevels == 0) {
+        unsubscribeTick(priceLevel.getTicker());
+      }
+    } else {
+      logger.warn("IB Last Tick Handler does not exist for {}", priceLevel.getTicker());
+    }
+
+    return remainingPriceLevels;
+  }
+
+  @Override
+  public Optional<Tick> getLastTick(String ticker) {
+
+    Optional<Tick> tick = Optional.empty();
+
+    Optional<TickHandler> optionalTickHandler = getHandler(ticker);
+
+    if (optionalTickHandler.isPresent()) {
+      final TickHandler tickHandler = optionalTickHandler.get();
+      tick = Optional.of(new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime()));
+    } else {
+      logger.warn("No Tick Handler for {}", ticker);
+    }
+
+    return tick;
+  }
+
+  private TickHandler subscribeTick(String ticker, TickConsumer tickConsumer) {
 
     logger.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker);
@@ -40,22 +93,27 @@ public class IbTickSubscriber implements TickSubscriber {
         IbStringUtil.toStringContract(contract));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
-    logger.info("Current Monitors: {}",
-        ibTickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
+    logger.info("Current Monitors: {}", ibTickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
     return ibTickHandler;
   }
 
-  @Override
-  public void unsubscribeTick(TickHandler tickHandler) {
+  private void unsubscribeTick(String ticker) {
 
-    logger.info("Unsubscribing from Tick Handler: {}", tickHandler.getTicker());
+    IbLastTickHandler ibLastTickHandler = ibTickHandlers.remove(ticker);
 
-    ibController.getController().cancelTopMktData(ibTickHandlers.remove(tickHandler.getTicker()));
+    if (ibLastTickHandler != null) {
+
+      logger.info("Unsubscribing from Tick Handler: {}", ibLastTickHandler.getTicker());
+
+      ibController.getController().cancelTopMktData(ibLastTickHandler);
+    } else {
+      logger.warn("IB Last Tick Handler does not exist for {}", ticker);
+    }
   }
 
-  @Override
-  public Optional<TickHandler> getHandler(String ticker) {
+  private Optional<TickHandler> getHandler(String ticker) {
     return Optional.ofNullable(ibTickHandlers.get(ticker));
   }
+
 }

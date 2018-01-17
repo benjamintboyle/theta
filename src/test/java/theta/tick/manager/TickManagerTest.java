@@ -93,8 +93,7 @@ public class TickManagerTest {
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
     Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
-    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickConsumer.class)))
-        .thenReturn(handler);
+    Mockito.when(tickSubscriber.addPriceLevelMonitor(trade, ArgumentMatchers.any(TickConsumer.class))).thenReturn(1);
 
     sut.addMonitor(trade);
 
@@ -112,8 +111,7 @@ public class TickManagerTest {
 
     final List<Theta> tradeToReturn = Arrays.asList(trade);
     Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-    Mockito.when(tickSubscriber.subscribeTick(trade.getTicker(), ArgumentMatchers.any(TickConsumer.class)))
-        .thenReturn(handler);
+    Mockito.when(tickSubscriber.addPriceLevelMonitor(trade, ArgumentMatchers.any(TickConsumer.class))).thenReturn(1);
 
     sut.addMonitor(trade);
 

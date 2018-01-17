@@ -39,6 +39,20 @@ public class Tick {
 
   @Override
   public String toString() {
-    return "Tick [ticker=" + ticker + ", price=" + price + ", type=" + type + ", timestamp=" + timestamp + "]";
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Tick [");
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+    builder.append(", Price: ");
+    builder.append(getPrice());
+    builder.append(", Type: ");
+    builder.append(getTickType());
+    builder.append(", Time: ");
+    builder.append(getTimestamp());
+
+    builder.append("]");
+
+    return builder.toString();
   }
 }

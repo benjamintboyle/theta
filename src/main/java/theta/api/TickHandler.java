@@ -1,9 +1,8 @@
 package theta.api;
 
 import java.time.ZonedDateTime;
-import theta.tick.api.PriceLevel;
 
-public interface TickHandler {
+public interface TickHandler extends PriceLevelMonitor {
 
   public String getTicker();
 
@@ -24,8 +23,4 @@ public interface TickHandler {
   public Integer getVolume();
 
   public Boolean isSnapshot();
-
-  public Integer addPriceLevel(PriceLevel priceLevel);
-
-  public Integer removePriceLevel(PriceLevel priceLevel);
 }

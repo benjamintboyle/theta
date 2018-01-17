@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import theta.ThetaUtil;
-import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -25,7 +24,6 @@ import theta.tick.api.PriceLevel;
 import theta.tick.api.TickConsumer;
 import theta.tick.api.TickMonitor;
 import theta.tick.domain.Tick;
-import theta.tick.domain.TickType;
 import theta.tick.processor.TickProcessor;
 
 public class TickManager implements TickMonitor, TickConsumer {
@@ -57,52 +55,46 @@ public class TickManager implements TickMonitor, TickConsumer {
 
       while (getStatus().getState() == ManagerState.RUNNING) {
 
-        // Blocks until tick available
-        logger.info("Waiting for next tick across strike price.");
-        final Tick tick = getLastTick();
+        String ticker = null;
 
-        processTick(tick);
+        try {
+          // Blocks until tick available
+          logger.info("Waiting for next tick across strike price.");
+          ticker = tickQueue.take();
+        } catch (final InterruptedException exception) {
+          logger.error("Interupted while waiting for tick", exception);
+          emitter.onError(exception);
+        }
+
+        final Optional<Tick> tick = tickSubscriber.getLastTick(ticker);
+
+        if (tick.isPresent()) {
+          logger.info("Received notification of tick across strike price: {}", tick.get());
+
+          processTick(tick.get());
+        } else {
+          logger.warn("No Tick available for {}", ticker);
+        }
       }
 
       getStatus().changeState(ManagerState.SHUTDOWN);
     });
   }
 
-  private Tick getLastTick() {
-
-    Tick tick = null;
-
-    String ticker = null;
-
-    try {
-      ticker = tickQueue.take();
-    } catch (final InterruptedException e) {
-      logger.error("Interupted while waiting for tick", e);
-    }
-
-    final Optional<TickHandler> optionalTickHandler = tickSubscriber.getHandler(ticker);
-
-    if (optionalTickHandler.isPresent()) {
-      final TickHandler tickHandler = optionalTickHandler.get();
-      tick = new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime());
-    } else {
-      logger.warn("No Tick Handler for {}", ticker);
-      tick = getLastTick();
-    }
-
-    logger.info("Received notification of tick across strike price: {}", tick);
-
-    return tick;
-  }
-
   @Override
   public void acceptTick(String ticker) {
+
     logger.info("Received Tick from Handler: {}", ticker);
+
     if (!tickQueue.contains(ticker)) {
       try {
+
         tickQueue.put(ticker);
+
       } catch (final InterruptedException e) {
+
         logger.error("Interupted without adding Tick", e);
+
       }
     }
   }
@@ -110,47 +102,17 @@ public class TickManager implements TickMonitor, TickConsumer {
   @Override
   public void addMonitor(PriceLevel priceLevel) {
 
-    final String ticker = priceLevel.getTicker();
-    Optional<TickHandler> tickHandler = tickSubscriber.getHandler(ticker);
-
-    if (!tickHandler.isPresent()) {
-      logger.info("Adding Monitor for {}", ticker);
-
-      tickHandler = Optional.ofNullable(tickSubscriber.subscribeTick(ticker, this));
-    } else {
-      logger.debug("Monitor exists for {}", ticker);
-    }
-
-    if (tickHandler.isPresent()) {
-      tickHandler.get().addPriceLevel(priceLevel);
-    } else {
-      logger.error("Tick Handler not subscribed for {}", ticker);
-    }
+    tickSubscriber.addPriceLevelMonitor(priceLevel, this);
   }
 
   @Override
   public Integer deleteMonitor(PriceLevel priceLevel) {
 
-    Integer priceLevelsMonitored = 0;
-
-    final Optional<TickHandler> tickHandler = tickSubscriber.getHandler(priceLevel.getTicker());
-
-    if (tickHandler.isPresent()) {
-      priceLevelsMonitored = tickHandler.get().removePriceLevel(priceLevel);
-
-      if (priceLevelsMonitored == 0) {
-        logger.info("Deleting Tick Monitor for: {}", priceLevel.getTicker());
-        tickSubscriber.unsubscribeTick(tickHandler.get());
-        tickQueue.remove(priceLevel.getTicker());
-      }
-    } else {
-      logger.warn("Tick Monitor for: {} does not exist", priceLevel.getTicker());
-    }
-
-    return priceLevelsMonitored;
+    return tickSubscriber.removePriceLevelMonitor(priceLevel);
   }
 
   private void processTick(Tick tick) {
+
     logger.info("Processing: {}", tick);
 
     if (tick.getTimestamp().isBefore(ZonedDateTime.now().minusSeconds(2))) {
@@ -159,19 +121,25 @@ public class TickManager implements TickMonitor, TickConsumer {
 
     final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
-    logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
+    if (tradesToCheck.size() == 0) {
+      logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
-    final TickProcessor thetaTickProcessor = new TickProcessor(tick);
+      final TickProcessor thetaTickProcessor = new TickProcessor(tick);
 
-    final List<Theta> stocksToReverse =
-        tradesToCheck.stream().map(thetaTickProcessor).flatMap(List::stream).collect(Collectors.toList());
+      final List<Theta> stocksToReverse =
+          tradesToCheck.stream().map(thetaTickProcessor).flatMap(List::stream).collect(Collectors.toList());
 
-    for (final Theta theta : stocksToReverse) {
-      deleteMonitor(theta);
-    }
+      for (final Theta theta : stocksToReverse) {
+        deleteMonitor(theta);
+      }
 
-    for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
-      executor.reverseTrade(stock);
+      for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
+        executor.reverseTrade(stock);
+      }
+    } else {
+      logger.warn("Unsubscribing Tick Monitor for {}. Received 0 Positions from Position Provider for Tick: {}",
+          tick.getTicker(), tick);
+
     }
   }
 

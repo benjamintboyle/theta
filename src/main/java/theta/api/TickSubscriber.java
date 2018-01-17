@@ -1,12 +1,9 @@
 package theta.api;
 
 import java.util.Optional;
-import theta.tick.api.TickConsumer;
+import theta.tick.domain.Tick;
 
-public interface TickSubscriber {
-  public TickHandler subscribeTick(String ticker, TickConsumer tickObserver);
+public interface TickSubscriber extends PriceLevelMonitor {
 
-  public void unsubscribeTick(TickHandler tickHandler);
-
-  public Optional<TickHandler> getHandler(String ticker);
+  public Optional<Tick> getLastTick(String ticker);
 }
