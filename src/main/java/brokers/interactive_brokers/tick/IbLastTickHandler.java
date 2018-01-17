@@ -32,6 +32,8 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   private Double haltedPrice = Double.MIN_VALUE;
 
   private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+  private String bidExchange = "";
+  private String askExchange = "";
 
   private Integer bidSize = Integer.MIN_VALUE;
   private Integer askSize = Integer.MIN_VALUE;
@@ -120,6 +122,16 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
         logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
             ticker, tickType, lastTime);
         break;
+      case BID_EXCH:
+        bidExchange = value;
+        logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+            ticker, tickType, bidExchange);
+        break;
+      case ASK_EXCH:
+        askExchange = value;
+        logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+            ticker, tickType, askExchange);
+        break;
       default:
         logger.warn("'Tick String' not logged for: {} with value: {}", tickType, value);
         break;
@@ -196,6 +208,14 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   @Override
   public ZonedDateTime getLastTime() {
     return lastTime;
+  }
+
+  public String getBidExchange() {
+    return bidExchange;
+  }
+
+  public String getAskExchange() {
+    return askExchange;
   }
 
   @Override
