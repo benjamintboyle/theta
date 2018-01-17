@@ -99,7 +99,7 @@ public class ThetaEngine implements Callable<String> {
 
   private Disposable startTickManager() {
 
-    return portfolioManager.getPositionEnd().observeOn(ThetaSchedulersFactory.getManagerThread())
+    return portfolioManager.getPositionEnd().observeOn(ThetaSchedulersFactory.managerThread())
         .andThen(tickManager.startTickProcessing()).subscribe(
 
             () -> {

@@ -50,7 +50,7 @@ public class ExecutionManager implements Executor {
       logger.info("Executing order: {}", order);
 
       final Disposable disposableExecutionHandler = executionHandler.executeMarketStockOrder(order)
-          .subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
+          .subscribeOn(ThetaSchedulersFactory.asyncUnlimittedThread()).subscribe(
 
               message -> {
                 logger.info(message);

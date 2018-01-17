@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -241,16 +240,11 @@ public class PortfolioManager implements PositionProvider {
   public void logPositions() {
 
     // Log positions asynchronously
-    Completable positionLogger = Completable.create(emitter -> {
-      PositionLogger.logThetaPositions(thetaIdMap.values());
-
-      PositionLogger.logUnmatchedPositions(securityIdMap.values(), securityThetaLink.keySet());
-
-      emitter.onComplete();
-    });
+    Completable positionLogger =
+        PositionLogger.logPositions(thetaIdMap.values(), securityThetaLink.keySet(), securityIdMap.values());
 
     // Only output when all positions have been received
-    getPositionEnd().andThen(positionLogger).subscribeOn(ThetaSchedulersFactory.getAsyncWaitThread()).subscribe(
+    getPositionEnd().andThen(positionLogger).subscribe(
 
         () -> logger.info("Position Logging Complete"),
 

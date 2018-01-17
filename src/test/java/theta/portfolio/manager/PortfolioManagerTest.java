@@ -45,7 +45,7 @@ public class PortfolioManagerTest {
     sut = new PortfolioManager(mockPositionHandler);
     sut.registerTickMonitor(mockTickManager);
 
-    sut.startPositionProcessing().subscribeOn(ThetaSchedulersFactory.getManagerThread())
+    sut.startPositionProcessing().subscribeOn(ThetaSchedulersFactory.managerThread())
         .subscribe();
   }
 
