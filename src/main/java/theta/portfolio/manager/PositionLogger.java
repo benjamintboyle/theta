@@ -3,11 +3,12 @@ package theta.portfolio.manager;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Completable;
 import theta.domain.Option;
 import theta.domain.Theta;
 import theta.domain.api.Security;
@@ -57,19 +58,12 @@ public class PositionLogger {
     }
   };
 
-  public static Completable logPositions(Collection<Theta> thetas, Collection<UUID> matchedPositionIds,
-      Collection<Security> allSecurities) {
+  public static void logPositions(Map<UUID, Theta> thetaIdMap, Map<UUID, Set<UUID>> securityThetaLink,
+      Map<UUID, Security> securityIdMap) {
 
-    // Log positions asynchronously
-    Completable positionLogger = Completable.create(emitter -> {
-      logThetaPositions(thetas);
+    logThetaPositions(thetaIdMap.values());
 
-      logUnmatchedPositions(matchedPositionIds, allSecurities);
-
-      emitter.onComplete();
-    });
-
-    return positionLogger;
+    logUnmatchedPositions(securityThetaLink.keySet(), securityIdMap.values());
   }
 
   public static void logThetaPositions(Collection<Theta> thetas) {

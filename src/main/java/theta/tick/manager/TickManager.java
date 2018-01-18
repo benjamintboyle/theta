@@ -45,7 +45,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
   public Completable startTickProcessing() {
 
-    logger.debug("Entered TickProcessing");
+    logger.debug("Starting Tick Processing");
 
     return Completable.create(emitter -> {
 

@@ -9,10 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.api.PositionHandler;
@@ -36,11 +38,11 @@ public class PortfolioManager implements PositionProvider {
   // Currently active theta trades
   private final Map<UUID, Theta> thetaIdMap = new ConcurrentHashMap<>();
 
-  // Internal Id to Security map
-  private final Map<UUID, Security> securityIdMap = new ConcurrentHashMap<>();
-
   // Securities to theta trade map
   private final Map<UUID, Set<UUID>> securityThetaLink = new ConcurrentHashMap<>();
+
+  // Internal Id to Security map
+  private final Map<UUID, Security> securityIdMap = new ConcurrentHashMap<>();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
@@ -54,10 +56,12 @@ public class PortfolioManager implements PositionProvider {
 
   public Completable startPositionProcessing() {
 
-    getStatus().changeState(ManagerState.RUNNING);
+    logger.debug("Starting Position Processing");
 
     return Completable.create(emitter -> {
-      final Disposable requestPositionDisposable = positionHandler.requestPositionsFromBrokerage().subscribe(
+      final Flowable<Security> positionFlowable = positionHandler.requestPositionsFromBrokerage();
+
+      final Disposable requestPositionDisposable = positionFlowable.subscribe(
 
           security -> {
 
@@ -70,9 +74,6 @@ public class PortfolioManager implements PositionProvider {
               securityIdMap.remove(security.getId());
               logger.info("Security not processed due to 0 quantity: {}", security);
             }
-
-            // Log positions if queue is empty
-            logPositions();
           },
 
           exception -> {
@@ -83,10 +84,30 @@ public class PortfolioManager implements PositionProvider {
           () -> {
             getStatus().changeState(ManagerState.SHUTDOWN);
             emitter.onComplete();
+          },
+
+          subscription -> {
+            getStatus().changeState(ManagerState.RUNNING);
           });
 
       portfolioDisposables.add(requestPositionDisposable);
+
+      Flowable<Security> positionLoggerFlowable = positionFlowable.debounce(10, TimeUnit.MILLISECONDS);
+
+      final Disposable positionLoggerDisposable = positionLoggerFlowable.subscribe(
+
+          security -> {
+            PositionLogger.logPositions(thetaIdMap, securityThetaLink, securityIdMap);
+            logger.info("Position Logging Complete. Triggered by: {}", security);
+          },
+
+          exception -> {
+            logger.error("Position Logger Flowable error", exception);
+          });
+
+      portfolioDisposables.add(positionLoggerDisposable);
     });
+
   }
 
   public Completable getPositionEnd() {
@@ -235,20 +256,6 @@ public class PortfolioManager implements PositionProvider {
   public void registerTickMonitor(TickMonitor monitor) {
     logger.info("Registering Tick Monitor with Portfolio Manager");
     this.monitor = monitor;
-  }
-
-  public void logPositions() {
-
-    // Log positions asynchronously
-    Completable positionLogger =
-        PositionLogger.logPositions(thetaIdMap.values(), securityThetaLink.keySet(), securityIdMap.values());
-
-    // Only output when all positions have been received
-    getPositionEnd().andThen(positionLogger).subscribe(
-
-        () -> logger.info("Position Logging Complete"),
-
-        exception -> logger.error("Exception during Position Logging", exception));
   }
 
   public void shutdown() {
