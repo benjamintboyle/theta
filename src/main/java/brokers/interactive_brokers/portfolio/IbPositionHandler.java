@@ -68,7 +68,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     controller.getController().reqPositions(this);
 
-    return subjectPositions.toFlowable(BackpressureStrategy.BUFFER);
+    return subjectPositions.serialize().toFlowable(BackpressureStrategy.BUFFER);
   }
 
   @Override

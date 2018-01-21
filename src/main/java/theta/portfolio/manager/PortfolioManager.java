@@ -9,14 +9,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -59,51 +58,68 @@ public class PortfolioManager implements PositionProvider {
     logger.debug("Starting Position Processing");
 
     return Completable.create(emitter -> {
-      final Flowable<Security> positionFlowable = positionHandler.requestPositionsFromBrokerage();
+      // final Flowable<Security> positionFlowable = positionHandler.requestPositionsFromBrokerage();
 
-      final Disposable requestPositionDisposable = positionFlowable.subscribe(
+      // final Disposable requestPositionDisposable = positionFlowable.subscribe(
+      //
+      // security -> {
+      //
+      // logger.info("Processing Position: {}", security);
+      //
+      // removePositionIfExists(security);
+      //
+      // if (security.getQuantity() != 0) {
+      // securityIdMap.put(security.getId(), security);
+      // processPosition(security.getTicker());
+      // } else {
+      // securityIdMap.remove(security.getId());
+      // logger.info("Security not processed due to 0 quantity: {}", security);
+      // }
+      // },
+      //
+      // exception -> {
+      // logger.error("Issue with Received Positions from Brokerage", exception);
+      // emitter.onError(exception);
+      // },
+      //
+      // () -> {
+      // getStatus().changeState(ManagerState.SHUTDOWN);
+      // emitter.onComplete();
+      // },
+      //
+      // subscription -> {
+      // getStatus().changeState(ManagerState.RUNNING);
+      // });
+      //
+      // portfolioDisposables.add(requestPositionDisposable);
 
-          security -> {
+      final Disposable positionLoggerDisposable =
+          positionHandler.requestPositionsFromBrokerage().subscribeOn(ThetaSchedulersFactory.asyncUnlimittedThread())
+              .map(security -> processSecurity(security)).onBackpressureLatest()
+              // .onBackpressureBuffer().debounce(1, TimeUnit.SECONDS).onBackpressureLatest()
+              .subscribe(
 
-            removePositionIfExists(security);
+                  security -> {
+                    logger.info("Position Logging Start. Triggered by: {}", security);
 
-            if (security.getQuantity() != 0) {
-              securityIdMap.put(security.getId(), security);
-              processPosition(security.getTicker());
-            } else {
-              securityIdMap.remove(security.getId());
-              logger.info("Security not processed due to 0 quantity: {}", security);
-            }
-          },
+                    PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap());
 
-          exception -> {
-            logger.error("Issue with Received Positions from Brokerage", exception);
-            emitter.onError(exception);
-          },
+                    logger.info("Position Logging Complete. Triggered by: {}", security);
+                  },
 
-          () -> {
-            getStatus().changeState(ManagerState.SHUTDOWN);
-            emitter.onComplete();
-          },
+                  exception -> {
+                    logger.error("Issue with Received Positions from Brokerage", exception);
+                    emitter.onError(exception);
+                  },
 
-          subscription -> {
-            getStatus().changeState(ManagerState.RUNNING);
-          });
+                  () -> {
+                    getStatus().changeState(ManagerState.SHUTDOWN);
+                    emitter.onComplete();
+                  },
 
-      portfolioDisposables.add(requestPositionDisposable);
-
-      Flowable<Security> positionLoggerFlowable = positionFlowable.debounce(10, TimeUnit.MILLISECONDS);
-
-      final Disposable positionLoggerDisposable = positionLoggerFlowable.subscribe(
-
-          security -> {
-            PositionLogger.logPositions(thetaIdMap, securityThetaLink, securityIdMap);
-            logger.info("Position Logging Complete. Triggered by: {}", security);
-          },
-
-          exception -> {
-            logger.error("Position Logger Flowable error", exception);
-          });
+                  subscription -> {
+                    getStatus().changeState(ManagerState.RUNNING);
+                  });
 
       portfolioDisposables.add(positionLoggerDisposable);
     });
@@ -122,6 +138,23 @@ public class PortfolioManager implements PositionProvider {
 
     logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
     return positionsToProvide;
+  }
+
+  private Security processSecurity(Security security) {
+
+    logger.info("Processing Position: {}", security);
+
+    removePositionIfExists(security);
+
+    if (security.getQuantity() != 0) {
+      securityIdMap.put(security.getId(), security);
+      processPosition(security.getTicker());
+    } else {
+      securityIdMap.remove(security.getId());
+      logger.info("Security not processed due to 0 quantity: {}", security);
+    }
+
+    return security;
   }
 
   // Removes positions if security is contained within it
@@ -226,23 +259,31 @@ public class PortfolioManager implements PositionProvider {
 
   private Optional<Security> getSecurityWithQuantity(Security security, Double assignedQuantity) {
 
-    final double unassignedQuantity = security.getQuantity() - assignedQuantity;
     Optional<Security> securityWithQuantity = Optional.empty();
 
-    if (unassignedQuantity != 0) {
-      if (security.getSecurityType().equals(SecurityType.STOCK)) {
+    if (security.getQuantity().equals(assignedQuantity)) {
 
-        securityWithQuantity =
-            Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
-      }
+      securityWithQuantity = Optional.of(security);
 
-      if (security.getSecurityType().equals(SecurityType.CALL) || security.getSecurityType().equals(SecurityType.PUT)) {
+    } else {
+      final double unassignedQuantity = security.getQuantity() - assignedQuantity;
 
-        final Option inputOption = (Option) security;
+      if (unassignedQuantity != 0) {
+        if (security.getSecurityType().equals(SecurityType.STOCK)) {
 
-        securityWithQuantity = Optional.of(
-            new Option(inputOption.getId(), inputOption.getSecurityType(), inputOption.getTicker(), unassignedQuantity,
-                inputOption.getStrikePrice(), inputOption.getExpiration(), inputOption.getAverageTradePrice()));
+          securityWithQuantity =
+              Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
+        }
+
+        if (security.getSecurityType().equals(SecurityType.CALL)
+            || security.getSecurityType().equals(SecurityType.PUT)) {
+
+          final Option inputOption = (Option) security;
+
+          securityWithQuantity = Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
+              inputOption.getTicker(), unassignedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
+              inputOption.getAverageTradePrice()));
+        }
       }
     }
 
@@ -263,4 +304,15 @@ public class PortfolioManager implements PositionProvider {
     portfolioDisposables.dispose();
   }
 
+  private Map<UUID, Theta> getThetaIdMap() {
+    return thetaIdMap;
+  }
+
+  private Map<UUID, Set<UUID>> getSecurityThetaLink() {
+    return securityThetaLink;
+  }
+
+  private Map<UUID, Security> getSecurityIdMap() {
+    return securityIdMap;
+  }
 }
