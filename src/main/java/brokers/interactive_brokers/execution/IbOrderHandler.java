@@ -11,22 +11,21 @@ import io.reactivex.Emitter;
 import theta.execution.api.ExecutableOrder;
 
 public class IbOrderHandler implements IOrderHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutableOrder order;
   private final Emitter<String> emitter;
 
   private OrderState currentOrderState = null;
-  private final OrderStatus currentOrderStatus = null;
-  private final Double filled = null;
-  private final Double remaining = null;
-  private final Double avgFillPrice = null;
-  private final Long permId = null;
-  private final Integer parentId = null;
-  private final Double lastFillPrice = null;
-  private final Integer clientId = null;
-  private final String whyHeld = null;
+  private OrderStatus currentOrderStatus = null;
+  private Double filled = null;
+  private Double remaining = null;
+  private Double avgFillPrice = null;
+  private Long permId = null;
+  private Integer parentId = null;
+  private Double lastFillPrice = null;
+  private Integer clientId = null;
+  private String whyHeld = null;
 
   public IbOrderHandler(ExecutableOrder order, Emitter<String> emitter) {
     this.order = order;
@@ -35,24 +34,36 @@ public class IbOrderHandler implements IOrderHandler {
 
   @Override
   public void orderState(OrderState orderState) {
-    logger.debug("Received OrderState: {}", IbStringUtil.toStringOrderState(orderState));
+
+    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", order.getBrokerId(), order.getTicker(),
+        IbStringUtil.toStringOrderState(orderState));
+
     currentOrderState = orderState;
 
-    sendNext("OrderState received: {}" + IbStringUtil.toStringOrderState(currentOrderState));
+    sendNext("OrderState");
   }
 
   @Override
-  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
-      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+  public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
+      int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
-    logger.debug(
-        "Received OrderStatus: Status: {}, Filled: {}, Remaining: {}, Average Fill Price: {}, Perm Id: {}, Parent Id: {}, Last Fill Price: {}, Client Id: {}, Why Held: {}",
-        status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId,
-        whyHeld);
+    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", order.getBrokerId(), order.getTicker(),
+        IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice,
+            clientId, whyHeld));
+
+    currentOrderStatus = status;
+    this.filled = filled;
+    this.remaining = remaining;
+    this.avgFillPrice = avgFillPrice;
+    this.permId = permId;
+    this.parentId = parentId;
+    this.lastFillPrice = lastFillPrice;
+    this.clientId = clientId;
+    this.whyHeld = whyHeld;
 
     sendNext("OrderStatus");
 
-    if (status == OrderStatus.Filled && remaining == 0) {
+    if (this.currentOrderStatus == OrderStatus.Filled && this.remaining == 0) {
       logger.debug("Sending complete for order: {}", order);
       emitter.onComplete();
     }
@@ -60,7 +71,8 @@ public class IbOrderHandler implements IOrderHandler {
 
   @Override
   public void handle(int errorCode, final String errorMsg) {
-    logger.error("Order Handler Errror, Error Code: {}, Message: []", errorCode, errorMsg);
+    logger.error("Order Handler Error, Error Code: {}, Message: []", errorCode, errorMsg);
+    emitter.onError(new Exception("Error from Interactive Brokers for Order: " + order.getBrokerId()));
   }
 
   private void sendNext(String trigger) {
@@ -69,16 +81,16 @@ public class IbOrderHandler implements IOrderHandler {
     builder.append("Trigger: ");
     builder.append(trigger);
 
-    builder.append(", Order Number: ");
-    builder.append(order.getId());
+    builder.append(", Order Id: ");
+    builder.append(order.getBrokerId());
 
     builder.append(", Ticker: ");
     builder.append(order.getTicker());
 
     // Order Status
     builder.append(", Order Status: ");
-    builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining,
-        avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
+    builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining, avgFillPrice, permId,
+        parentId, lastFillPrice, clientId, whyHeld));
 
     // Order State
     builder.append(", Order State: ");

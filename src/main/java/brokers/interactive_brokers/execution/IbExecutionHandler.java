@@ -47,7 +47,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     order.setBrokerId(ibOrder.orderId());
 
     if (order.getBrokerId().isPresent()) {
-      logger.debug("Order #{} sent to Broker Servers for Order: {}", order.getBrokerId().get(), order);
+      logger.debug("Order #{} sent to Broker Servers for: {}", order.getBrokerId().get(), order);
     } else {
       logger.warn(
           "Order Id not set for Order. May indicate an internal error. ExecutableOrder: {}, IB Contract: {}, IB Order: {}",

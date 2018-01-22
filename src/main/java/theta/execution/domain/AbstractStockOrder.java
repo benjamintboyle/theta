@@ -77,7 +77,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
 
     builder.append("Ticker: ");
     builder.append(getTicker());
-    builder.append("Action: ");
+    builder.append(", Action: ");
     builder.append(getExecutionAction());
     builder.append(", Quantity: ");
     builder.append(getQuantity());

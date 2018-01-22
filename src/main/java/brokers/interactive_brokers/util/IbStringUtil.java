@@ -8,6 +8,7 @@ import com.ib.client.DeltaNeutralContract;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
+import com.ib.client.Types.SecType;
 
 public class IbStringUtil {
 
@@ -403,10 +404,7 @@ public class IbStringUtil {
     final StringBuilder stringBuilder = new StringBuilder();
 
     if (contract != null) {
-      stringBuilder.append("Contract Id: ");
-      stringBuilder.append(contract.conid());
 
-      stringBuilder.append(DELIMITTER);
       stringBuilder.append("Symbol: ");
       stringBuilder.append(contract.symbol());
 
@@ -414,13 +412,15 @@ public class IbStringUtil {
       stringBuilder.append("Security Type: ");
       stringBuilder.append(contract.secType());
 
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Expiration Date: ");
-      stringBuilder.append(contract.lastTradeDateOrContractMonth());
+      if (!contract.secType().equals(SecType.STK)) {
+        stringBuilder.append(DELIMITTER);
+        stringBuilder.append("Expiration Date: ");
+        stringBuilder.append(contract.lastTradeDateOrContractMonth());
 
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Strike Price: ");
-      stringBuilder.append(contract.strike());
+        stringBuilder.append(DELIMITTER);
+        stringBuilder.append("Strike Price: ");
+        stringBuilder.append(contract.strike());
+      }
 
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Right: ");
@@ -454,39 +454,52 @@ public class IbStringUtil {
       stringBuilder.append("Security Id: ");
       stringBuilder.append(contract.secId());
 
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Delta Neutral Contract: ");
-      stringBuilder.append("[");
-      stringBuilder.append(IbStringUtil.toStringDeltaNeutralContract(contract.underComp()));
-      stringBuilder.append("]");
+      if (contract.underComp() != null) {
+        stringBuilder.append(DELIMITTER);
+        stringBuilder.append("Delta Neutral Contract: ");
+        stringBuilder.append("[");
+        stringBuilder.append(IbStringUtil.toStringDeltaNeutralContract(contract.underComp()));
+        stringBuilder.append("]");
+      }
 
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Include Expired: ");
       stringBuilder.append(contract.includeExpired());
 
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Combo Legs Description: ");
-      stringBuilder.append(contract.comboLegsDescrip());
-
-      final List<ComboLeg> comboLegList = contract.comboLegs();
-
-      stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Combo Legs: ");
-      stringBuilder.append("[");
-      stringBuilder.append("Count: ");
-      stringBuilder.append(comboLegList.size());
-
-      for (int i = 0; i < comboLegList.size(); i++) {
+      if (!contract.comboLegs().isEmpty()) {
         stringBuilder.append(DELIMITTER);
-        stringBuilder.append(i);
-        stringBuilder.append(": [");
+        stringBuilder.append("Combo Legs Description: ");
+        stringBuilder.append(contract.comboLegsDescrip());
 
-        IbStringUtil.toStringComboLeg(comboLegList.get(i));
+        final List<ComboLeg> comboLegList = contract.comboLegs();
 
-        stringBuilder.append("]");
+        stringBuilder.append(DELIMITTER);
+        stringBuilder.append("Combo Legs: ");
+        stringBuilder.append("[");
+        stringBuilder.append("Count: ");
+        stringBuilder.append(comboLegList.size());
+
+        for (int i = 0; i < comboLegList.size(); i++) {
+          stringBuilder.append(DELIMITTER);
+          stringBuilder.append(i);
+          stringBuilder.append(": [");
+
+          IbStringUtil.toStringComboLeg(comboLegList.get(i));
+
+          stringBuilder.append("]");
+        }
       }
 
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Contract Id: ");
+      stringBuilder.append(contract.conid());
+
       stringBuilder.append("]");
+
+    }
+
+    if (stringBuilder.length() == 0) {
+      stringBuilder.append(contract);
     }
 
     return stringBuilder.toString();
@@ -506,6 +519,10 @@ public class IbStringUtil {
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Price: ");
       stringBuilder.append(deltaNeutralContract.price());
+    }
+
+    if (stringBuilder.length() == 0) {
+      stringBuilder.append(deltaNeutralContract);
     }
 
     return stringBuilder.toString();
@@ -546,6 +563,10 @@ public class IbStringUtil {
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Exempt Code: ");
       stringBuilder.append(comboLeg.exemptCode());
+    }
+
+    if (stringBuilder.length() == 0) {
+      stringBuilder.append(comboLeg);
     }
 
     return stringBuilder.toString();
