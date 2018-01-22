@@ -9,13 +9,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -58,46 +58,10 @@ public class PortfolioManager implements PositionProvider {
     logger.debug("Starting Position Processing");
 
     return Completable.create(emitter -> {
-      // final Flowable<Security> positionFlowable = positionHandler.requestPositionsFromBrokerage();
-
-      // final Disposable requestPositionDisposable = positionFlowable.subscribe(
-      //
-      // security -> {
-      //
-      // logger.info("Processing Position: {}", security);
-      //
-      // removePositionIfExists(security);
-      //
-      // if (security.getQuantity() != 0) {
-      // securityIdMap.put(security.getId(), security);
-      // processPosition(security.getTicker());
-      // } else {
-      // securityIdMap.remove(security.getId());
-      // logger.info("Security not processed due to 0 quantity: {}", security);
-      // }
-      // },
-      //
-      // exception -> {
-      // logger.error("Issue with Received Positions from Brokerage", exception);
-      // emitter.onError(exception);
-      // },
-      //
-      // () -> {
-      // getStatus().changeState(ManagerState.SHUTDOWN);
-      // emitter.onComplete();
-      // },
-      //
-      // subscription -> {
-      // getStatus().changeState(ManagerState.RUNNING);
-      // });
-      //
-      // portfolioDisposables.add(requestPositionDisposable);
 
       final Disposable positionLoggerDisposable =
-          positionHandler.requestPositionsFromBrokerage().subscribeOn(ThetaSchedulersFactory.asyncUnlimittedThread())
-              .map(security -> processSecurity(security)).onBackpressureLatest()
-              // .onBackpressureBuffer().debounce(1, TimeUnit.SECONDS).onBackpressureLatest()
-              .subscribe(
+          positionHandler.requestPositionsFromBrokerage().map(security -> processSecurity(security))
+              .onBackpressureLatest().debounce(25, TimeUnit.MILLISECONDS).onBackpressureLatest().subscribe(
 
                   security -> {
                     logger.info("Position Logging Start. Triggered by: {}", security);
@@ -119,6 +83,7 @@ public class PortfolioManager implements PositionProvider {
 
                   subscription -> {
                     getStatus().changeState(ManagerState.RUNNING);
+                    subscription.request(Long.MAX_VALUE);
                   });
 
       portfolioDisposables.add(positionLoggerDisposable);

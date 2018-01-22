@@ -40,11 +40,17 @@ public class ThetaUtil {
     if (InetAddress.getLocalHost().getHostAddress().equals(ENGINE_IP_ADDRESS_DOCKER)) {
       gatewayAddress = InetAddress.getByName(GATEWAY_IP_ADDRESS_DOCKER);
       gatewayPort = GATEWAY_PORT;
+
+      logger.info("Deteched Docker container.");
     } else {
       // If not running in a Docker container assume using TWS on local host
       gatewayAddress = InetAddress.getLoopbackAddress();
       gatewayPort = TWS_PORT;
+
+      logger.info("Detected local loopback gateway.");
     }
+
+    logger.info("Attempting to use Gateway at: {}:{}", gatewayAddress, gatewayPort);
 
     return new InetSocketAddress(gatewayAddress, gatewayPort);
   }
