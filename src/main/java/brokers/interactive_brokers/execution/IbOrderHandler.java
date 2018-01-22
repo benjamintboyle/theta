@@ -35,8 +35,8 @@ public class IbOrderHandler implements IOrderHandler {
   @Override
   public void orderState(OrderState orderState) {
 
-    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", order.getBrokerId(), order.getTicker(),
-        IbStringUtil.toStringOrderState(orderState));
+    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", order.getBrokerId().orElse(null),
+        order.getTicker(), IbStringUtil.toStringOrderState(orderState));
 
     currentOrderState = orderState;
 
@@ -47,9 +47,9 @@ public class IbOrderHandler implements IOrderHandler {
   public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
       int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
-    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", order.getBrokerId(), order.getTicker(),
-        IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice,
-            clientId, whyHeld));
+    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", order.getBrokerId().orElse(null),
+        order.getTicker(), IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId,
+            lastFillPrice, clientId, whyHeld));
 
     currentOrderStatus = status;
     this.filled = filled;
@@ -72,7 +72,7 @@ public class IbOrderHandler implements IOrderHandler {
   @Override
   public void handle(int errorCode, final String errorMsg) {
     logger.error("Order Handler Error, Error Code: {}, Message: []", errorCode, errorMsg);
-    emitter.onError(new Exception("Error from Interactive Brokers for Order: " + order.getBrokerId()));
+    emitter.onError(new Exception("Error from Interactive Brokers for Order: " + order.getBrokerId().orElse(null)));
   }
 
   private void sendNext(String trigger) {
@@ -82,7 +82,7 @@ public class IbOrderHandler implements IOrderHandler {
     builder.append(trigger);
 
     builder.append(", Order Id: ");
-    builder.append(order.getBrokerId());
+    builder.append(order.getBrokerId().orElse(null));
 
     builder.append(", Ticker: ");
     builder.append(order.getTicker());

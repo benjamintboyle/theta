@@ -59,32 +59,33 @@ public class PortfolioManager implements PositionProvider {
 
     return Completable.create(emitter -> {
 
-      final Disposable positionLoggerDisposable =
-          positionHandler.requestPositionsFromBrokerage().map(security -> processSecurity(security))
-              .onBackpressureLatest().debounce(25, TimeUnit.MILLISECONDS).onBackpressureLatest().subscribe(
+      final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
+          .map(security -> processSecurity(security))
+          .debounce(25, TimeUnit.MILLISECONDS)
+          .subscribe(
 
-                  security -> {
-                    logger.info("Position Logging Start. Triggered by: {}", security);
+              security -> {
+                logger.info("Position Logging Start. Triggered by: {}", security);
 
-                    PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap());
+                PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap());
 
-                    logger.info("Position Logging Complete. Triggered by: {}", security);
-                  },
+                logger.info("Position Logging Complete. Triggered by: {}", security);
+              },
 
-                  exception -> {
-                    logger.error("Issue with Received Positions from Brokerage", exception);
-                    emitter.onError(exception);
-                  },
+              exception -> {
+                logger.error("Issue with Received Positions from Brokerage", exception);
+                emitter.onError(exception);
+              },
 
-                  () -> {
-                    getStatus().changeState(ManagerState.SHUTDOWN);
-                    emitter.onComplete();
-                  },
+              () -> {
+                getStatus().changeState(ManagerState.SHUTDOWN);
+                emitter.onComplete();
+              },
 
-                  subscription -> {
-                    getStatus().changeState(ManagerState.RUNNING);
-                    subscription.request(Long.MAX_VALUE);
-                  });
+              subscription -> {
+                getStatus().changeState(ManagerState.RUNNING);
+                subscription.request(Long.MAX_VALUE);
+              });
 
       portfolioDisposables.add(positionLoggerDisposable);
     });
@@ -98,8 +99,9 @@ public class PortfolioManager implements PositionProvider {
   @Override
   public List<Theta> providePositions(String ticker) {
 
-    List<Theta> positionsToProvide = thetaIdMap.values().stream()
-        .filter(position -> position.getTicker().equals(ticker)).collect(Collectors.toList());
+    List<Theta> positionsToProvide =
+        thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker)).collect(
+            Collectors.toList());
 
     logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
     return positionsToProvide;
@@ -138,7 +140,10 @@ public class PortfolioManager implements PositionProvider {
 
         logger.info("Removed theta trade: {}, based on security: {}", theta, security);
 
-        if (!thetaIdMap.values().stream().filter(ticker -> ticker.getTicker().equals(theta.getTicker())).findAny()
+        if (!thetaIdMap.values()
+            .stream()
+            .filter(ticker -> ticker.getTicker().equals(theta.getTicker()))
+            .findAny()
             .isPresent()) {
 
           logger.info("No more theta positions for {}, removing monitor.", theta.getTicker());
@@ -151,12 +156,15 @@ public class PortfolioManager implements PositionProvider {
   private void processPosition(String ticker) {
 
     // Calculate unassigned call, put, stock
-    final List<Stock> unassignedStocks = getUnassignedOfSecurity(ticker, SecurityType.STOCK).stream()
-        .map(stock -> (Stock) stock).collect(Collectors.toList());
-    final List<Option> unassignedCalls = getUnassignedOfSecurity(ticker, SecurityType.CALL).stream()
-        .map(call -> (Option) call).collect(Collectors.toList());
-    final List<Option> unassignedPuts = getUnassignedOfSecurity(ticker, SecurityType.PUT).stream()
-        .map(put -> (Option) put).collect(Collectors.toList());
+    final List<Stock> unassignedStocks =
+        getUnassignedOfSecurity(ticker, SecurityType.STOCK).stream().map(stock -> (Stock) stock).collect(
+            Collectors.toList());
+    final List<Option> unassignedCalls =
+        getUnassignedOfSecurity(ticker, SecurityType.CALL).stream().map(call -> (Option) call).collect(
+            Collectors.toList());
+    final List<Option> unassignedPuts =
+        getUnassignedOfSecurity(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
+            Collectors.toList());
 
     List<Theta> thetas = new ArrayList<>();
 
@@ -174,17 +182,20 @@ public class PortfolioManager implements PositionProvider {
   }
 
   private List<Security> getUnassignedOfSecurity(String ticker, SecurityType securityType) {
-    final List<UUID> allIdsOfSecurity =
-        securityIdMap.values().stream().filter(otherSecurity -> otherSecurity.getQuantity() != 0)
-            .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
-            .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType)).map(Security::getId)
-            .collect(Collectors.toList());
+    final List<UUID> allIdsOfSecurity = securityIdMap.values()
+        .stream()
+        .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
+        .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
+        .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType))
+        .map(Security::getId)
+        .collect(Collectors.toList());
 
-    final Map<UUID, Double> assignedCountMap =
-        thetaIdMap.values().stream().map(theta -> theta.getSecurityOfType(securityType))
-            .filter(otherSecurity -> allIdsOfSecurity.stream()
-                .anyMatch(allSecurity -> otherSecurity.getId().equals(allSecurity)))
-            .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
+    final Map<UUID, Double> assignedCountMap = thetaIdMap.values()
+        .stream()
+        .map(theta -> theta.getSecurityOfType(securityType))
+        .filter(otherSecurity -> allIdsOfSecurity.stream()
+            .anyMatch(allSecurity -> otherSecurity.getId().equals(allSecurity)))
+        .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
 
 
     final List<Security> unassignedSecurities = new ArrayList<>();
