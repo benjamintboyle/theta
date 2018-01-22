@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ThetaSchedulersFactory;
 import theta.api.ExecutionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -49,29 +48,27 @@ public class ExecutionManager implements Executor {
 
       logger.info("Executing order: {}", order);
 
-      final Disposable disposableExecutionHandler = executionHandler.executeMarketStockOrder(order)
-          .subscribeOn(ThetaSchedulersFactory.asyncUnlimittedThread()).subscribe(
+      final Disposable disposableExecutionHandler = executionHandler.executeMarketStockOrder(order).subscribe(
 
-              message -> {
-                logger.info(message);
-              },
+          message -> {
+            logger.info(message);
+          },
 
-              // TODO: Should probably send cancel request here?
-              error -> {
-                logger.error("Order Handler encountered an error", error);
-              },
+          // TODO: Should probably send cancel request here?
+          error -> {
+            logger.error("Order Handler encountered an error", error);
+          },
 
-              () -> {
-                logger.info("Order successfully filled: {}", order);
-                Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
+          () -> {
+            logger.info("Order successfully filled: {}", order);
+            Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
 
-                if (filledOrder.isPresent()) {
-                  logger.info("Order removed from active orders list: {}", order);
-                } else {
-                  logger.warn("Received filled order notification for which there is no Active Order record: {}",
-                      order);
-                }
-              });
+            if (filledOrder.isPresent()) {
+              logger.info("Order removed from active orders list: {}", order);
+            } else {
+              logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
+            }
+          });
 
       compositeDisposable.add(disposableExecutionHandler);
     } else {

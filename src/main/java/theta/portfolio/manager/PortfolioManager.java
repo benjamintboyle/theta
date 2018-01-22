@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -61,7 +62,7 @@ public class PortfolioManager implements PositionProvider {
 
       final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
           .map(security -> processSecurity(security))
-          .debounce(25, TimeUnit.MILLISECONDS)
+          .debounce(1000, TimeUnit.MILLISECONDS, ThetaSchedulersFactory.asyncUnlimittedThread())
           .subscribe(
 
               security -> {

@@ -22,6 +22,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
+import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -49,18 +50,6 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     this.controller = controller;
   }
 
-  private UUID generateId(Integer contractId) {
-    UUID uuid = UUID.randomUUID();
-
-    if (contractIdMap.containsKey(contractId)) {
-      uuid = contractIdMap.get(contractId);
-    } else {
-      contractIdMap.put(contractId, uuid);
-    }
-
-    return uuid;
-  }
-
   @Override
   public Flowable<Security> requestPositionsFromBrokerage() {
 
@@ -68,12 +57,18 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     controller.getController().reqPositions(this);
 
-    return subjectPositions.serialize().toFlowable(BackpressureStrategy.BUFFER);
+    return subjectPositions.toFlowable(BackpressureStrategy.BUFFER)
+        // Don't let IB threads out of brokers.interactive_brokers package
+        .observeOn(ThetaSchedulersFactory.asyncFixedThread());
   }
 
   @Override
   public Completable getPositionEnd() {
-    return subjectPositionEndTime.firstOrError().toCompletable().timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    return subjectPositionEndTime.firstOrError()
+        .toCompletable()
+        .timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        // Don't let IB threads out of brokers.interactive_brokers package
+        .observeOn(ThetaSchedulersFactory.asyncUnlimittedThread());
   }
 
   @Override
@@ -84,34 +79,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     switch (contract.secType()) {
       case STK:
-        final Stock stock = Stock.of(generateId(contract.conid()), contract.symbol(), position, avgCost);
+        final Stock stock = generateStock(contract, position, avgCost);
         subjectPositions.onNext(stock);
 
         break;
       case OPT:
-        SecurityType securityType = null;
-        switch (contract.right()) {
-          case Call:
-            securityType = SecurityType.CALL;
-            break;
-          case Put:
-            securityType = SecurityType.PUT;
-            break;
-          default:
-            logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
-            break;
-        }
+        final Option option = generateOption(contract, position, avgCost);
+        subjectPositions.onNext(option);
 
-        final Optional<LocalDate> optionalExpiration =
-            IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
-
-        if (optionalExpiration.isPresent()) {
-          final Option option = new Option(generateId(contract.conid()), securityType, contract.symbol(), position,
-              contract.strike(), optionalExpiration.get(), avgCost);
-          subjectPositions.onNext(option);
-        } else {
-          logger.error("Invalid Option Expiration for Contract: ", IbStringUtil.toStringContract(contract));
-        }
         break;
       default:
         logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
@@ -123,6 +98,45 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   public void positionEnd() {
     logger.info("Received Position End notification");
     subjectPositionEndTime.onNext(ZonedDateTime.now());
+  }
+
+  private Stock generateStock(Contract contract, Double position, Double avgCost) {
+    final Stock stock = Stock.of(generateId(contract.conid()), contract.symbol(), position, avgCost);
+
+    return stock;
+  }
+
+  private Option generateOption(Contract contract, Double position, Double avgCost) {
+    SecurityType securityType = null;
+    switch (contract.right()) {
+      case Call:
+        securityType = SecurityType.CALL;
+        break;
+      case Put:
+        securityType = SecurityType.PUT;
+        break;
+      default:
+        logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
+        break;
+    }
+
+    final Optional<LocalDate> optionalExpiration =
+        IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
+
+    return new Option(generateId(contract.conid()), securityType, contract.symbol(), position, contract.strike(),
+        optionalExpiration.get(), avgCost);
+  }
+
+  private UUID generateId(Integer contractId) {
+    UUID uuid = UUID.randomUUID();
+
+    if (contractIdMap.containsKey(contractId)) {
+      uuid = contractIdMap.get(contractId);
+    } else {
+      contractIdMap.put(contractId, uuid);
+    }
+
+    return uuid;
   }
 
   public void shutdown() {

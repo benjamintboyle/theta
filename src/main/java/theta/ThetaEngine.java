@@ -84,32 +84,30 @@ public class ThetaEngine implements Callable<String> {
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect().toCompletable().observeOn(ThetaSchedulersFactory.managerThread())
-        .andThen(portfolioManager.startPositionProcessing()).subscribe(
+    return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
 
-            () -> {
-              logger.info("Portfolio Manager has Shutdown");
-            },
+        () -> {
+          logger.info("Portfolio Manager has Shutdown");
+        },
 
-            error -> {
-              logger.error("Portfolio Manager Error", error);
-              shutdown();
-            });
+        error -> {
+          logger.error("Portfolio Manager Error", error);
+          shutdown();
+        });
   }
 
   private Disposable startTickManager() {
 
-    return portfolioManager.getPositionEnd().observeOn(ThetaSchedulersFactory.managerThread())
-        .andThen(tickManager.startTickProcessing()).subscribe(
+    return portfolioManager.getPositionEnd().andThen(tickManager.startTickProcessing()).subscribe(
 
-            () -> {
-              logger.info("Tick Manager has Shutdown");
-            },
+        () -> {
+          logger.info("Tick Manager has Shutdown");
+        },
 
-            error -> {
-              logger.error("Tick Manager Error", error);
-              shutdown();
-            });
+        error -> {
+          logger.error("Tick Manager Error", error);
+          shutdown();
+        });
   }
 
   public void shutdown() {
