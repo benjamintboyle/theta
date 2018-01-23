@@ -6,8 +6,9 @@ COPY build/distributions/theta.tar /opt/
 
 RUN tar -xvf /opt/theta.tar --directory /opt/ \
       && rm /opt/theta.tar \
-      && chgrp theta /opt/theta \
-      && chmod 775 /opt/theta
+      && mkdir /opt/theta/logs \
+      && chgrp theta /opt/theta /opt/theta/logs \
+      && chmod 775 /opt/theta /opt/theta/logs
 
 USER theta
 WORKDIR /opt/theta/
