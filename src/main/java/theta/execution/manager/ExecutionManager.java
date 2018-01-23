@@ -44,11 +44,12 @@ public class ExecutionManager implements Executor {
   }
 
   private void executeOrder(ExecutableOrder order) {
+
     if (!activeOrderExists(order)) {
 
       logger.info("Executing order: {}", order);
 
-      final Disposable disposableExecutionHandler = executionHandler.executeMarketStockOrder(order).subscribe(
+      final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
 
           message -> {
             logger.info(message);
@@ -57,6 +58,11 @@ public class ExecutionManager implements Executor {
           // TODO: Should probably send cancel request here?
           error -> {
             logger.error("Order Handler encountered an error", error);
+            Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
+            compositeDisposable.add(disposableCancelOrder);
+
+            logger.warn("Removing order from active orders: {}", order);
+            activeOrders.remove(order.getId());
           },
 
           () -> {
@@ -84,7 +90,8 @@ public class ExecutionManager implements Executor {
     if (!currentActiveOrder.isPresent()) {
       activeOrders.put(order.getId(), order);
     } else {
-      logger.warn("Active Order exists for {}, Active Order: {}, New Order Request: ", currentActiveOrder.get(), order);
+      logger.warn("Active Order exists for {}, Active Order: {}, New Order Request: {}", order.getTicker(),
+          currentActiveOrder.get(), order);
     }
 
     return currentActiveOrder.isPresent();

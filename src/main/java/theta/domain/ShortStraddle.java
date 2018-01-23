@@ -31,7 +31,7 @@ public class ShortStraddle {
     }
 
     if (straddle.isPresent()) {
-      logger.debug("Built {}", straddle);
+      logger.debug("Built {}", straddle.get());
     } else {
       logger.warn("Could not build Short Straddle with: {}, {}", call, put);
     }

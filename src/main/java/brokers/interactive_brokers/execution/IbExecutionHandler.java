@@ -1,6 +1,8 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -20,18 +22,29 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   private final IbController ibController;
 
+  private final Map<ExecutableOrder, IbOrderHandler> orderHandlerMapper = new HashMap<>();
+
   public IbExecutionHandler(IbController ibController) {
     logger.info("Starting Interactive Brokers Execution Handler");
     this.ibController = ibController;
   }
 
   @Override
-  public Flowable<String> executeMarketStockOrder(ExecutableOrder order) {
+  public Flowable<String> executeStockMarketOrder(ExecutableOrder order) {
     return Flowable.create(emitter -> {
 
-      executeOrder(order, new IbOrderHandler(order, emitter));
+      orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
+      executeOrder(order, orderHandlerMapper.get(order));
 
     }, BackpressureStrategy.BUFFER);
+  }
+
+  @Override
+  public Flowable<String> cancelStockMarketOrder(ExecutableOrder order) {
+
+    ibController.getController().cancelOrder(order.getBrokerId().get());
+
+    return Flowable.empty();
   }
 
   private void executeOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
@@ -54,4 +67,5 @@ public class IbExecutionHandler implements ExecutionHandler {
           order, IbStringUtil.toStringContract(ibContract), IbStringUtil.toStringOrder(ibOrder));
     }
   }
+
 }

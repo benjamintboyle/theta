@@ -7,14 +7,14 @@ import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
 import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.util.IbStringUtil;
-import io.reactivex.Emitter;
+import io.reactivex.FlowableEmitter;
 import theta.execution.api.ExecutableOrder;
 
 public class IbOrderHandler implements IOrderHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutableOrder order;
-  private final Emitter<String> emitter;
+  private final FlowableEmitter<String> emitter;
 
   private OrderState currentOrderState = null;
   private OrderStatus currentOrderStatus = null;
@@ -27,9 +27,13 @@ public class IbOrderHandler implements IOrderHandler {
   private Integer clientId = null;
   private String whyHeld = null;
 
-  public IbOrderHandler(ExecutableOrder order, Emitter<String> emitter) {
+  public IbOrderHandler(ExecutableOrder order, FlowableEmitter<String> emitter) {
     this.order = order;
     this.emitter = emitter;
+  }
+
+  public FlowableEmitter<String> getEmitter() {
+    return emitter;
   }
 
   @Override
@@ -72,7 +76,9 @@ public class IbOrderHandler implements IOrderHandler {
   @Override
   public void handle(int errorCode, final String errorMsg) {
     logger.error("Order Handler Error, Error Code: {}, Message: []", errorCode, errorMsg);
-    emitter.onError(new Exception("Error from Interactive Brokers for Order: " + order.getBrokerId().orElse(null)));
+    // TODO: Not all "Errors" received back are fatal (most seem not to be)
+    // emitter.onError(new Exception("Error from Interactive Brokers for Order: " +
+    // order.getBrokerId().orElse(null)));
   }
 
   private void sendNext(String trigger) {
