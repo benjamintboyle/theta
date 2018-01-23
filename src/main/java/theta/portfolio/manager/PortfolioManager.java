@@ -23,6 +23,7 @@ import theta.domain.ManagerStatus;
 import theta.domain.Option;
 import theta.domain.Stock;
 import theta.domain.Theta;
+import theta.domain.Ticker;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.portfolio.api.PositionProvider;
@@ -98,7 +99,7 @@ public class PortfolioManager implements PositionProvider {
   }
 
   @Override
-  public List<Theta> providePositions(String ticker) {
+  public List<Theta> providePositions(Ticker ticker) {
 
     List<Theta> positionsToProvide =
         thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker)).collect(
@@ -154,7 +155,7 @@ public class PortfolioManager implements PositionProvider {
     }
   }
 
-  private void processPosition(String ticker) {
+  private void processPosition(Ticker ticker) {
 
     // Calculate unassigned call, put, stock
     final List<Stock> unassignedStocks =
@@ -182,7 +183,7 @@ public class PortfolioManager implements PositionProvider {
 
   }
 
-  private List<Security> getUnassignedOfSecurity(String ticker, SecurityType securityType) {
+  private List<Security> getUnassignedOfSecurity(Ticker ticker, SecurityType securityType) {
     final List<UUID> allIdsOfSecurity = securityIdMap.values()
         .stream()
         .filter(otherSecurity -> otherSecurity.getQuantity() != 0)

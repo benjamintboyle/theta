@@ -12,13 +12,13 @@ public class Stock implements Security {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
-  private final String ticker;
+  private final Ticker ticker;
   private final Double quantity;
   private final Double averageTradePrice;
 
   private final SecurityType type = SecurityType.STOCK;
 
-  private Stock(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+  private Stock(final UUID id, final Ticker ticker, final Double quantity, final Double averageTradePrice) {
 
     this.id = Objects.requireNonNull(id, "Stock 'id' must not be null.");
     this.ticker = Objects.requireNonNull(ticker, "Stock 'Ticker' must not be null.");
@@ -28,11 +28,11 @@ public class Stock implements Security {
     logger.debug("Built {}", toString());
   }
 
-  public static Stock of(final UUID id, final String ticker, final Double quantity, final Double averageTradePrice) {
+  public static Stock of(final UUID id, final Ticker ticker, final Double quantity, final Double averageTradePrice) {
     return new Stock(id, ticker, quantity, averageTradePrice);
   }
 
-  public static Stock of(final String ticker, final Double quantity, final Double averageTradePrice) {
+  public static Stock of(final Ticker ticker, final Double quantity, final Double averageTradePrice) {
     return of(UUID.randomUUID(), ticker, quantity, averageTradePrice);
   }
 
@@ -57,7 +57,7 @@ public class Stock implements Security {
   }
 
   @Override
-  public String getTicker() {
+  public Ticker getTicker() {
     return ticker;
   }
 

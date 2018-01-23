@@ -2,6 +2,7 @@ package theta.execution.api;
 
 import java.util.Optional;
 import java.util.UUID;
+import theta.domain.Ticker;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.execution.domain.ExecutionAction;
@@ -15,7 +16,7 @@ public interface ExecutableOrder {
 
   public void setBrokerId(Integer orderId);
 
-  public String getTicker();
+  public Ticker getTicker();
 
   public SecurityType getSecurityType();
 

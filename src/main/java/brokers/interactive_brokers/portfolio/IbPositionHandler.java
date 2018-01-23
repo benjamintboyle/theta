@@ -26,6 +26,7 @@ import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
+import theta.domain.Ticker;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
@@ -101,7 +102,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   }
 
   private Stock generateStock(Contract contract, Double position, Double avgCost) {
-    final Stock stock = Stock.of(generateId(contract.conid()), contract.symbol(), position, avgCost);
+    final Stock stock = Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), position, avgCost);
 
     return stock;
   }
@@ -123,8 +124,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     final Optional<LocalDate> optionalExpiration =
         IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
 
-    return new Option(generateId(contract.conid()), securityType, contract.symbol(), position, contract.strike(),
-        optionalExpiration.get(), avgCost);
+    return new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), position,
+        contract.strike(), optionalExpiration.get(), avgCost);
   }
 
   private UUID generateId(Integer contractId) {

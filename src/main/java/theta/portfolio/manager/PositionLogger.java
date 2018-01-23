@@ -67,8 +67,8 @@ public class PositionLogger {
   }
 
   public static void logThetaPositions(Collection<Theta> thetas) {
-    for (final Theta position : thetas.stream().sorted(Comparator.comparing(Theta::getTicker))
-        .collect(Collectors.toList())) {
+    for (final Theta position : thetas.stream().sorted(Comparator.comparing(Theta::getTicker)).collect(
+        Collectors.toList())) {
       logger.info("Current position: {}", position);
     }
   }
@@ -76,8 +76,10 @@ public class PositionLogger {
   public static void logUnmatchedPositions(Collection<UUID> matchedPositionIds, Collection<Security> allSecurities) {
     for (final Security security : allSecurities.stream()
         .filter(security -> !matchedPositionIds.contains(security.getId()))
-        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions).thenComparing(byOptionExpiration)
-            .thenComparing(byPrice).thenComparing(byCallIsGreaterThanPut))
+        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
+            .thenComparing(byOptionExpiration)
+            .thenComparing(byPrice)
+            .thenComparing(byCallIsGreaterThanPut))
         .collect(Collectors.toList())) {
       logger.info("Current unprocessed security: {}", security);
     }

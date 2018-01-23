@@ -40,7 +40,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     final Order ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
 
-    final Contract ibContract = new StkContract(order.getTicker());
+    final Contract ibContract = new StkContract(order.getTicker().toString());
 
     ibController.getController().placeOrModifyOrder(ibContract, ibOrder, ibOrderHandler);
 

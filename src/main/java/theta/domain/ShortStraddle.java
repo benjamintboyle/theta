@@ -47,7 +47,7 @@ public class ShortStraddle {
     return SecurityType.SHORT_STRADDLE;
   }
 
-  public String getTicker() {
+  public Ticker getTicker() {
     return call.getTicker();
   }
 

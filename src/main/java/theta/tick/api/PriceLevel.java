@@ -1,7 +1,9 @@
 package theta.tick.api;
 
+import theta.domain.Ticker;
+
 public interface PriceLevel {
-  public String getTicker();
+  public Ticker getTicker();
 
   public Double getStrikePrice();
 

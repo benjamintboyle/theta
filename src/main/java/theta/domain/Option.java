@@ -9,19 +9,18 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Option implements Security {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private UUID id = UUID.randomUUID();
   private final SecurityType type;
-  private final String backingTicker;
+  private final Ticker backingTicker;
   private final Double quantity;
   private final Double strikePrice;
   private final LocalDate expiration;
   private final Double averageTradePrice;
 
-  public Option(UUID id, SecurityType type, String backingTicker, Double quantity,
-      Double strikePrice, LocalDate expiration, Double averageTradePrice) {
+  public Option(UUID id, SecurityType type, Ticker backingTicker, Double quantity, Double strikePrice,
+      LocalDate expiration, Double averageTradePrice) {
 
     this.id = id;
     this.type = type;
@@ -45,7 +44,7 @@ public class Option implements Security {
   }
 
   @Override
-  public String getTicker() {
+  public Ticker getTicker() {
     return backingTicker;
   }
 

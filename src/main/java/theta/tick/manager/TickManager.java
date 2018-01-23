@@ -18,6 +18,7 @@ import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
 import theta.domain.Theta;
+import theta.domain.Ticker;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.PriceLevel;
@@ -36,7 +37,7 @@ public class TickManager implements TickMonitor, TickConsumer {
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
-  private final BlockingQueue<String> tickQueue = new LinkedBlockingQueue<String>();
+  private final BlockingQueue<Ticker> tickQueue = new LinkedBlockingQueue<>();
 
   public TickManager(TickSubscriber tickSubscriber) {
     getStatus().changeState(ManagerState.STARTING);
@@ -55,7 +56,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
       while (getStatus().getState() == ManagerState.RUNNING) {
 
-        String ticker = null;
+        Ticker ticker = null;
 
         try {
           // Blocks until tick available
@@ -82,7 +83,7 @@ public class TickManager implements TickMonitor, TickConsumer {
   }
 
   @Override
-  public void acceptTick(String ticker) {
+  public void acceptTick(Ticker ticker) {
 
     logger.info("Received Tick from Handler: {}", ticker);
 

@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
+import theta.domain.Ticker;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
 
@@ -40,7 +41,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   }
 
   @Override
-  public String getTicker() {
+  public Ticker getTicker() {
     return getStock().getTicker();
   }
 

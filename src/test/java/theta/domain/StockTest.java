@@ -9,11 +9,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class StockTest {
   public static Stock buildTestStock() {
-    return Stock.of("CHK", Double.valueOf(100), 15.0);
+    return Stock.of(Ticker.from("CHK"), Double.valueOf(100), 15.0);
   }
 
   public static Stock buildTestStockShort() {
-    return Stock.of("CHK", Double.valueOf(-100), 15.0);
+    return Stock.of(Ticker.from("CHK"), Double.valueOf(-100), 15.0);
   }
 
   @Test

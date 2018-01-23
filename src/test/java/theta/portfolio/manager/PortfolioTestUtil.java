@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Option;
 import theta.domain.Stock;
+import theta.domain.Ticker;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
@@ -49,7 +50,7 @@ public class PortfolioTestUtil {
 
       final String[] security = splitPattern.split(trade);
       final String securityType = security[0];
-      final String ticker = security[1];
+      final Ticker ticker = Ticker.from(security[1]);
       final Double quantity = Double.valueOf(security[2]);
       final Double price = Double.valueOf(security[3]);
       logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity, price);

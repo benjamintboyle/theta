@@ -16,6 +16,7 @@ import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
 import brokers.interactive_brokers.tick.domain.IbPriceLevel;
 import theta.api.TickHandler;
+import theta.domain.Ticker;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 import theta.tick.api.TickConsumer;
@@ -25,7 +26,7 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
 
   private final TickConsumer tickConsumer;
 
-  private final String ticker;
+  private final Ticker ticker;
 
   private Double bidPrice = Double.MIN_VALUE;
   private Double askPrice = Double.MIN_VALUE;
@@ -50,7 +51,7 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   private final Set<Double> fallsBelow = new HashSet<Double>();
   private final Set<Double> risesAbove = new HashSet<Double>();
 
-  public IbLastTickHandler(String ticker, TickConsumer tickConsumer) {
+  public IbLastTickHandler(Ticker ticker, TickConsumer tickConsumer) {
     this.ticker = ticker;
     this.tickConsumer = tickConsumer;
     logger.info("Built Interactive Brokers Tick Handler for: {}", ticker);
@@ -174,7 +175,7 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   @Override
-  public String getTicker() {
+  public Ticker getTicker() {
     return ticker;
   }
 
@@ -311,7 +312,7 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   @Override
-  public List<PriceLevel> getPriceLevelsMonitored(String ticker) {
+  public List<PriceLevel> getPriceLevelsMonitored(Ticker ticker) {
     List<PriceLevel> priceLevels = new ArrayList<>();
 
     for (Double price : fallsBelow) {

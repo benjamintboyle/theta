@@ -4,16 +4,17 @@ import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.Ticker;
 
 public class Tick {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Double price;
-  private final String ticker;
+  private final Ticker ticker;
   private final ZonedDateTime timestamp;
   private final TickType type;
 
-  public Tick(final String ticker, final Double price, final TickType type, final ZonedDateTime timestamp) {
+  public Tick(final Ticker ticker, final Double price, final TickType type, final ZonedDateTime timestamp) {
     this.ticker = ticker;
     this.price = price;
     this.type = type;
@@ -25,7 +26,7 @@ public class Tick {
     return price;
   }
 
-  public String getTicker() {
+  public Ticker getTicker() {
     return ticker;
   }
 

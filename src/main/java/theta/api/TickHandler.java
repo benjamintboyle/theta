@@ -1,10 +1,11 @@
 package theta.api;
 
 import java.time.ZonedDateTime;
+import theta.domain.Ticker;
 
 public interface TickHandler extends PriceLevelMonitor {
 
-  public String getTicker();
+  public Ticker getTicker();
 
   public Double getBid();
 

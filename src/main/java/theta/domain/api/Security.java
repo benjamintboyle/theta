@@ -1,6 +1,7 @@
 package theta.domain.api;
 
 import java.util.UUID;
+import theta.domain.Ticker;
 
 public interface Security {
 
@@ -8,7 +9,7 @@ public interface Security {
 
   public SecurityType getSecurityType();
 
-  public String getTicker();
+  public Ticker getTicker();
 
   public Double getQuantity();
 

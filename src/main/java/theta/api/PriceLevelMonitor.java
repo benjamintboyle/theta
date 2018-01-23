@@ -1,6 +1,7 @@
 package theta.api;
 
 import java.util.List;
+import theta.domain.Ticker;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.TickConsumer;
 
@@ -9,5 +10,5 @@ public interface PriceLevelMonitor {
 
   public Integer removePriceLevelMonitor(PriceLevel priceLevel);
 
-  public List<PriceLevel> getPriceLevelsMonitored(String ticker);
+  public List<PriceLevel> getPriceLevelsMonitored(Ticker ticker);
 }

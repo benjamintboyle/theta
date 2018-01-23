@@ -14,6 +14,7 @@ import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.domain.Ticker;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.TickConsumer;
 import theta.tick.domain.Tick;
@@ -23,7 +24,7 @@ public class IbTickSubscriber implements TickSubscriber {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-  private final Map<String, IbLastTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
+  private final Map<Ticker, IbLastTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -67,7 +68,7 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public List<PriceLevel> getPriceLevelsMonitored(String ticker) {
+  public List<PriceLevel> getPriceLevelsMonitored(Ticker ticker) {
 
     List<PriceLevel> priceLevels = new ArrayList<>();
     Optional<TickHandler> optionalTickHandler = getHandler(ticker);
@@ -82,7 +83,7 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public Optional<Tick> getLastTick(String ticker) {
+  public Optional<Tick> getLastTick(Ticker ticker) {
 
     Optional<Tick> tick = Optional.empty();
 
@@ -98,10 +99,10 @@ public class IbTickSubscriber implements TickSubscriber {
     return tick;
   }
 
-  private TickHandler subscribeTick(String ticker, TickConsumer tickConsumer) {
+  private TickHandler subscribeTick(Ticker ticker, TickConsumer tickConsumer) {
 
     logger.info("Subscribing to Ticks for: {}", ticker);
-    final StkContract contract = new StkContract(ticker);
+    final StkContract contract = new StkContract(ticker.toString());
 
     final IbLastTickHandler ibTickHandler = new IbLastTickHandler(ticker, tickConsumer);
     ibTickHandlers.put(ticker, ibTickHandler);
@@ -115,7 +116,7 @@ public class IbTickSubscriber implements TickSubscriber {
     return ibTickHandler;
   }
 
-  private void unsubscribeTick(String ticker) {
+  private void unsubscribeTick(Ticker ticker) {
 
     IbLastTickHandler ibLastTickHandler = ibTickHandlers.remove(ticker);
 
@@ -129,7 +130,7 @@ public class IbTickSubscriber implements TickSubscriber {
     }
   }
 
-  private Optional<TickHandler> getHandler(String ticker) {
+  private Optional<TickHandler> getHandler(Ticker ticker) {
     return Optional.ofNullable(ibTickHandlers.get(ticker));
   }
 

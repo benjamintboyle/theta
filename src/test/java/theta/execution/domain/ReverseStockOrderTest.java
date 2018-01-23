@@ -9,13 +9,14 @@ import theta.domain.Option;
 import theta.domain.OptionTest;
 import theta.domain.Stock;
 import theta.domain.StockTest;
+import theta.domain.Ticker;
 import theta.execution.api.ExecutableOrder;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ReverseStockOrderTest {
 
-  private final Stock longStock = Stock.of("CHK", 100.0, 10.0);
-  private final Stock wrongQuantityStock = Stock.of("CHK", 101.0, 10.0);
+  private final Stock longStock = Stock.of(Ticker.from("CHK"), 100.0, 10.0);
+  private final Stock wrongQuantityStock = Stock.of(Ticker.from("CHK"), 101.0, 10.0);
 
   private final ExecutableOrder sutLong = new ReverseStockOrder(longStock, ExecutionAction.BUY, ExecutionType.MARKET);
   private final ExecutableOrder sutQuantity =
