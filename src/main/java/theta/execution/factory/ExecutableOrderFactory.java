@@ -7,22 +7,15 @@ import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.domain.ExecutionAction;
-import theta.execution.domain.ExecutionType;
 import theta.execution.domain.ReverseStockOrder;
 
 public class ExecutableOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock) {
-    logger.info("Reversing Stock Position: {}", stock);
+    logger.debug("Reversing Position: {}", stock);
 
-    ExecutionAction action = ExecutionAction.BUY;
-    if (stock.getQuantity() > 0) {
-      action = ExecutionAction.SELL;
-    }
-
-    ExecutableOrder order = new ReverseStockOrder(stock, action, ExecutionType.MARKET);
+    ExecutableOrder order = ReverseStockOrder.reverse(stock);
 
     logger.info("Validating trade of Security: {}, using Order: {}", stock, order);
     if (!order.validate(stock)) {

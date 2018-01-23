@@ -17,11 +17,11 @@ public class ReverseStockOrderTest {
 
   private final Stock longStock = Stock.of(Ticker.from("CHK"), 100.0, 10.0);
   private final Stock wrongQuantityStock = Stock.of(Ticker.from("CHK"), 101.0, 10.0);
+  private final Stock shortStock = Stock.of(Ticker.from("CHK"), -100.0, 10.0);
 
-  private final ExecutableOrder sutLong = new ReverseStockOrder(longStock, ExecutionAction.BUY, ExecutionType.MARKET);
-  private final ExecutableOrder sutQuantity =
-      new ReverseStockOrder(wrongQuantityStock, ExecutionAction.BUY, ExecutionType.MARKET);
-  private final ExecutableOrder sutShort = new ReverseStockOrder(longStock, ExecutionAction.SELL, ExecutionType.MARKET);
+  private final ExecutableOrder sutLong = ReverseStockOrder.reverse(longStock);
+  private final ExecutableOrder sutQuantity = ReverseStockOrder.reverse(wrongQuantityStock);
+  private final ExecutableOrder sutShort = ReverseStockOrder.reverse(shortStock);
 
   @Test
   public void validateLongToLongFailureTest() {

@@ -13,21 +13,27 @@ import theta.execution.api.ExecutableOrder;
 public abstract class AbstractStockOrder implements ExecutableOrder {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final Stock stock;
+  private final UUID id;
+
+  private final Ticker ticker;
+  private final Double quantity;
   private final ExecutionAction action;
   private final ExecutionType executionType;
   private Optional<Integer> brokerId = Optional.empty();
 
-  public AbstractStockOrder(Stock stock, ExecutionAction action, ExecutionType executionType) {
-    this.stock = stock;
+  public AbstractStockOrder(Stock stock, Double quantity, ExecutionAction action, ExecutionType executionType) {
+    id = stock.getId();
+    ticker = stock.getTicker();
+    this.quantity = quantity;
     this.action = action;
     this.executionType = executionType;
-    logger.info("Built Stock Order: {}", toString());
+
+    logger.debug("Built: {}", toString());
   }
 
   @Override
   public UUID getId() {
-    return getStock().getId();
+    return id;
   }
 
   @Override
@@ -42,17 +48,17 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
 
   @Override
   public Ticker getTicker() {
-    return getStock().getTicker();
+    return ticker;
   }
 
   @Override
   public SecurityType getSecurityType() {
-    return getStock().getSecurityType();
+    return SecurityType.STOCK;
   }
 
   @Override
   public Double getQuantity() {
-    return getStock().getQuantity();
+    return quantity;
   }
 
   @Override
@@ -63,10 +69,6 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   @Override
   public ExecutionType getExecutionType() {
     return executionType;
-  }
-
-  private Stock getStock() {
-    return stock;
   }
 
   @Override

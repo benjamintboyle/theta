@@ -70,7 +70,8 @@ public class TickManager implements TickMonitor, TickConsumer {
         final Optional<Tick> tick = tickSubscriber.getLastTick(ticker);
 
         if (tick.isPresent()) {
-          logger.info("Received notification of tick across strike price: {}", tick.get());
+
+          logger.info("Received tick across strike price: {}", tick.get());
 
           processTick(tick.get());
         } else {
@@ -114,7 +115,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
   private void processTick(Tick tick) {
 
-    logger.info("Processing: {}", tick);
+    logger.debug("Processing: {}", tick);
 
     if (tick.getTimestamp().isBefore(ZonedDateTime.now().minusSeconds(2))) {
       logger.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);

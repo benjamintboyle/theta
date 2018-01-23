@@ -19,7 +19,8 @@ public class Tick {
     this.price = price;
     this.type = type;
     this.timestamp = timestamp;
-    Tick.logger.info("Built Tick: {}", toString());
+
+    logger.debug("Built: {}", toString());
   }
 
   public Double getPrice() {
@@ -47,10 +48,10 @@ public class Tick {
     builder.append(getTicker());
     builder.append(", Price: ");
     builder.append(getPrice());
-    builder.append(", Type: ");
-    builder.append(getTickType());
     builder.append(", Time: ");
     builder.append(getTimestamp());
+    builder.append(", Type: ");
+    builder.append(getTickType());
 
     builder.append("]");
 

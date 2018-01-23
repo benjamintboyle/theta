@@ -51,7 +51,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     logger.info("Executing order: {}", order);
 
-    final Order ibOrder = IbOrderUtil.buildMarketOrder(order.getQuantity());
+    final Order ibOrder = IbOrderUtil.buildIbOrder(order);
 
     final Contract ibContract = new StkContract(order.getTicker().toString());
 

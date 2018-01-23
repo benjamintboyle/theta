@@ -12,8 +12,20 @@ import theta.domain.api.SecurityType;
 public class ReverseStockOrder extends AbstractStockOrder {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public ReverseStockOrder(Stock stock, ExecutionAction action, ExecutionType executionType) {
-    super(stock, action, executionType);
+  private ReverseStockOrder(Stock stock, Double quantity, ExecutionAction action, ExecutionType executionType) {
+    super(stock, quantity, action, executionType);
+  }
+
+  public static ReverseStockOrder reverse(Stock stock) {
+
+    ExecutionAction action = ExecutionAction.BUY;
+    if (stock.getQuantity() > 0) {
+      action = ExecutionAction.SELL;
+    }
+
+    Double reversedQuantity = 2 * Math.abs(stock.getQuantity());
+
+    return new ReverseStockOrder(stock, reversedQuantity, action, ExecutionType.MARKET);
   }
 
   @Override
