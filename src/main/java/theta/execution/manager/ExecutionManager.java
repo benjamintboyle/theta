@@ -1,6 +1,10 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +25,10 @@ public class ExecutionManager implements Executor {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
+
+  private static final ZoneId MARKET_TIMEZONE = ZoneId.of("America/New_York");
+  private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
+  private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(4, 00);
 
   private final Map<UUID, ExecutableOrder> activeOrders = new ConcurrentHashMap<>();
 
@@ -45,40 +53,44 @@ public class ExecutionManager implements Executor {
 
   private void executeOrder(ExecutableOrder order) {
 
-    if (!activeOrderExists(order)) {
+    if (duringMarketHours()) {
+      if (!activeOrderExists(order)) {
 
-      logger.info("Executing order: {}", order);
+        logger.info("Executing order: {}", order);
 
-      final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
+        final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
 
-          message -> {
-            logger.info(message);
-          },
+            message -> {
+              logger.info(message);
+            },
 
-          // TODO: Should probably send cancel request here?
-          error -> {
-            logger.error("Order Handler encountered an error", error);
-            Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
-            compositeDisposable.add(disposableCancelOrder);
+            // TODO: Should probably send cancel request here?
+            error -> {
+              logger.error("Order Handler encountered an error", error);
+              Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
+              compositeDisposable.add(disposableCancelOrder);
 
-            logger.warn("Removing order from active orders: {}", order);
-            activeOrders.remove(order.getId());
-          },
+              logger.warn("Removing order from active orders: {}", order);
+              activeOrders.remove(order.getId());
+            },
 
-          () -> {
-            logger.info("Order successfully filled: {}", order);
-            Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
+            () -> {
+              logger.info("Order successfully filled: {}", order);
+              Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
 
-            if (filledOrder.isPresent()) {
-              logger.info("Order removed from active orders list: {}", order);
-            } else {
-              logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
-            }
-          });
+              if (filledOrder.isPresent()) {
+                logger.info("Order removed from active orders list: {}", order);
+              } else {
+                logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
+              }
+            });
 
-      compositeDisposable.add(disposableExecutionHandler);
+        compositeDisposable.add(disposableExecutionHandler);
+      } else {
+        logger.error("Existing order. Order will not be executed: {}", order);
+      }
     } else {
-      logger.error("Existing order. Order will not be executed: {}", order);
+      logger.warn("Not during market hours. Order will not be executed: {}", order);
     }
   }
 
@@ -95,6 +107,14 @@ public class ExecutionManager implements Executor {
     }
 
     return currentActiveOrder.isPresent();
+  }
+
+  private boolean duringMarketHours() {
+    ZonedDateTime marketTimeNow = ZonedDateTime.now(MARKET_TIMEZONE);
+
+    return DayOfWeek.from(marketTimeNow) != DayOfWeek.SATURDAY && DayOfWeek.from(marketTimeNow) != DayOfWeek.SUNDAY
+        && marketTimeNow.toLocalTime().isAfter(MARKET_OPEN_TIME)
+        && marketTimeNow.toLocalTime().isBefore(MARKET_CLOSE_TIME);
   }
 
   public void shutdown() {
