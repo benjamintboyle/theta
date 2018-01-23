@@ -1,8 +1,6 @@
 package theta.execution.domain;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashSet;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
@@ -29,44 +27,62 @@ public class ReverseStockOrder extends AbstractStockOrder {
   }
 
   @Override
-  public Boolean validate(Security security) {
-    logger.info("Validating Reverse Stock Theta Trade Order: {}", toString());
-    final Set<Boolean> isValid = new HashSet<Boolean>();
+  public Boolean isValid(Security security) {
 
-    isValid.add(isValidSecurityType(security.getSecurityType()));
-    isValid.add(isAbsoluteQuantityEqualOrLess(security.getQuantity()));
-    isValid.add(isValidAction(security.getQuantity()));
+    logger.debug("Validating Reverse Stock Theta Trade Order: {}", toString());
 
-    return !isValid.contains(Boolean.FALSE);
+    boolean isValid = true;
+
+    if (!isValidSecurityType(security.getSecurityType())) {
+      logger.error("Security Types do not match: {} != {}, {}, {}", getSecurityType(), security.getSecurityType(),
+          toString(), security);
+      isValid = false;
+    }
+
+
+    if (!isAbsoluteQuantityDouble(security.getQuantity())) {
+      logger.error("Security Order Quantity is not double: {} != {}, {}, {}", getQuantity(), security.getQuantity(),
+          toString(), security);
+      isValid = false;
+    }
+
+    if (!isValidAction(security.getQuantity())) {
+      logger.error("Execution Action is incorrect based on Security quantity: {} != {}, {}, {}", getExecutionAction(),
+          security.getQuantity(), toString(), security);
+      isValid = false;
+    }
+
+    return isValid;
   }
 
-  private Boolean isValidAction(Double quantity) {
-    Boolean isValidAction = Boolean.FALSE;
+  private Boolean isAbsoluteQuantityDouble(Double quantity) {
+    return getQuantity() == 2 * Math.abs(quantity);
+  }
+
+  private Boolean isValidSecurityType(SecurityType securityType) {
+    return getSecurityType().equals(securityType);
+  }
+
+  private boolean isValidAction(Double quantity) {
+    boolean isValidAction = false;
 
     switch (getExecutionAction()) {
       case BUY:
         if (quantity < 0) {
-          isValidAction = Boolean.TRUE;
+          isValidAction = true;
         }
         break;
       case SELL:
         if (quantity > 0) {
-          isValidAction = Boolean.TRUE;
+          isValidAction = true;
         }
         break;
       default:
-        isValidAction = Boolean.FALSE;
+        isValidAction = false;
         logger.error("Invalid execution action: {}", getExecutionAction());
     }
 
     return isValidAction;
   }
 
-  private Boolean isAbsoluteQuantityEqualOrLess(Double quantity) {
-    return Math.abs(quantity) >= Math.abs(getQuantity());
-  }
-
-  private Boolean isValidSecurityType(SecurityType securityType) {
-    return getSecurityType().equals(securityType);
-  }
 }

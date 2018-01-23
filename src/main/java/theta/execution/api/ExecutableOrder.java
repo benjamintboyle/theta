@@ -26,5 +26,5 @@ public interface ExecutableOrder {
 
   public Double getQuantity();
 
-  public Boolean validate(Security security);
+  public Boolean isValid(Security security);
 }

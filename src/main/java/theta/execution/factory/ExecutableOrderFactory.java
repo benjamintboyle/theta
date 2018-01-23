@@ -17,9 +17,8 @@ public class ExecutableOrderFactory {
 
     ExecutableOrder order = ReverseStockOrder.reverse(stock);
 
-    logger.info("Validating trade of Security: {}, using Order: {}", stock, order);
-    if (!order.validate(stock)) {
-      logger.error("Invalid order for Reverse Trade of Security: {}, using Order: {}", stock, order.toString());
+    if (order == null || !order.isValid(stock)) {
+      logger.error("Invalid order for Reverse Trade of: {}, for {}", order, stock);
       order = null;
     }
 
