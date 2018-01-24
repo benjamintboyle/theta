@@ -412,6 +412,7 @@ public class IbStringUtil {
       stringBuilder.append("Security Type: ");
       stringBuilder.append(contract.secType());
 
+
       if (!contract.secType().equals(SecType.STK)) {
         stringBuilder.append(DELIMITTER);
         stringBuilder.append("Expiration Date: ");
@@ -421,6 +422,7 @@ public class IbStringUtil {
         stringBuilder.append("Strike Price: ");
         stringBuilder.append(contract.strike());
       }
+
 
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Right: ");
@@ -454,6 +456,11 @@ public class IbStringUtil {
       stringBuilder.append("Security Id: ");
       stringBuilder.append(contract.secId());
 
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Include Expired: ");
+      stringBuilder.append(contract.includeExpired());
+
+
       if (contract.underComp() != null) {
         stringBuilder.append(DELIMITTER);
         stringBuilder.append("Delta Neutral Contract: ");
@@ -462,41 +469,48 @@ public class IbStringUtil {
         stringBuilder.append("]");
       }
 
+
+      final List<ComboLeg> comboLegList = contract.comboLegs();
+
       stringBuilder.append(DELIMITTER);
-      stringBuilder.append("Include Expired: ");
-      stringBuilder.append(contract.includeExpired());
+      stringBuilder.append("Combo Legs: ");
+      stringBuilder.append("[ ");
+      stringBuilder.append("Count: ");
+      stringBuilder.append(comboLegList.size());
 
-      if (!contract.comboLegs().isEmpty()) {
-        stringBuilder.append(DELIMITTER);
-        stringBuilder.append("Combo Legs Description: ");
-        stringBuilder.append(contract.comboLegsDescrip());
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Combo Legs Description: ");
+      stringBuilder.append(contract.comboLegsDescrip());
 
-        final List<ComboLeg> comboLegList = contract.comboLegs();
+      stringBuilder.append(DELIMITTER);
+      stringBuilder.append("Legs: [ ");
 
-        stringBuilder.append(DELIMITTER);
-        stringBuilder.append("Combo Legs: ");
-        stringBuilder.append("[");
-        stringBuilder.append("Count: ");
-        stringBuilder.append(comboLegList.size());
+      if (comboLegList.size() > 0) {
 
         for (int i = 0; i < comboLegList.size(); i++) {
-          stringBuilder.append(DELIMITTER);
+
+          if (i > 0) {
+            stringBuilder.append(DELIMITTER);
+          }
+
+          stringBuilder.append("Leg ");
           stringBuilder.append(i);
-          stringBuilder.append(": [");
+          stringBuilder.append(": [ ");
 
           IbStringUtil.toStringComboLeg(comboLegList.get(i));
 
-          stringBuilder.append("]");
+          stringBuilder.append(" ] ");
         }
       }
+
+      stringBuilder.append(" ] ]");
+
 
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Contract Id: ");
       stringBuilder.append(contract.conid());
-
-      stringBuilder.append("]");
-
     }
+
 
     if (stringBuilder.length() == 0) {
       stringBuilder.append(contract);

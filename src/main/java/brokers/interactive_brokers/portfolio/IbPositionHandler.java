@@ -78,6 +78,17 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         "Handler has received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
         position, IbStringUtil.toStringContract(contract), account, avgCost);
 
+    processIbPosition(contract, position, avgCost);
+  }
+
+  @Override
+  public void positionEnd() {
+    logger.info("Received Position End notification");
+    subjectPositionEndTime.onNext(ZonedDateTime.now());
+  }
+
+  private void processIbPosition(Contract contract, double position, double avgCost) {
+
     switch (contract.secType()) {
       case STK:
         final Stock stock = generateStock(contract, position, avgCost);
@@ -93,12 +104,6 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
         break;
     }
-  }
-
-  @Override
-  public void positionEnd() {
-    logger.info("Received Position End notification");
-    subjectPositionEndTime.onNext(ZonedDateTime.now());
   }
 
   private Stock generateStock(Contract contract, Double position, Double avgCost) {

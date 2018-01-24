@@ -184,31 +184,29 @@ public class PortfolioManager implements PositionProvider {
   }
 
   private List<Security> getUnassignedOfSecurity(Ticker ticker, SecurityType securityType) {
-    final List<UUID> allIdsOfSecurity = securityIdMap.values()
-        .stream()
-        .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
-        .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
-        .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType))
-        .map(Security::getId)
-        .collect(Collectors.toList());
-
-    final Map<UUID, Double> assignedCountMap = thetaIdMap.values()
-        .stream()
-        .map(theta -> theta.getSecurityOfType(securityType))
-        .filter(otherSecurity -> allIdsOfSecurity.stream()
-            .anyMatch(allSecurity -> otherSecurity.getId().equals(allSecurity)))
-        .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
-
 
     final List<Security> unassignedSecurities = new ArrayList<>();
 
-    for (final UUID securityId : allIdsOfSecurity) {
-      final Security security = securityIdMap.get(securityId);
+    final Set<Security> allIdsOfTickerAndSecurityType = securityIdMap.values()
+        .stream()
+        .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
+        .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType))
+        .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
+        .collect(Collectors.toSet());
 
-      final double assignedQuantity =
-          Optional.ofNullable(assignedCountMap.get(security.getId())).orElse(Double.valueOf(0)).doubleValue();
+    final Map<UUID, Double> assignedCountMap = thetaIdMap.values()
+        .stream()
+        .filter(theta -> theta.getTicker().equals(ticker))
+        .map(theta -> theta.getSecurityOfType(securityType))
+        .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
 
-      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, assignedQuantity);
+
+    for (final Security security : allIdsOfTickerAndSecurityType) {
+
+      final double unassignedQuantity = security.getQuantity() - assignedCountMap.getOrDefault(security.getId(), 0.0);
+      logger.trace("Calculated {} unassigned securities for {}", unassignedQuantity, security);
+
+      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, unassignedQuantity);
 
       if (securityWithAdjustedQuantity.isPresent()) {
         unassignedSecurities.add(securityWithAdjustedQuantity.get());
@@ -216,6 +214,52 @@ public class PortfolioManager implements PositionProvider {
     }
 
     return unassignedSecurities;
+  }
+
+  private Optional<Security> getSecurityWithQuantity(Security security, double unassignedQuantity) {
+
+    Optional<Security> securityWithQuantity = Optional.empty();
+
+    // If unassigned and security are equal, just return security
+    if (unassignedQuantity == security.getQuantity()) {
+      securityWithQuantity = Optional.of(security);
+    }
+
+    // Main condition where security is subdivided
+    else if (Math.abs(unassignedQuantity) < Math.abs(security.getQuantity())) {
+
+      logger.trace("Subdividing security quantity of {} for {}", unassignedQuantity, security);
+
+      switch (security.getSecurityType()) {
+        case STOCK:
+          securityWithQuantity =
+              Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
+          break;
+        case CALL:
+        case PUT:
+          final Option inputOption = (Option) security;
+
+          securityWithQuantity = Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
+              inputOption.getTicker(), unassignedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
+              inputOption.getAverageTradePrice()));
+          break;
+        default:
+          logger.warn("Invalid security type {} for reducing quantity {}", security.getSecurityType(), security);
+      }
+    }
+
+    // If there are no unassigned then do nothing
+    else if (unassignedQuantity == 0) {
+      logger.trace("All securities have been assigned for {}", security);
+    }
+
+    // Error case where unassigned are greater than security (should never happen)
+    else {
+      logger.warn("Skipping security. Calculated inaccurate quantity of {} unassigned securities (too many) for {}",
+          unassignedQuantity, security);
+    }
+
+    return securityWithQuantity;
   }
 
   private void updateSecurityMaps(Theta theta) {
@@ -233,39 +277,6 @@ public class PortfolioManager implements PositionProvider {
     final Set<UUID> putThetaIds = securityThetaLink.getOrDefault(theta.getPut().getId(), new HashSet<>());
     putThetaIds.add(theta.getId());
     securityThetaLink.put(theta.getPut().getId(), putThetaIds);
-  }
-
-  private Optional<Security> getSecurityWithQuantity(Security security, Double assignedQuantity) {
-
-    Optional<Security> securityWithQuantity = Optional.empty();
-
-    if (security.getQuantity().equals(assignedQuantity)) {
-
-      securityWithQuantity = Optional.of(security);
-
-    } else {
-      final double unassignedQuantity = security.getQuantity() - assignedQuantity;
-
-      if (unassignedQuantity != 0) {
-        if (security.getSecurityType().equals(SecurityType.STOCK)) {
-
-          securityWithQuantity =
-              Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
-        }
-
-        if (security.getSecurityType().equals(SecurityType.CALL)
-            || security.getSecurityType().equals(SecurityType.PUT)) {
-
-          final Option inputOption = (Option) security;
-
-          securityWithQuantity = Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
-              inputOption.getTicker(), unassignedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
-              inputOption.getAverageTradePrice()));
-        }
-      }
-    }
-
-    return securityWithQuantity;
   }
 
   public ManagerStatus getStatus() {

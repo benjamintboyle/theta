@@ -17,7 +17,7 @@ public class ExecutableOrderFactory {
 
     ExecutableOrder order = ReverseStockOrder.reverse(stock);
 
-    if (order == null || !order.isValid(stock)) {
+    if (!order.isValid(stock)) {
       logger.error("Invalid order for Reverse Trade of: {}, for {}", order, stock);
       order = null;
     }
