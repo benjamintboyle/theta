@@ -28,7 +28,7 @@ public class ExecutionManager implements Executor {
 
   private static final ZoneId MARKET_TIMEZONE = ZoneId.of("America/New_York");
   private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
-  private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(4, 00);
+  private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 00);
 
   private final Map<UUID, ExecutableOrder> activeOrders = new ConcurrentHashMap<>();
 
