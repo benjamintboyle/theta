@@ -58,7 +58,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     controller.getController().reqPositions(this);
 
-    return subjectPositions.toFlowable(BackpressureStrategy.BUFFER)
+    return getPositionEnd().andThen(subjectPositions.toFlowable(BackpressureStrategy.BUFFER))
         // Don't let IB threads out of brokers.interactive_brokers package
         .observeOn(ThetaSchedulersFactory.asyncFixedThread());
   }
