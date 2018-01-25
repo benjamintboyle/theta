@@ -27,9 +27,9 @@ import theta.domain.Theta;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
+import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
-import theta.tick.domain.Tick;
-import theta.tick.domain.TickType;
+import theta.tick.domain.LastTick;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class TickManagerTest {
@@ -79,8 +79,8 @@ public class TickManagerTest {
       final double min = theta.getStrikePrice() - TickManagerTest.aroundPricePlusMinus;
       final double max = theta.getStrikePrice() + TickManagerTest.aroundPricePlusMinus;
       final double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-      priceTicks
-          .add(new Tick(theta.getTicker(), Precision.round(randomAroundPrice, 2), TickType.LAST, ZonedDateTime.now()));
+      priceTicks.add(new LastTick(theta.getTicker(), Precision.round(randomAroundPrice, 2),
+          Precision.round(randomAroundPrice, 2), Precision.round(randomAroundPrice, 2), ZonedDateTime.now()));
     }
 
     return priceTicks;
@@ -124,7 +124,7 @@ public class TickManagerTest {
     Mockito
         .verify(executor,
             Mockito.times(calculatePriceTransitions(trade.getStrikePrice(),
-                priceTicks.stream().map(Tick::getPrice).collect(Collectors.toList()))))
+                priceTicks.stream().map(Tick::getLastPrice).collect(Collectors.toList()))))
         .reverseTrade(ArgumentMatchers.any(Stock.class));
   }
 }

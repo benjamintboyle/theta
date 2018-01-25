@@ -38,7 +38,9 @@ public class StockUtil {
     final Map<UUID, Stock> thetasToReverse = new HashMap<>();
 
     for (final Theta theta : thetasToConvert) {
+
       if (thetasToReverse.containsKey(theta.getStock().getId())) {
+
         final Optional<Stock> combinedStock =
             StockUtil.of(thetasToReverse.get(theta.getStock().getId()), theta.getStock());
 

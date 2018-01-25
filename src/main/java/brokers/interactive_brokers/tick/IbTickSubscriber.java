@@ -16,9 +16,9 @@ import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.Ticker;
 import theta.tick.api.PriceLevel;
+import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
-import theta.tick.domain.Tick;
-import theta.tick.domain.TickType;
+import theta.tick.domain.LastTick;
 
 public class IbTickSubscriber implements TickSubscriber {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -91,7 +91,8 @@ public class IbTickSubscriber implements TickSubscriber {
 
     if (optionalTickHandler.isPresent()) {
       final TickHandler tickHandler = optionalTickHandler.get();
-      tick = Optional.of(new Tick(ticker, tickHandler.getLast(), TickType.LAST, tickHandler.getLastTime()));
+      tick = Optional.of(new LastTick(ticker, tickHandler.getLast(), tickHandler.getBid(), tickHandler.getAsk(),
+          tickHandler.getLastTime()));
     } else {
       logger.warn("No Tick Handler for {}", ticker);
     }

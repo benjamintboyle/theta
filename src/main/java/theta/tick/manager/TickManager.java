@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import theta.ThetaUtil;
 import theta.api.TickSubscriber;
 import theta.domain.ManagerState;
@@ -22,9 +24,9 @@ import theta.domain.Ticker;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.PriceLevel;
+import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
 import theta.tick.api.TickMonitor;
-import theta.tick.domain.Tick;
 import theta.tick.processor.TickProcessor;
 
 public class TickManager implements TickMonitor, TickConsumer {
@@ -38,6 +40,8 @@ public class TickManager implements TickMonitor, TickConsumer {
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   private final BlockingQueue<Ticker> tickQueue = new LinkedBlockingQueue<>();
+
+  private final CompositeDisposable tickManagerDisposable = new CompositeDisposable();
 
   public TickManager(TickSubscriber tickSubscriber) {
     getStatus().changeState(ManagerState.STARTING);
@@ -124,6 +128,7 @@ public class TickManager implements TickMonitor, TickConsumer {
     final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
     if (tradesToCheck.size() > 0) {
+
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
       final TickProcessor thetaTickProcessor = new TickProcessor(tick);
@@ -136,8 +141,22 @@ public class TickManager implements TickMonitor, TickConsumer {
       }
 
       for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
-        executor.reverseTrade(stock);
+
+        Disposable disposableTrade = executor.reverseTrade(stock).subscribe(
+
+            () -> {
+              logger.info("Trade complete for {}", stock);
+            },
+
+            exception -> {
+              logger.error("Error with Trade of {}", stock);
+            }
+
+        );
+
+        tickManagerDisposable.add(disposableTrade);
       }
+
     } else {
       logger.warn("Unsubscribing Tick Monitor for {}. Received 0 Positions from Position Provider for Tick: {}",
           tick.getTicker(), tick);

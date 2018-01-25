@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.api.ExecutionHandler;
@@ -43,55 +44,70 @@ public class ExecutionManager implements Executor {
   }
 
   @Override
-  public void reverseTrade(Stock stock) {
+  public Completable reverseTrade(Stock stock) {
+
     logger.info("Reversing Trade: {}", stock.toString());
 
     final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock);
 
-    validatedOrder.ifPresent(order -> executeOrder(order));
+    Completable reverseTradeCompletable =
+        Completable.error(new IllegalArgumentException("Invalid order built for " + stock));
+
+    if (validatedOrder.isPresent()) {
+      reverseTradeCompletable = executeOrder(validatedOrder.get());
+    }
+
+    return reverseTradeCompletable;
   }
 
-  private void executeOrder(ExecutableOrder order) {
+  private Completable executeOrder(ExecutableOrder order) {
 
-    if (duringMarketHours()) {
-      if (!activeOrderExists(order)) {
+    return Completable.create(emitter -> {
+      if (duringMarketHours()) {
+        if (!activeOrderExists(order)) {
 
-        logger.info("Executing order: {}", order);
+          logger.info("Executing order: {}", order);
 
-        final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
+          final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
 
-            message -> {
-              logger.info(message);
-            },
+              message -> {
+                logger.info(message);
+              },
 
-            // TODO: Should probably send cancel request here?
-            error -> {
-              logger.error("Order Handler encountered an error", error);
-              Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
-              compositeDisposable.add(disposableCancelOrder);
+              // TODO: Should probably correct cancel request
+              error -> {
+                logger.error("Order Handler encountered an error", error);
+                Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
+                compositeDisposable.add(disposableCancelOrder);
 
-              logger.warn("Removing order from active orders: {}", order);
-              activeOrders.remove(order.getId());
-            },
+                logger.warn("Removing order from active orders: {}", order);
+                activeOrders.remove(order.getId());
 
-            () -> {
-              logger.info("Order successfully filled: {}", order);
-              Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
+                emitter.onError(error);
+              },
 
-              if (filledOrder.isPresent()) {
-                logger.info("Order removed from active orders list: {}", order);
-              } else {
-                logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
-              }
-            });
+              () -> {
+                logger.info("Order successfully filled: {}", order);
+                Optional<ExecutableOrder> filledOrder = Optional.ofNullable(activeOrders.remove(order.getId()));
 
-        compositeDisposable.add(disposableExecutionHandler);
+                if (filledOrder.isPresent()) {
+                  logger.info("Order removed from active orders list: {}", order);
+                } else {
+                  logger.warn("Received filled order notification for which there is no Active Order record: {}",
+                      order);
+                }
+
+                emitter.onComplete();
+              });
+
+          compositeDisposable.add(disposableExecutionHandler);
+        } else {
+          logger.error("Existing order. Order will not be executed: {}", order);
+        }
       } else {
-        logger.error("Existing order. Order will not be executed: {}", order);
+        logger.warn("Not during market hours. Order will not be executed: {}", order);
       }
-    } else {
-      logger.warn("Not during market hours. Order will not be executed: {}", order);
-    }
+    });
   }
 
   private boolean activeOrderExists(ExecutableOrder order) {
