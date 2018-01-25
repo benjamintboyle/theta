@@ -56,11 +56,11 @@ public class PortfolioManagerTest {
     final int expectedThetas = 6;
     final List<Theta> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
+    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1, -2, 1, 5, 7, 10).toArray()));
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1L, -2L, 1L, 5L, 7L, 10L).toArray()));
   }
 
   @Test
@@ -68,11 +68,11 @@ public class PortfolioManagerTest {
     final int expectedThetas = 6;
     final List<Theta> thetas = fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
+    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7, -1, 1, 2, 5, 10).toArray()));
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7L, -1L, 1L, 2L, 5L, 10L).toArray()));
   }
 
   @Test
@@ -80,11 +80,11 @@ public class PortfolioManagerTest {
     final int expectedThetas = 4;
     final List<Theta> thetas = fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
 
-    final List<Integer> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
+    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
 
     MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
     MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(1, 2, 2, 5).toArray()));
+        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(1L, 2L, 2L, 5L).toArray()));
   }
 
   private List<Theta> fileIngestHelper(final String filename, int expected) {

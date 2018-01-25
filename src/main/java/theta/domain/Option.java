@@ -2,6 +2,7 @@ package theta.domain;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +15,12 @@ public class Option implements Security {
   private UUID id = UUID.randomUUID();
   private final SecurityType type;
   private final Ticker backingTicker;
-  private final Double quantity;
+  private final long quantity;
   private final Double strikePrice;
   private final LocalDate expiration;
   private final Double averageTradePrice;
 
-  public Option(UUID id, SecurityType type, Ticker backingTicker, Double quantity, Double strikePrice,
+  public Option(UUID id, SecurityType type, Ticker backingTicker, long quantity, Double strikePrice,
       LocalDate expiration, Double averageTradePrice) {
 
     this.id = id;
@@ -49,7 +50,7 @@ public class Option implements Security {
   }
 
   @Override
-  public Double getQuantity() {
+  public long getQuantity() {
     return quantity;
   }
 
@@ -98,16 +99,8 @@ public class Option implements Security {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((averageTradePrice == null) ? 0 : averageTradePrice.hashCode());
-    result = prime * result + ((backingTicker == null) ? 0 : backingTicker.hashCode());
-    result = prime * result + ((expiration == null) ? 0 : expiration.hashCode());
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
-    result = prime * result + ((strikePrice == null) ? 0 : strikePrice.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    return result;
+    return Objects.hash(getId(), getSecurityType(), getTicker(), getQuantity(), getStrikePrice(), getExpiration(),
+        getAverageTradePrice());
   }
 
   @Override
@@ -121,52 +114,13 @@ public class Option implements Security {
     if (getClass() != obj.getClass()) {
       return false;
     }
+
     final Option other = (Option) obj;
-    if (averageTradePrice == null) {
-      if (other.averageTradePrice != null) {
-        return false;
-      }
-    } else if (!averageTradePrice.equals(other.averageTradePrice)) {
-      return false;
-    }
-    if (backingTicker == null) {
-      if (other.backingTicker != null) {
-        return false;
-      }
-    } else if (!backingTicker.equals(other.backingTicker)) {
-      return false;
-    }
-    if (expiration == null) {
-      if (other.expiration != null) {
-        return false;
-      }
-    } else if (!expiration.equals(other.expiration)) {
-      return false;
-    }
-    if (id == null) {
-      if (other.id != null) {
-        return false;
-      }
-    } else if (!id.equals(other.id)) {
-      return false;
-    }
-    if (quantity == null) {
-      if (other.quantity != null) {
-        return false;
-      }
-    } else if (!quantity.equals(other.quantity)) {
-      return false;
-    }
-    if (strikePrice == null) {
-      if (other.strikePrice != null) {
-        return false;
-      }
-    } else if (!strikePrice.equals(other.strikePrice)) {
-      return false;
-    }
-    if (type != other.type) {
-      return false;
-    }
-    return true;
+
+    return Objects.equals(getId(), other.getId()) && Objects.equals(getSecurityType(), other.getSecurityType())
+        && Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
+        && Objects.equals(getStrikePrice(), other.getStrikePrice())
+        && Objects.equals(getExpiration(), other.getExpiration())
+        && Objects.equals(getAverageTradePrice(), other.getAverageTradePrice());
   }
 }

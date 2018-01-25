@@ -24,7 +24,7 @@ public interface ExecutableOrder {
 
   public ExecutionType getExecutionType();
 
-  public Double getQuantity();
+  public long getQuantity();
 
   public Boolean isValid(Security security);
 }

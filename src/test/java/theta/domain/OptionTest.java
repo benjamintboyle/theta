@@ -15,23 +15,19 @@ public class OptionTest {
   private static final LocalDate expiration = LocalDate.now().plusDays(30);
 
   public static Option buildTestCallOption() {
-    return new Option(UUID.randomUUID(), SecurityType.CALL, Ticker.from("CHK"), Double.valueOf(1), 15.0,
-        OptionTest.expiration, 0.7);
+    return new Option(UUID.randomUUID(), SecurityType.CALL, Ticker.from("CHK"), 1L, 15.0, OptionTest.expiration, 0.7);
   }
 
   public static Option buildTestShortCallOption() {
-    return new Option(UUID.randomUUID(), SecurityType.CALL, Ticker.from("CHK"), Double.valueOf(-1), 15.0,
-        OptionTest.expiration, 0.7);
+    return new Option(UUID.randomUUID(), SecurityType.CALL, Ticker.from("CHK"), -1L, 15.0, OptionTest.expiration, 0.7);
   }
 
   public static Option buildTestPutOption() {
-    return new Option(UUID.randomUUID(), SecurityType.PUT, Ticker.from("CHK"), Double.valueOf(1), 15.0,
-        OptionTest.expiration, 0.7);
+    return new Option(UUID.randomUUID(), SecurityType.PUT, Ticker.from("CHK"), 1L, 15.0, OptionTest.expiration, 0.7);
   }
 
   public static Option buildTestShortPutOption() {
-    return new Option(UUID.randomUUID(), SecurityType.PUT, Ticker.from("CHK"), Double.valueOf(-1), 15.0,
-        OptionTest.expiration, 0.7);
+    return new Option(UUID.randomUUID(), SecurityType.PUT, Ticker.from("CHK"), -1L, 15.0, OptionTest.expiration, 0.7);
   }
 
   @Test

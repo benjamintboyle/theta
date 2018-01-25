@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.api.Security;
 
 public class StockUtil {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -55,14 +56,14 @@ public class StockUtil {
     return new ArrayList<>(thetasToReverse.values());
   }
 
+  @Deprecated
   public static Stock adjustStockQuantity(Stock stock, ShortStraddle straddle) {
     Stock adjustedStock = stock;
 
     // If there is an exact quantity match for stocks
-    if (Math.abs(stock.getQuantity().intValue()) / 100 > Math.abs(straddle.getQuantity().intValue())) {
+    if (stock.getQuantity() / 100 > straddle.getQuantity()) {
       // If not exact match for quantity, then use only part of it to cover
-      final Double quantity =
-          stock.getQuantity() / Math.abs(stock.getQuantity()) * Math.abs(straddle.getQuantity()) * 100;
+      final long quantity = stock.getQuantity() / stock.getQuantity() * straddle.getQuantity() * 100;
       adjustedStock = Stock.of(stock.getId(), stock.getTicker(), quantity, stock.getPrice());
     }
 
@@ -72,4 +73,15 @@ public class StockUtil {
     return adjustedStock;
   }
 
+  public static Optional<Stock> adjustStockQuantity(Stock stock, long adjustment) {
+    Optional<Security> stockAsSecurity = SecurityUtil.getSecurityWithQuantity(stock, adjustment);
+
+    Optional<Stock> adjustedStock = Optional.empty();
+
+    if (stockAsSecurity.isPresent() && stockAsSecurity.get() instanceof Stock) {
+      adjustedStock = Optional.of((Stock) stockAsSecurity.get());
+    }
+
+    return adjustedStock;
+  }
 }

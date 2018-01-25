@@ -16,12 +16,12 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   private final UUID id;
 
   private final Ticker ticker;
-  private final Double quantity;
+  private final long quantity;
   private final ExecutionAction action;
   private final ExecutionType executionType;
   private Optional<Integer> brokerId = Optional.empty();
 
-  public AbstractStockOrder(Stock stock, Double quantity, ExecutionAction action, ExecutionType executionType) {
+  public AbstractStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
     id = stock.getId();
     ticker = stock.getTicker();
     this.quantity = quantity;
@@ -57,7 +57,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   }
 
   @Override
-  public Double getQuantity() {
+  public long getQuantity() {
     return quantity;
   }
 

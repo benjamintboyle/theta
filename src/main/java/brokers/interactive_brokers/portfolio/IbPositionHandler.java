@@ -106,13 +106,16 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     }
   }
 
-  private Stock generateStock(Contract contract, Double position, Double avgCost) {
-    final Stock stock = Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), position, avgCost);
+  private Stock generateStock(Contract contract, double position, Double avgCost) {
+
+    final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
+
+    final Stock stock = Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), quantity, avgCost);
 
     return stock;
   }
 
-  private Option generateOption(Contract contract, Double position, Double avgCost) {
+  private Option generateOption(Contract contract, double position, Double avgCost) {
     SecurityType securityType = null;
     switch (contract.right()) {
       case Call:
@@ -129,8 +132,23 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     final Optional<LocalDate> optionalExpiration =
         IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
 
-    return new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), position,
+    final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
+
+    return new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), quantity,
         contract.strike(), optionalExpiration.get(), avgCost);
+  }
+
+  private long convertQuantityToLongCheckingIfWholeValue(double quantity, Contract contract) {
+
+    long wholeQuantity = Math.round(quantity);
+
+    if (Math.abs(quantity - wholeQuantity) > Math.ulp(quantity)) {
+      wholeQuantity = (long) quantity;
+      logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity, wholeQuantity,
+          IbStringUtil.toStringContract(contract));
+    }
+
+    return wholeQuantity;
   }
 
   private UUID generateId(Integer contractId) {

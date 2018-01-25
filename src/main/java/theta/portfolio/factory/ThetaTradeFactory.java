@@ -36,16 +36,21 @@ public class ThetaTradeFactory {
 
         // If stock quantity is greater than number of option contracts adjust, otherwise return
         // full stock quantity
-        final Stock adjustedStock = StockUtil.adjustStockQuantity(stock, straddle);
+        final Optional<Stock> adjustedStock =
+            StockUtil.adjustStockQuantity(stock, Math.abs(straddle.getQuantity() * 100));
 
         // Build theta
-        final Optional<Theta> theta = Theta.of(adjustedStock, straddle);
+        if (adjustedStock.isPresent()) {
+          final Optional<Theta> theta = Theta.of(adjustedStock.get(), straddle);
 
-        // Successfully created and added theta to list
-        if (theta.isPresent()) {
-          thetas.add(theta.get());
+          // Successfully created and added theta to list
+          if (theta.isPresent()) {
+            thetas.add(theta.get());
+          } else {
+            logger.warn("ThetaTrade could not be built from Stock: {}, Straddle: {}", adjustedStock, straddle);
+          }
         } else {
-          logger.warn("ThetaTrade could not be built from Stock: {}, Straddle: {}", adjustedStock, straddle);
+          logger.warn("Not Adjusted Stock available for {} {}", stock, straddle);
         }
       } else {
         logger.warn("No coverable stock could be identified for Straddle: {}, from Stocks: {}", straddle, stockList);
@@ -62,8 +67,10 @@ public class ThetaTradeFactory {
     final List<ShortStraddle> straddleList = new ArrayList<>();
 
     for (final Option call : calls) {
-      final List<Option> straddlablePuts = puts.stream().filter(put -> put.getExpiration().equals(call.getExpiration()))
-          .filter(put -> put.getStrikePrice().equals(call.getStrikePrice())).collect(Collectors.toList());
+      final List<Option> straddlablePuts = puts.stream()
+          .filter(put -> put.getExpiration().equals(call.getExpiration()))
+          .filter(put -> put.getStrikePrice().equals(call.getStrikePrice()))
+          .collect(Collectors.toList());
 
       if (straddlablePuts.size() > 1) {
         logger.warn("Multiple puts match single call - Call: {}, Puts: {}", call, straddlablePuts);
@@ -88,9 +95,9 @@ public class ThetaTradeFactory {
   }
 
   private static Optional<Stock> getCoverableStock(List<Stock> stockList, ShortStraddle straddle) {
-    return stockList.stream().filter(stock -> stock.getTicker().equals(straddle.getTicker()))
-        .filter(
-            stock -> (Math.abs(stock.getQuantity().intValue()) / 100) >= Math.abs(straddle.getQuantity().intValue()))
+    return stockList.stream()
+        .filter(stock -> stock.getTicker().equals(straddle.getTicker()))
+        .filter(stock -> Math.abs(stock.getQuantity()) >= Math.abs(straddle.getQuantity() * 100))
         .findFirst();
   }
 }

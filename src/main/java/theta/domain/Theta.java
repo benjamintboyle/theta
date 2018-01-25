@@ -11,7 +11,7 @@ import theta.domain.api.SecurityType;
 import theta.tick.api.PriceLevel;
 import theta.tick.api.PriceLevelDirection;
 
-public class Theta implements PriceLevel {
+public class Theta implements PriceLevel, Security {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
@@ -48,6 +48,7 @@ public class Theta implements PriceLevel {
     return theta;
   }
 
+  @Override
   public UUID getId() {
     return id;
   }
@@ -59,8 +60,13 @@ public class Theta implements PriceLevel {
    *
    * @return
    */
-  public Integer getQuantity() {
-    return Integer.valueOf(getStock().getQuantity().intValue() / 100);
+  @Override
+  public long getQuantity() {
+    return getStraddle().getQuantity();
+  }
+
+  public Double getPrice() {
+    return getStraddle().getPrice();
   }
 
   public Stock getStock() {
@@ -79,6 +85,7 @@ public class Theta implements PriceLevel {
     return getStraddle().getPut();
   }
 
+  @Override
   public SecurityType getSecurityType() {
     return SecurityType.THETA;
   }
@@ -185,7 +192,7 @@ public class Theta implements PriceLevel {
     // All same ticker
     if (stock.getTicker().equals(straddle.getTicker())) {
       // If stock quantities are multiple of 100 to options
-      if (Math.abs(stock.getQuantity().intValue() / 100) == Math.abs(straddle.getQuantity().intValue())) {
+      if (Math.abs(stock.getQuantity()) == Math.abs(straddle.getQuantity() * 100)) {
         isValid = true;
       } else {
         logger.error("Stock is not 100 times quantity of option quantity: {}, {}", stock.getQuantity(),

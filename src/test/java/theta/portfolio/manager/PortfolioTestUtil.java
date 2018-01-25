@@ -51,7 +51,7 @@ public class PortfolioTestUtil {
       final String[] security = splitPattern.split(trade);
       final String securityType = security[0];
       final Ticker ticker = Ticker.from(security[1]);
-      final Double quantity = Double.valueOf(security[2]);
+      final long quantity = Long.parseLong(security[2]);
       final Double price = Double.valueOf(security[3]);
       logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity, price);
 

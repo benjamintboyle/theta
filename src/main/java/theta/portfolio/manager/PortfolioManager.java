@@ -21,6 +21,7 @@ import theta.api.PositionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Option;
+import theta.domain.SecurityUtil;
 import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.domain.Ticker;
@@ -194,19 +195,20 @@ public class PortfolioManager implements PositionProvider {
         .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
         .collect(Collectors.toSet());
 
-    final Map<UUID, Double> allocatedCountMap = thetaIdMap.values()
+    final Map<UUID, Long> allocatedCountMap = thetaIdMap.values()
         .stream()
         .filter(theta -> theta.getTicker().equals(ticker))
         .map(theta -> theta.getSecurityOfType(securityType))
-        .collect(Collectors.groupingBy(Security::getId, Collectors.summingDouble(Security::getQuantity)));
+        .collect(Collectors.groupingBy(Security::getId, Collectors.summingLong(Security::getQuantity)));
 
 
     for (final Security security : allIdsOfTickerAndSecurityType) {
 
-      final double unallocatedQuantity = security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0.0);
+      final long unallocatedQuantity = security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0L);
       logger.debug("Calculated {} unallocated securitie(s) for {}", unallocatedQuantity, security);
 
-      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, unallocatedQuantity);
+      final Optional<Security> securityWithAdjustedQuantity =
+          SecurityUtil.getSecurityWithQuantity(security, unallocatedQuantity);
 
       if (securityWithAdjustedQuantity.isPresent()) {
         unallocatedSecurities.add(securityWithAdjustedQuantity.get());
@@ -214,52 +216,6 @@ public class PortfolioManager implements PositionProvider {
     }
 
     return unallocatedSecurities;
-  }
-
-  private Optional<Security> getSecurityWithQuantity(Security security, double unallocatedQuantity) {
-
-    Optional<Security> securityWithQuantity = Optional.empty();
-
-    // If unallocated and security are equal, just return security
-    if (unallocatedQuantity == security.getQuantity()) {
-      securityWithQuantity = Optional.of(security);
-    }
-
-    // If there are no unallocated then do nothing
-    else if (unallocatedQuantity == 0) {
-      logger.debug("All securities have been allocated for {}", security);
-    }
-
-    // Main condition where security is subdivided
-    else if (Math.abs(unallocatedQuantity) < Math.abs(security.getQuantity())) {
-
-      logger.debug("Subdividing security quantity of {} for {}", unallocatedQuantity, security);
-
-      switch (security.getSecurityType()) {
-        case STOCK:
-          securityWithQuantity =
-              Optional.of(Stock.of(security.getId(), security.getTicker(), unallocatedQuantity, security.getPrice()));
-          break;
-        case CALL:
-        case PUT:
-          final Option inputOption = (Option) security;
-
-          securityWithQuantity = Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
-              inputOption.getTicker(), unallocatedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
-              inputOption.getAverageTradePrice()));
-          break;
-        default:
-          logger.warn("Invalid security type {} for reducing quantity {}", security.getSecurityType(), security);
-      }
-    }
-
-    // Error case where unallocated are greater than security (should never happen)
-    else {
-      logger.warn("Skipping security. Calculated inaccurate quantity of {} unallocated securities (too many) for {}",
-          unallocatedQuantity, security);
-    }
-
-    return securityWithQuantity;
   }
 
   private void updateSecurityMaps(Theta theta) {

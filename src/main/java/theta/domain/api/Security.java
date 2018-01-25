@@ -11,7 +11,7 @@ public interface Security {
 
   public Ticker getTicker();
 
-  public Double getQuantity();
+  public long getQuantity();
 
   public Double getPrice();
 

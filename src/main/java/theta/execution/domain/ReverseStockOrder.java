@@ -10,7 +10,7 @@ import theta.domain.api.SecurityType;
 public class ReverseStockOrder extends AbstractStockOrder {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ReverseStockOrder(Stock stock, Double quantity, ExecutionAction action, ExecutionType executionType) {
+  private ReverseStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
     super(stock, quantity, action, executionType);
   }
 
@@ -21,7 +21,7 @@ public class ReverseStockOrder extends AbstractStockOrder {
       action = ExecutionAction.SELL;
     }
 
-    Double reversedQuantity = 2 * Math.abs(stock.getQuantity());
+    long reversedQuantity = 2 * Math.abs(stock.getQuantity());
 
     return new ReverseStockOrder(stock, reversedQuantity, action, ExecutionType.MARKET);
   }
@@ -55,7 +55,7 @@ public class ReverseStockOrder extends AbstractStockOrder {
     return isValid;
   }
 
-  private Boolean isAbsoluteQuantityDouble(Double quantity) {
+  private Boolean isAbsoluteQuantityDouble(long quantity) {
     return getQuantity() == 2 * Math.abs(quantity);
   }
 
@@ -63,7 +63,7 @@ public class ReverseStockOrder extends AbstractStockOrder {
     return getSecurityType().equals(securityType);
   }
 
-  private boolean isValidAction(Double quantity) {
+  private boolean isValidAction(long quantity) {
     boolean isValidAction = false;
 
     switch (getExecutionAction()) {

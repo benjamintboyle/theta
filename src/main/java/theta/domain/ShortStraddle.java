@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
-public class ShortStraddle {
+public class ShortStraddle implements Security {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -39,20 +40,29 @@ public class ShortStraddle {
     return straddle;
   }
 
+  @Override
   public UUID getId() {
     return id;
   }
 
+  @Override
   public SecurityType getSecurityType() {
     return SecurityType.SHORT_STRADDLE;
   }
 
+  @Override
   public Ticker getTicker() {
     return call.getTicker();
   }
 
-  public Double getQuantity() {
+  @Override
+  public long getQuantity() {
     return call.getQuantity();
+  }
+
+  @Override
+  public Double getPrice() {
+    return getStrikePrice();
   }
 
   public Double getStrikePrice() {
@@ -104,7 +114,7 @@ public class ShortStraddle {
     }
 
     // Are equal quantities
-    if (!call.getQuantity().equals(put.getQuantity())) {
+    if (!(call.getQuantity() == (put.getQuantity()))) {
       logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, call, put);
       isValidShortStraddle = false;
     }
@@ -148,4 +158,5 @@ public class ShortStraddle {
 
     return builder.toString();
   }
+
 }
