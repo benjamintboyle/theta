@@ -157,21 +157,21 @@ public class PortfolioManager implements PositionProvider {
 
   private void processPosition(Ticker ticker) {
 
-    // Calculate unassigned call, put, stock
-    final List<Stock> unassignedStocks =
-        getUnassignedOfSecurity(ticker, SecurityType.STOCK).stream().map(stock -> (Stock) stock).collect(
+    // Calculate unallocated call, put, stock
+    final List<Stock> unallocatedStocks =
+        getUnallocatedSecuritiesOf(ticker, SecurityType.STOCK).stream().map(stock -> (Stock) stock).collect(
             Collectors.toList());
-    final List<Option> unassignedCalls =
-        getUnassignedOfSecurity(ticker, SecurityType.CALL).stream().map(call -> (Option) call).collect(
+    final List<Option> unallocatedCalls =
+        getUnallocatedSecuritiesOf(ticker, SecurityType.CALL).stream().map(call -> (Option) call).collect(
             Collectors.toList());
-    final List<Option> unassignedPuts =
-        getUnassignedOfSecurity(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
+    final List<Option> unallocatedPuts =
+        getUnallocatedSecuritiesOf(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
             Collectors.toList());
 
     List<Theta> thetas = new ArrayList<>();
 
-    if (unassignedStocks.size() > 0 && unassignedCalls.size() > 0 && unassignedPuts.size() > 0) {
-      thetas = ThetaTradeFactory.processThetaTrade(unassignedStocks, unassignedCalls, unassignedPuts);
+    if (unallocatedStocks.size() > 0 && unallocatedCalls.size() > 0 && unallocatedPuts.size() > 0) {
+      thetas = ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts);
     }
 
     for (final Theta theta : thetas) {
@@ -183,9 +183,9 @@ public class PortfolioManager implements PositionProvider {
 
   }
 
-  private List<Security> getUnassignedOfSecurity(Ticker ticker, SecurityType securityType) {
+  private List<Security> getUnallocatedSecuritiesOf(Ticker ticker, SecurityType securityType) {
 
-    final List<Security> unassignedSecurities = new ArrayList<>();
+    final List<Security> unallocatedSecurities = new ArrayList<>();
 
     final Set<Security> allIdsOfTickerAndSecurityType = securityIdMap.values()
         .stream()
@@ -194,7 +194,7 @@ public class PortfolioManager implements PositionProvider {
         .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
         .collect(Collectors.toSet());
 
-    final Map<UUID, Double> assignedCountMap = thetaIdMap.values()
+    final Map<UUID, Double> allocatedCountMap = thetaIdMap.values()
         .stream()
         .filter(theta -> theta.getTicker().equals(ticker))
         .map(theta -> theta.getSecurityOfType(securityType))
@@ -203,44 +203,49 @@ public class PortfolioManager implements PositionProvider {
 
     for (final Security security : allIdsOfTickerAndSecurityType) {
 
-      final double unassignedQuantity = security.getQuantity() - assignedCountMap.getOrDefault(security.getId(), 0.0);
-      logger.trace("Calculated {} unassigned securities for {}", unassignedQuantity, security);
+      final double unallocatedQuantity = security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0.0);
+      logger.debug("Calculated {} unallocated securitie(s) for {}", unallocatedQuantity, security);
 
-      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, unassignedQuantity);
+      final Optional<Security> securityWithAdjustedQuantity = getSecurityWithQuantity(security, unallocatedQuantity);
 
       if (securityWithAdjustedQuantity.isPresent()) {
-        unassignedSecurities.add(securityWithAdjustedQuantity.get());
+        unallocatedSecurities.add(securityWithAdjustedQuantity.get());
       }
     }
 
-    return unassignedSecurities;
+    return unallocatedSecurities;
   }
 
-  private Optional<Security> getSecurityWithQuantity(Security security, double unassignedQuantity) {
+  private Optional<Security> getSecurityWithQuantity(Security security, double unallocatedQuantity) {
 
     Optional<Security> securityWithQuantity = Optional.empty();
 
-    // If unassigned and security are equal, just return security
-    if (unassignedQuantity == security.getQuantity()) {
+    // If unallocated and security are equal, just return security
+    if (unallocatedQuantity == security.getQuantity()) {
       securityWithQuantity = Optional.of(security);
     }
 
-    // Main condition where security is subdivided
-    else if (Math.abs(unassignedQuantity) < Math.abs(security.getQuantity())) {
+    // If there are no unallocated then do nothing
+    else if (unallocatedQuantity == 0) {
+      logger.debug("All securities have been allocated for {}", security);
+    }
 
-      logger.trace("Subdividing security quantity of {} for {}", unassignedQuantity, security);
+    // Main condition where security is subdivided
+    else if (Math.abs(unallocatedQuantity) < Math.abs(security.getQuantity())) {
+
+      logger.debug("Subdividing security quantity of {} for {}", unallocatedQuantity, security);
 
       switch (security.getSecurityType()) {
         case STOCK:
           securityWithQuantity =
-              Optional.of(Stock.of(security.getId(), security.getTicker(), unassignedQuantity, security.getPrice()));
+              Optional.of(Stock.of(security.getId(), security.getTicker(), unallocatedQuantity, security.getPrice()));
           break;
         case CALL:
         case PUT:
           final Option inputOption = (Option) security;
 
           securityWithQuantity = Optional.of(new Option(inputOption.getId(), inputOption.getSecurityType(),
-              inputOption.getTicker(), unassignedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
+              inputOption.getTicker(), unallocatedQuantity, inputOption.getStrikePrice(), inputOption.getExpiration(),
               inputOption.getAverageTradePrice()));
           break;
         default:
@@ -248,15 +253,10 @@ public class PortfolioManager implements PositionProvider {
       }
     }
 
-    // If there are no unassigned then do nothing
-    else if (unassignedQuantity == 0) {
-      logger.trace("All securities have been assigned for {}", security);
-    }
-
-    // Error case where unassigned are greater than security (should never happen)
+    // Error case where unallocated are greater than security (should never happen)
     else {
-      logger.warn("Skipping security. Calculated inaccurate quantity of {} unassigned securities (too many) for {}",
-          unassignedQuantity, security);
+      logger.warn("Skipping security. Calculated inaccurate quantity of {} unallocated securities (too many) for {}",
+          unallocatedQuantity, security);
     }
 
     return securityWithQuantity;
