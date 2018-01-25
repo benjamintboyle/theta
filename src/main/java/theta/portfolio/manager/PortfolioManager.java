@@ -204,8 +204,9 @@ public class PortfolioManager implements PositionProvider {
 
     for (final Security security : allIdsOfTickerAndSecurityType) {
 
-      final long unallocatedQuantity = security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0L);
-      logger.debug("Calculated {} unallocated securitie(s) for {}", unallocatedQuantity, security);
+      final long unallocatedQuantity =
+          Math.abs(security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0L));
+      logger.debug("Calculated {} unallocated securities for {}", unallocatedQuantity, security);
 
       final Optional<Security> securityWithAdjustedQuantity =
           SecurityUtil.getSecurityWithQuantity(security, unallocatedQuantity);

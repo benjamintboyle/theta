@@ -37,7 +37,7 @@ public class ThetaTradeFactory {
         // If stock quantity is greater than number of option contracts adjust, otherwise return
         // full stock quantity
         final Optional<Stock> adjustedStock =
-            StockUtil.adjustStockQuantity(stock, Math.abs(straddle.getQuantity() * 100));
+            StockUtil.adjustStockQuantity(stock, Math.abs(straddle.getQuantity()) * 100);
 
         // Build theta
         if (adjustedStock.isPresent()) {

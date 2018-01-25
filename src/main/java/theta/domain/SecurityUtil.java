@@ -10,6 +10,7 @@ public class SecurityUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+
   public static Optional<Security> getSecurityWithQuantity(Security security, long adjustment) {
 
     Optional<Security> securityWithQuantity = Optional.empty();
