@@ -18,6 +18,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
+import theta.domain.DefaultPriceLevel;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Option;
@@ -25,6 +26,7 @@ import theta.domain.SecurityUtil;
 import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.domain.Ticker;
+import theta.domain.api.PriceLevel;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.portfolio.api.PositionProvider;
@@ -112,7 +114,18 @@ public class PortfolioManager implements PositionProvider {
 
     logger.info("Processing Position: {}", security);
 
-    removePositionIfExists(security);
+    removePositionIfExists(security).stream()
+        // Filter out price levels that still exist in thetas
+        .filter(
+
+            deletablePriceLevel -> thetaIdMap.values().stream().map(DefaultPriceLevel::of).noneMatch(
+                existingPriceLevel -> existingPriceLevel.equals(deletablePriceLevel)))
+        .distinct()
+        .forEach(priceLevel -> {
+
+          logger.info("Removing monitor. No more positions for Price Level: {}", priceLevel);
+          monitor.deleteMonitor(priceLevel);
+        });
 
     if (security.getQuantity() != 0) {
       securityIdMap.put(security.getId(), security);
@@ -126,32 +139,31 @@ public class PortfolioManager implements PositionProvider {
   }
 
   // Removes positions if security is contained within it
-  private void removePositionIfExists(Security security) {
+  private List<PriceLevel> removePositionIfExists(Security security) {
 
-    final Optional<Set<UUID>> thetaIds = Optional.ofNullable(securityThetaLink.remove(security.getId()));
+    final List<PriceLevel> removedPriceLevels = new ArrayList<>();
 
-    for (final UUID thetaId : thetaIds.orElse(Set.of())) {
+    final Set<UUID> thetaIds = Optional.ofNullable(securityThetaLink.remove(security.getId())).orElse(Set.of());
+
+    for (final UUID thetaId : thetaIds) {
       final Optional<Theta> optionalTheta = Optional.ofNullable(thetaIdMap.remove(thetaId));
 
-      optionalTheta.ifPresent(theta -> {
+      optionalTheta.map(DefaultPriceLevel::of).ifPresent(priceLevel -> {
+
+        removedPriceLevels.add(priceLevel);
+
+        Theta theta = optionalTheta.get();
+
         // Remove link/map for call and put and stock associated with ThetaTrade
-        removePositionIfExists(theta.getStock());
-        removePositionIfExists(theta.getCall());
-        removePositionIfExists(theta.getPut());
+        removedPriceLevels.addAll(removePositionIfExists(theta.getStock()));
+        removedPriceLevels.addAll(removePositionIfExists(theta.getCall()));
+        removedPriceLevels.addAll(removePositionIfExists(theta.getPut()));
 
         logger.info("Removed theta trade: {}, based on security: {}", theta, security);
-
-        if (!thetaIdMap.values()
-            .stream()
-            .filter(ticker -> ticker.getTicker().equals(theta.getTicker()))
-            .findAny()
-            .isPresent()) {
-
-          logger.info("No more theta positions for {}, removing monitor.", theta.getTicker());
-          monitor.deleteMonitor(theta);
-        }
       });
     }
+
+    return removedPriceLevels;
   }
 
   private void processPosition(Ticker ticker) {
@@ -167,17 +179,12 @@ public class PortfolioManager implements PositionProvider {
         getUnallocatedSecuritiesOf(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
             Collectors.toList());
 
-    List<Theta> thetas = new ArrayList<>();
-
     if (unallocatedStocks.size() > 0 && unallocatedCalls.size() > 0 && unallocatedPuts.size() > 0) {
-      thetas = ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts);
-    }
-
-    for (final Theta theta : thetas) {
-
-      updateSecurityMaps(theta);
-
-      monitor.addMonitor(theta);
+      ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts)
+          .stream()
+          .map(theta -> updateSecurityMaps(theta))
+          .distinct()
+          .forEach(priceLevel -> monitor.addMonitor(priceLevel));
     }
 
   }
@@ -217,7 +224,7 @@ public class PortfolioManager implements PositionProvider {
     return unallocatedSecurities;
   }
 
-  private void updateSecurityMaps(Theta theta) {
+  private PriceLevel updateSecurityMaps(Theta theta) {
 
     thetaIdMap.put(theta.getId(), theta);
 
@@ -232,6 +239,8 @@ public class PortfolioManager implements PositionProvider {
     final Set<UUID> putThetaIds = securityThetaLink.getOrDefault(theta.getPut().getId(), new HashSet<>());
     putThetaIds.add(theta.getId());
     securityThetaLink.put(theta.getPut().getId(), putThetaIds);
+
+    return DefaultPriceLevel.of(theta);
   }
 
   public ManagerStatus getStatus() {

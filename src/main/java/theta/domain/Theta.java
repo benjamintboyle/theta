@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
-import theta.tick.api.PriceLevel;
-import theta.tick.api.PriceLevelDirection;
 
-public class Theta implements PriceLevel, Security {
+public class Theta implements Security {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
@@ -65,6 +63,7 @@ public class Theta implements PriceLevel, Security {
     return getStraddle().getQuantity();
   }
 
+  @Override
   public Double getPrice() {
     return getStraddle().getPrice();
   }
@@ -114,27 +113,8 @@ public class Theta implements PriceLevel, Security {
   }
 
   @Override
-  public Double getStrikePrice() {
-    return getCall().getStrikePrice();
-  }
-
-  @Override
   public Ticker getTicker() {
     return getStock().getTicker();
-  }
-
-  @Override
-  public PriceLevelDirection tradeIf() {
-    PriceLevelDirection priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
-
-    if (getStock().getQuantity() > 0) {
-      priceLevelDirection = PriceLevelDirection.FALLS_BELOW;
-    }
-    if (getStock().getQuantity() < 0) {
-      priceLevelDirection = PriceLevelDirection.RISES_ABOVE;
-    }
-
-    return priceLevelDirection;
   }
 
   @Override

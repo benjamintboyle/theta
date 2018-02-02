@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.DefaultPriceLevel;
 import theta.domain.Theta;
-import theta.tick.api.PriceLevelDirection;
+import theta.domain.api.PriceLevel;
+import theta.domain.api.PriceLevelDirection;
 import theta.tick.api.Tick;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
@@ -27,27 +29,28 @@ public class TickProcessor implements Function<Theta, List<Theta>> {
 
   private List<Theta> processTick(Theta theta) {
 
+    final PriceLevel priceLevel = DefaultPriceLevel.of(theta);
     final List<Theta> tradesToReverse = new ArrayList<>();
 
     logger.info("Checking Tick against position: {}", theta.toString());
 
-    if (theta.getTicker().equals(tick.getTicker())) {
-      if (theta.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
-        if (tick.getLastPrice() < theta.getStrikePrice()) {
+    if (priceLevel.getTicker().equals(tick.getTicker())) {
+      if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
+        if (tick.getLastPrice() < priceLevel.getStrikePrice()) {
           tradesToReverse.add(theta);
         } else {
           logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.FALLS_BELOW, tick,
               theta);
         }
-      } else if (theta.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
-        if (tick.getLastPrice() > theta.getStrikePrice()) {
+      } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
+        if (tick.getLastPrice() > priceLevel.getStrikePrice()) {
           tradesToReverse.add(theta);
         } else {
           logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.RISES_ABOVE, tick,
               theta);
         }
       } else {
-        logger.error("Invalid Price Level: {}", theta.tradeIf());
+        logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
       }
     }
 

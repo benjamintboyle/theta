@@ -14,11 +14,11 @@ import org.slf4j.LoggerFactory;
 import com.ib.client.TickType;
 import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
-import brokers.interactive_brokers.tick.domain.IbPriceLevel;
 import theta.api.TickHandler;
+import theta.domain.DefaultPriceLevel;
 import theta.domain.Ticker;
-import theta.tick.api.PriceLevel;
-import theta.tick.api.PriceLevelDirection;
+import theta.domain.api.PriceLevel;
+import theta.domain.api.PriceLevelDirection;
 import theta.tick.api.TickConsumer;
 
 public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
@@ -317,11 +317,11 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
     List<PriceLevel> priceLevels = new ArrayList<>();
 
     for (Double price : fallsBelow) {
-      priceLevels.add(new IbPriceLevel(ticker, price, PriceLevelDirection.FALLS_BELOW));
+      priceLevels.add(DefaultPriceLevel.from(ticker, price, PriceLevelDirection.FALLS_BELOW));
     }
 
     for (Double price : risesAbove) {
-      priceLevels.add(new IbPriceLevel(ticker, price, PriceLevelDirection.RISES_ABOVE));
+      priceLevels.add(DefaultPriceLevel.from(ticker, price, PriceLevelDirection.RISES_ABOVE));
     }
 
     return priceLevels;

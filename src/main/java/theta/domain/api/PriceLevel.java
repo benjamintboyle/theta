@@ -1,8 +1,8 @@
-package theta.tick.api;
+package theta.domain.api;
 
 import theta.domain.Ticker;
 
-public interface PriceLevel {
+public interface PriceLevel extends Comparable<PriceLevel> {
   public Ticker getTicker();
 
   public Double getStrikePrice();

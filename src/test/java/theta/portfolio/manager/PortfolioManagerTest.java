@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +96,8 @@ public class PortfolioManagerTest {
       // sut.acceptPosition(security);
     }
 
-    Mockito.verify(mockTickManager, Mockito.timeout(5000).times(expected)).addMonitor(thetaListCaptor.capture());
+    // Mockito.verify(mockTickManager,
+    // Mockito.timeout(5000).times(expected)).addMonitor(thetaListCaptor.capture());
 
     return thetaListCaptor.getAllValues();
   }

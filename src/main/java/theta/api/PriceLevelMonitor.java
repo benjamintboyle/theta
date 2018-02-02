@@ -2,7 +2,7 @@ package theta.api;
 
 import java.util.List;
 import theta.domain.Ticker;
-import theta.tick.api.PriceLevel;
+import theta.domain.api.PriceLevel;
 import theta.tick.api.TickConsumer;
 
 public interface PriceLevelMonitor {

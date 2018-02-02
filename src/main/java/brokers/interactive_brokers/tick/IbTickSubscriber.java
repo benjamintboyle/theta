@@ -16,7 +16,7 @@ import brokers.interactive_brokers.util.IbStringUtil;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.Ticker;
-import theta.tick.api.PriceLevel;
+import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
 import theta.tick.domain.LastTick;
