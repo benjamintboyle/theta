@@ -2,6 +2,7 @@ package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -140,7 +141,9 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private void logHandlers() {
 
-    logger.info("Current Handlers: {}", ibTickHandlers.values().stream().sorted().collect(Collectors.toList()));
+    logger.info("Current Handlers: {}",
+        ibTickHandlers.values().stream().sorted(Comparator.comparing(IbLastTickHandler::getTicker)).collect(
+            Collectors.toList()));
 
   }
 
