@@ -44,6 +44,8 @@ public class IbTickSubscriber implements TickSubscriber {
       remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickConsumer);
     }
 
+    logHandlers();
+
     return remainingPriceLevels;
   }
 
@@ -63,6 +65,8 @@ public class IbTickSubscriber implements TickSubscriber {
     } else {
       logger.warn("IB Last Tick Handler does not exist for {}", priceLevel.getTicker());
     }
+
+    logHandlers();
 
     return remainingPriceLevels;
   }
@@ -105,14 +109,13 @@ public class IbTickSubscriber implements TickSubscriber {
     logger.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker.toString());
 
-    final IbLastTickHandler ibTickHandler = new IbLastTickHandler(ticker, tickConsumer);
+    final IbLastTickHandler ibTickHandler =
+        ibTickHandlers.getOrDefault(ticker, new IbLastTickHandler(ticker, tickConsumer));
     ibTickHandlers.put(ticker, ibTickHandler);
 
     logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
         IbStringUtil.toStringContract(contract));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
-
-    logger.info("Current Monitors: {}", ibTickHandlers.keySet().stream().sorted().collect(Collectors.toList()));
 
     return ibTickHandler;
   }
@@ -133,6 +136,12 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private Optional<TickHandler> getHandler(Ticker ticker) {
     return Optional.ofNullable(ibTickHandlers.get(ticker));
+  }
+
+  private void logHandlers() {
+
+    logger.info("Current Handlers: {}", ibTickHandlers.values().stream().sorted().collect(Collectors.toList()));
+
   }
 
 }

@@ -68,11 +68,9 @@ public class PortfolioManager implements PositionProvider {
           .subscribe(
 
               security -> {
-                logger.info("Position Logging Start. Triggered by: {}", security);
 
                 PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap());
 
-                logger.info("Position Logging Complete. Triggered by: {}", security);
               },
 
               exception -> {

@@ -61,9 +61,20 @@ public class PositionLogger {
   public static void logPositions(Map<UUID, Theta> thetaIdMap, Map<UUID, Set<UUID>> securityThetaLink,
       Map<UUID, Security> securityIdMap) {
 
+    logger.info("Position Logging Start");
+
     logThetaPositions(thetaIdMap.values());
 
+    logger.info("End Theta Logging");
+
     logUnmatchedPositions(securityThetaLink.keySet(), securityIdMap.values());
+
+    logger.info("End Unmatched Positions");
+
+    logAllSecurities(securityIdMap.values());
+
+    logger.info("Position Logging Complete");
+
   }
 
   public static void logThetaPositions(Collection<Theta> thetas) {
@@ -81,7 +92,19 @@ public class PositionLogger {
             .thenComparing(byPrice)
             .thenComparing(byCallIsGreaterThanPut))
         .collect(Collectors.toList())) {
-      logger.info("Current unprocessed security: {}", security);
+      logger.info("Unmatched security: {}", security);
     }
   }
+
+  private static void logAllSecurities(Collection<Security> allSecurities) {
+    for (final Security security : allSecurities.stream()
+        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
+            .thenComparing(byOptionExpiration)
+            .thenComparing(byPrice)
+            .thenComparing(byCallIsGreaterThanPut))
+        .collect(Collectors.toList())) {
+      logger.debug("List of all securities: {}", security);
+    }
+  }
+
 }
