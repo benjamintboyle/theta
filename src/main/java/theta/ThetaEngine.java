@@ -13,6 +13,7 @@ import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
+import theta.util.ThetaStartupUtil;
 
 public class ThetaEngine implements Callable<String> {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -40,7 +41,7 @@ public class ThetaEngine implements Callable<String> {
     logger.info("Starting ThetaEngine...");
 
     // Initialize API controller
-    final InetSocketAddress brokerGatewaySocketAddress = ThetaUtil.getGatewayAddress();
+    final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
     // new InetSocketAddress(InetAddress.getByName(BROKER_GATEWAY_ADDRESS), BROKER_GATEWAY_PORT);
 
     // Create Theta Engine

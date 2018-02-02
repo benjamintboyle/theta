@@ -1,10 +1,6 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,15 +17,12 @@ import theta.domain.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.Executor;
 import theta.execution.factory.ExecutableOrderFactory;
+import theta.util.ThetaMarketUtil;
 
 public class ExecutionManager implements Executor {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
-
-  private static final ZoneId MARKET_TIMEZONE = ZoneId.of("America/New_York");
-  private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
-  private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 00);
 
   private final Map<UUID, ExecutableOrder> activeOrders = new ConcurrentHashMap<>();
 
@@ -63,7 +56,7 @@ public class ExecutionManager implements Executor {
   private Completable executeOrder(ExecutableOrder order) {
 
     return Completable.create(emitter -> {
-      if (duringMarketHours()) {
+      if (ThetaMarketUtil.isDuringMarketHours()) {
         if (!activeOrderExists(order)) {
 
           logger.info("Executing order: {}", order);
@@ -123,14 +116,6 @@ public class ExecutionManager implements Executor {
     }
 
     return currentActiveOrder.isPresent();
-  }
-
-  private boolean duringMarketHours() {
-    ZonedDateTime marketTimeNow = ZonedDateTime.now(MARKET_TIMEZONE);
-
-    return DayOfWeek.from(marketTimeNow) != DayOfWeek.SATURDAY && DayOfWeek.from(marketTimeNow) != DayOfWeek.SUNDAY
-        && marketTimeNow.toLocalTime().isAfter(MARKET_OPEN_TIME)
-        && marketTimeNow.toLocalTime().isBefore(MARKET_CLOSE_TIME);
   }
 
   public void shutdown() {

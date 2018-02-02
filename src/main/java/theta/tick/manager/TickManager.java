@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import theta.ThetaUtil;
 import theta.api.TickSubscriber;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
@@ -28,6 +27,8 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
 import theta.tick.api.TickMonitor;
 import theta.tick.processor.TickProcessor;
+import theta.util.ThetaMarketUtil;
+import theta.util.ThetaStartupUtil;
 
 public class TickManager implements TickMonitor, TickConsumer {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -54,7 +55,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
     return Completable.create(emitter -> {
 
-      ThetaUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
+      ThetaStartupUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
 
       getStatus().changeState(ManagerState.RUNNING);
 
@@ -92,7 +93,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
     logger.info("Received Tick from Handler: {}", ticker);
 
-    if (!tickQueue.contains(ticker)) {
+    if (ThetaMarketUtil.isDuringMarketHours() && !tickQueue.contains(ticker)) {
       try {
 
         tickQueue.put(ticker);
@@ -135,10 +136,6 @@ public class TickManager implements TickMonitor, TickConsumer {
 
       final List<Theta> stocksToReverse =
           tradesToCheck.stream().map(thetaTickProcessor).flatMap(List::stream).collect(Collectors.toList());
-
-      for (final Theta theta : stocksToReverse) {
-        deleteMonitor(theta);
-      }
 
       for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
 
