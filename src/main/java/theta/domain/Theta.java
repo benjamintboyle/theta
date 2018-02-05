@@ -60,7 +60,7 @@ public class Theta implements Security {
    */
   @Override
   public long getQuantity() {
-    return getStraddle().getQuantity();
+    return Long.signum(getStock().getQuantity()) * Math.abs(getStraddle().getQuantity());
   }
 
   @Override

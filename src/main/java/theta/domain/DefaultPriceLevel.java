@@ -31,7 +31,7 @@ public class DefaultPriceLevel implements PriceLevel {
   }
 
   @Override
-  public Double getStrikePrice() {
+  public Double getPrice() {
     return price;
   }
 
@@ -47,8 +47,8 @@ public class DefaultPriceLevel implements PriceLevel {
 
     if (!getTicker().equals(other.getTicker())) {
       compareValue = getTicker().compareTo(other.getTicker());
-    } else if (!getStrikePrice().equals(other.getStrikePrice())) {
-      compareValue = getStrikePrice().compareTo(other.getStrikePrice());
+    } else if (!getPrice().equals(other.getPrice())) {
+      compareValue = getPrice().compareTo(other.getPrice());
     } else {
       compareValue = tradeIf().toString().compareTo(other.tradeIf().toString());
     }
@@ -59,7 +59,7 @@ public class DefaultPriceLevel implements PriceLevel {
   @Override
   public int hashCode() {
 
-    return Objects.hash(getTicker(), getStrikePrice(), tradeIf());
+    return Objects.hash(getTicker(), getPrice(), tradeIf());
   }
 
   @Override
@@ -74,12 +74,28 @@ public class DefaultPriceLevel implements PriceLevel {
 
       final PriceLevel other = (PriceLevel) obj;
 
-      return Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getStrikePrice(), other.getStrikePrice())
+      return Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getPrice(), other.getPrice())
           && Objects.equals(tradeIf(), other.tradeIf());
 
     }
 
     return false;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Ticker: ");
+    builder.append(getTicker());
+
+    builder.append(", Price: ");
+    builder.append(getPrice());
+
+    builder.append(", Price Direction: ");
+    builder.append(tradeIf());
+
+    return builder.toString();
   }
 
   private static PriceLevelDirection calculateTradeIf(Theta theta) {

@@ -36,14 +36,14 @@ public class TickProcessor implements Function<Theta, List<Theta>> {
 
     if (priceLevel.getTicker().equals(tick.getTicker())) {
       if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
-        if (tick.getLastPrice() < priceLevel.getStrikePrice()) {
+        if (tick.getLastPrice() < priceLevel.getPrice()) {
           tradesToReverse.add(theta);
         } else {
           logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.FALLS_BELOW, tick,
               theta);
         }
       } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
-        if (tick.getLastPrice() > priceLevel.getStrikePrice()) {
+        if (tick.getLastPrice() > priceLevel.getPrice()) {
           tradesToReverse.add(theta);
         } else {
           logger.error("Unexecuted - PriceLevel: {}, Tick: {}, Theta: {}", PriceLevelDirection.RISES_ABOVE, tick,

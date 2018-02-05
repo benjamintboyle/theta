@@ -257,15 +257,15 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
 
     if (priceLevel.getTicker().equals(ticker)) {
 
-      logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getStrikePrice(),
+      logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
           this);
 
       switch (priceLevel.tradeIf()) {
         case FALLS_BELOW:
-          fallsBelow.add(priceLevel.getStrikePrice());
+          fallsBelow.add(priceLevel.getPrice());
           break;
         case RISES_ABOVE:
-          risesAbove.add(priceLevel.getStrikePrice());
+          risesAbove.add(priceLevel.getPrice());
           break;
         default:
           logger.error("Unknown Price Direction: {} for Price Level: {}", priceLevel.tradeIf(), priceLevel);
@@ -285,19 +285,19 @@ public class IbLastTickHandler implements ITopMktDataHandler, TickHandler {
     if (priceLevel.getTicker().equals(ticker)) {
 
       logger.info("Removing Price Level {} ${} from Tick Handler: {}", priceLevel.tradeIf(),
-          priceLevel.getStrikePrice(), this);
+          priceLevel.getPrice(), this);
 
       switch (priceLevel.tradeIf()) {
         case FALLS_BELOW:
-          if (!fallsBelow.remove(priceLevel.getStrikePrice())) {
+          if (!fallsBelow.remove(priceLevel.getPrice())) {
             logger.warn("No Price Level to remove for {} ${} from Monitor: {}", priceLevel.tradeIf(),
-                priceLevel.getStrikePrice(), priceLevel.getTicker());
+                priceLevel.getPrice(), priceLevel.getTicker());
           }
           break;
         case RISES_ABOVE:
-          if (!risesAbove.remove(priceLevel.getStrikePrice())) {
+          if (!risesAbove.remove(priceLevel.getPrice())) {
             logger.warn("No Price Level to remove for {} ${} from Monitor: {}", priceLevel.tradeIf(),
-                priceLevel.getStrikePrice(), priceLevel.getTicker());
+                priceLevel.getPrice(), priceLevel.getTicker());
           }
           break;
         default:
