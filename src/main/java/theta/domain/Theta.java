@@ -126,8 +126,13 @@ public class Theta implements Security {
 
     builder.append("Ticker: ");
     builder.append(getTicker());
+
     builder.append(", Quantity: ");
     builder.append(getQuantity());
+
+    builder.append(", Price: ");
+    builder.append(getPrice());
+
     builder.append(", Id: ");
     builder.append(getId());
 
