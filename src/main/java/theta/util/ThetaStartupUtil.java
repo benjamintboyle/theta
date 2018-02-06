@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.tick.processor.LastTickProcessor;
+import theta.tick.processor.BidAskSpreadTickProcessor;
 import theta.tick.processor.TickProcessor;
 
 public class ThetaStartupUtil {
@@ -22,7 +22,8 @@ public class ThetaStartupUtil {
 
 
   // Tick Manager Configuration
-  private static final TickProcessor TICK_PROCESSOR = new LastTickProcessor();
+  private static final TickProcessor TICK_PROCESSOR = new BidAskSpreadTickProcessor();
+  // private static final TickProcessor TICK_PROCESSOR = new LastTickProcessor();
 
 
   // Thread Configuration
