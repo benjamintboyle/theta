@@ -1,14 +1,12 @@
 package theta.tick.domain;
 
-import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import theta.domain.Ticker;
 import theta.tick.api.Tick;
 
 public class DefaultTick implements Tick {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  // private static final Logger logger =
+  // LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Ticker ticker;
   private final TickType type;
@@ -26,7 +24,7 @@ public class DefaultTick implements Tick {
     this.askPrice = askPrice;
     this.timestamp = timestamp;
 
-    logger.debug("Built: {}", toString());
+    // logger.debug("Built: {}", toString());
   }
 
   @Override
