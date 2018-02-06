@@ -1,10 +1,13 @@
 package theta.tick.processor;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
 import theta.execution.domain.ExecutionType;
@@ -15,7 +18,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private Optional<Double> limitPrice = Optional.empty();
+  private Map<Ticker, Double> limitPriceByTicker = new HashMap<>();
 
   private final Set<TickType> applicableTickTypes = Set.of(TickType.ASK, TickType.BID);
 
@@ -38,16 +41,29 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
       double bidAskSpread = tick.getAskPrice() - tick.getBidPrice();
 
-      logger.debug("Checking Tick {} against Price Level: {}", tick, priceLevel);
+      double limitPrice = priceLevel.getPrice();
+
+      logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
 
       if (priceLevel.getTicker().equals(tick.getTicker())) {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
           if (tick.getBidPrice() + (bidAskSpread * DEVIATION) < priceLevel.getPrice()) {
             shouldReverse = true;
+
+            // TODO: Probably just want MARKET order at this point
+            if (tick.getAskPrice() < priceLevel.getPrice()) {
+              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: ", priceLevel, tick);
+              limitPrice = tick.getAskPrice();
+            }
           }
         } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
           if (tick.getAskPrice() - (bidAskSpread * DEVIATION) > priceLevel.getPrice()) {
             shouldReverse = true;
+
+            if (tick.getBidPrice() > priceLevel.getPrice()) {
+              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: ", priceLevel, tick);
+              limitPrice = tick.getBidPrice();
+            }
           }
         } else {
           logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
@@ -55,11 +71,11 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
       }
 
 
-      if (!limitPrice.isPresent()) {
-        limitPrice = Optional.of(priceLevel.getPrice());
-      } else if (Double.compare(limitPrice.get(), priceLevel.getPrice()) != 0) {
-        logger.error("Processing ticks found different strike prices {} and {}", priceLevel.getPrice(),
-            limitPrice.get());
+      // FIXME: This is a really terrible implementation.
+      Double previousLimit = limitPriceByTicker.put(priceLevel.getTicker(), limitPrice);
+
+      if (previousLimit != null && Double.compare(previousLimit, priceLevel.getPrice()) != 0) {
+        logger.error("Processing ticks found different Price Levels: {} and {}", priceLevel, previousLimit);
       }
     }
 
@@ -71,9 +87,10 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
     return EXECUTION_TYPE;
   }
 
+  // FIXME: This is a really terrible implementation.
   @Override
-  public Optional<Double> getLimitPrice() {
-    return limitPrice;
+  public Optional<Double> getLimitPrice(Ticker ticker) {
+    return Optional.of(limitPriceByTicker.get(ticker));
   }
 
 }

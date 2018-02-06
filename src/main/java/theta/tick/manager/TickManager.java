@@ -136,14 +136,17 @@ public class TickManager implements TickMonitor, TickConsumer {
 
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
-      final List<Theta> stocksToReverse =
+      final List<Theta> thetasToReverse =
           tradesToCheck.stream().filter(theta -> tickProcessor.process(tick, DefaultPriceLevel.of(theta))).collect(
               Collectors.toList());
 
-      for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
+      // FIXME: This doesn't correctly calculate limit price
 
-        Disposable disposableTrade =
-            executor.reverseTrade(stock, tickProcessor.getExecutionType(), tickProcessor.getLimitPrice()).subscribe(
+      for (final Stock stock : StockUtil.consolidateStock(thetasToReverse)) {
+
+        Disposable disposableTrade = executor
+            .reverseTrade(stock, tickProcessor.getExecutionType(), tickProcessor.getLimitPrice(stock.getTicker()))
+            .subscribe(
 
                 () -> {
                   logger.info("Trade complete for {}", stock);
@@ -153,7 +156,7 @@ public class TickManager implements TickMonitor, TickConsumer {
                   logger.error("Error with Trade of {}", stock);
                 }
 
-            );
+        );
 
         tickManagerDisposable.add(disposableTrade);
       }

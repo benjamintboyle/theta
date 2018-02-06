@@ -1,6 +1,7 @@
 package theta.tick.processor;
 
 import java.util.Optional;
+import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.execution.domain.ExecutionType;
 import theta.tick.api.Tick;
@@ -14,6 +15,6 @@ public interface TickProcessor {
 
   public ExecutionType getExecutionType();
 
-  public Optional<Double> getLimitPrice();
+  public Optional<Double> getLimitPrice(Ticker ticker);
 
 }

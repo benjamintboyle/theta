@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
 import theta.execution.domain.ExecutionType;
@@ -30,7 +31,7 @@ public class LastTickProcessor implements TickProcessor {
 
     if (isApplicable(tick.getTickType())) {
 
-      logger.debug("Checking Tick {} against Price Level: {}", tick, priceLevel);
+      logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
 
       if (priceLevel.getTicker().equals(tick.getTicker())) {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
@@ -56,7 +57,7 @@ public class LastTickProcessor implements TickProcessor {
   }
 
   @Override
-  public Optional<Double> getLimitPrice() {
+  public Optional<Double> getLimitPrice(Ticker ticker) {
     return Optional.empty();
   }
 
