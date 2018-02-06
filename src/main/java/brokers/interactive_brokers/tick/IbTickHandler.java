@@ -31,23 +31,23 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private final Ticker ticker;
   private final TickProcessor tickProcessor;
 
-  private Double bidPrice = Double.MIN_VALUE;
-  private Double askPrice = Double.MIN_VALUE;
-  private Double lastPrice = Double.MIN_VALUE;
-  private Double openPrice = Double.MIN_VALUE;
-  private Double lowPrice = Double.MIN_VALUE;
-  private Double highPrice = Double.MIN_VALUE;
-  private Double haltedPrice = Double.MIN_VALUE;
+  private Double bidPrice = -1.0;
+  private Double askPrice = -1.0;
+  private Double lastPrice = -1.0;
+  private Double openPrice = -1.0;
+  private Double lowPrice = -1.0;
+  private Double highPrice = -1.0;
+  private Double haltedPrice = -1.0;
 
   private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
   private String bidExchange = "";
   private String askExchange = "";
 
-  private Integer bidSize = Integer.MIN_VALUE;
-  private Integer askSize = Integer.MIN_VALUE;
-  private Double closePrice = Double.MIN_VALUE;
-  private Integer volume = Integer.MIN_VALUE;
-  private int lastSize = Integer.MIN_VALUE;
+  private Integer bidSize = -1;
+  private Integer askSize = -1;
+  private Double closePrice = -1.0;
+  private Integer volume = -1;
+  private int lastSize = -1;
 
   private Boolean isSnapshot;
 

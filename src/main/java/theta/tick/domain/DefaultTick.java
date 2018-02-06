@@ -66,8 +66,12 @@ public class DefaultTick implements Tick {
     builder.append("Tick [");
     builder.append("Ticker: ");
     builder.append(getTicker());
-    builder.append(", Price: ");
+    builder.append(", Last Price: ");
     builder.append(getLastPrice());
+    builder.append(", Bid Price: ");
+    builder.append(getBidPrice());
+    builder.append(", Ask Price: ");
+    builder.append(getAskPrice());
     builder.append(", Time: ");
     builder.append(getTimestamp());
     builder.append(", Type: ");

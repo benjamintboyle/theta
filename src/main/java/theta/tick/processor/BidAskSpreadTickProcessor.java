@@ -37,7 +37,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
     boolean shouldReverse = false;
 
-    if (isApplicable(tick.getTickType())) {
+    if (isApplicable(tick.getTickType()) && tick.getAskPrice() > 0 && tick.getBidPrice() > 0) {
 
       double bidAskSpread = tick.getAskPrice() - tick.getBidPrice();
 
