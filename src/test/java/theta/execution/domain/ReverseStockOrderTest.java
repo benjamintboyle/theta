@@ -1,5 +1,6 @@
 package theta.execution.domain;
 
+import java.util.Optional;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -19,9 +20,11 @@ public class ReverseStockOrderTest {
   private final Stock wrongQuantityStock = Stock.of(Ticker.from("CHK"), 101L, 10.0);
   private final Stock shortStock = Stock.of(Ticker.from("CHK"), -100L, 10.0);
 
-  private final ExecutableOrder sutLong = ReverseStockOrder.reverse(longStock);
-  private final ExecutableOrder sutQuantity = ReverseStockOrder.reverse(wrongQuantityStock);
-  private final ExecutableOrder sutShort = ReverseStockOrder.reverse(shortStock);
+  private final ExecutableOrder sutLong = ReverseStockOrder.reverse(longStock, ExecutionType.MARKET, Optional.empty());
+  private final ExecutableOrder sutQuantity =
+      ReverseStockOrder.reverse(wrongQuantityStock, ExecutionType.MARKET, Optional.empty());
+  private final ExecutableOrder sutShort =
+      ReverseStockOrder.reverse(shortStock, ExecutionType.MARKET, Optional.empty());
 
   @Test
   public void validateLongToLongFailureTest() {

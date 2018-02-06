@@ -7,19 +7,20 @@ import org.slf4j.LoggerFactory;
 import theta.domain.Ticker;
 import theta.tick.api.Tick;
 
-public class LastTick implements Tick {
+public class DefaultTick implements Tick {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Ticker ticker;
-  private final TickType type = TickType.LAST;
+  private final TickType type;
   private final Double lastPrice;
   private final Double bidPrice;
   private final Double askPrice;
   private final ZonedDateTime timestamp;
 
-  public LastTick(final Ticker ticker, final Double lastPrice, final Double bidPrice, final Double askPrice,
-      final ZonedDateTime timestamp) {
+  public DefaultTick(final Ticker ticker, final TickType type, final Double lastPrice, final Double bidPrice,
+      final Double askPrice, final ZonedDateTime timestamp) {
     this.ticker = ticker;
+    this.type = type;
     this.lastPrice = lastPrice;
     this.bidPrice = bidPrice;
     this.askPrice = askPrice;
@@ -28,47 +29,32 @@ public class LastTick implements Tick {
     logger.debug("Built: {}", toString());
   }
 
-  public Double getPrice() {
-
-    Double price;
-
-    switch (type) {
-      case LAST:
-        price = getLastPrice();
-        break;
-      case BID:
-        price = getBidPrice();
-        break;
-      case ASK:
-        price = getAskPrice();
-        break;
-      default:
-        throw new IllegalArgumentException("Expected Tick to be of type LAST, BID, or ASK, but was " + type);
-    }
-
-    return price;
-  }
-
+  @Override
   public Double getLastPrice() {
     return lastPrice;
   }
 
+  @Override
   public Double getBidPrice() {
     return bidPrice;
   }
 
+  @Override
   public Double getAskPrice() {
     return askPrice;
   }
 
+  @Override
   public Ticker getTicker() {
     return ticker;
   }
 
+  @Override
   public TickType getTickType() {
     return type;
   }
 
+  @Override
   public ZonedDateTime getTimestamp() {
     return timestamp;
   }

@@ -1,6 +1,7 @@
 package theta.execution.domain;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
@@ -14,7 +15,12 @@ public class ReverseStockOrder extends AbstractStockOrder {
     super(stock, quantity, action, executionType);
   }
 
-  public static ReverseStockOrder reverse(Stock stock) {
+  private ReverseStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
+      Double limitPrice) {
+    super(stock, quantity, action, executionType, limitPrice);
+  }
+
+  public static ReverseStockOrder reverse(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
 
     ExecutionAction action = ExecutionAction.BUY;
     if (stock.getQuantity() > 0) {
@@ -23,7 +29,15 @@ public class ReverseStockOrder extends AbstractStockOrder {
 
     long reversedQuantity = 2 * Math.abs(stock.getQuantity());
 
-    return new ReverseStockOrder(stock, reversedQuantity, action, ExecutionType.MARKET);
+    ReverseStockOrder executableOrder;
+
+    if (executionType == ExecutionType.LIMIT) {
+      executableOrder = new ReverseStockOrder(stock, reversedQuantity, action, executionType, limitPrice.get());
+    } else {
+      executableOrder = new ReverseStockOrder(stock, reversedQuantity, action, executionType);
+    }
+
+    return executableOrder;
   }
 
   @Override

@@ -35,6 +35,7 @@ public class IbOrderUtil {
         break;
       case LIMIT:
         ibOrder.orderType(OrderType.LMT);
+        ibOrder.lmtPrice(order.getLimitPrice().get());
         break;
       case STOP:
         ibOrder.orderType(OrderType.STP);

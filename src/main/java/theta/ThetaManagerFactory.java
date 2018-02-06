@@ -13,6 +13,7 @@ import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
+import theta.util.ThetaStartupUtil;
 
 public class ThetaManagerFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -43,7 +44,7 @@ public class ThetaManagerFactory {
 
     final TickSubscriber brokerTickSubscriber = IbHandlerFactory.buildTickSubscriber();
 
-    final TickManager tickManager = new TickManager(brokerTickSubscriber);
+    final TickManager tickManager = new TickManager(brokerTickSubscriber, ThetaStartupUtil.getTickProcessor());
 
     return tickManager;
   }

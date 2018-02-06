@@ -14,6 +14,7 @@ import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.api.TickSubscriber;
+import theta.domain.DefaultPriceLevel;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Stock;
@@ -34,6 +35,8 @@ public class TickManager implements TickMonitor, TickConsumer {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
+  private final TickProcessor tickProcessor;
+
   private PositionProvider positionProvider;
   private Executor executor;
 
@@ -44,9 +47,10 @@ public class TickManager implements TickMonitor, TickConsumer {
 
   private final CompositeDisposable tickManagerDisposable = new CompositeDisposable();
 
-  public TickManager(TickSubscriber tickSubscriber) {
+  public TickManager(TickSubscriber tickSubscriber, TickProcessor tickProcessor) {
     getStatus().changeState(ManagerState.STARTING);
     this.tickSubscriber = Objects.requireNonNull(tickSubscriber);
+    this.tickProcessor = Objects.requireNonNull(tickProcessor);
   }
 
   public Completable startTickProcessing() {
@@ -72,7 +76,7 @@ public class TickManager implements TickMonitor, TickConsumer {
           emitter.onError(exception);
         }
 
-        final Optional<Tick> tick = tickSubscriber.getLastTick(ticker);
+        final Optional<Tick> tick = tickSubscriber.getLastestTick(ticker);
 
         if (tick.isPresent()) {
 
@@ -109,7 +113,7 @@ public class TickManager implements TickMonitor, TickConsumer {
   @Override
   public void addMonitor(PriceLevel priceLevel) {
 
-    tickSubscriber.addPriceLevelMonitor(priceLevel, this);
+    tickSubscriber.addPriceLevelMonitor(priceLevel, this, tickProcessor);
   }
 
   @Override
@@ -132,24 +136,24 @@ public class TickManager implements TickMonitor, TickConsumer {
 
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
-      final TickProcessor thetaTickProcessor = new TickProcessor(tick);
-
       final List<Theta> stocksToReverse =
-          tradesToCheck.stream().map(thetaTickProcessor).flatMap(List::stream).collect(Collectors.toList());
+          tradesToCheck.stream().filter(theta -> tickProcessor.process(tick, DefaultPriceLevel.of(theta))).collect(
+              Collectors.toList());
 
       for (final Stock stock : StockUtil.consolidateStock(stocksToReverse)) {
 
-        Disposable disposableTrade = executor.reverseTrade(stock).subscribe(
+        Disposable disposableTrade =
+            executor.reverseTrade(stock, tickProcessor.getExecutionType(), tickProcessor.getLimitPrice()).subscribe(
 
-            () -> {
-              logger.info("Trade complete for {}", stock);
-            },
+                () -> {
+                  logger.info("Trade complete for {}", stock);
+                },
 
-            exception -> {
-              logger.error("Error with Trade of {}", stock);
-            }
+                exception -> {
+                  logger.error("Error with Trade of {}", stock);
+                }
 
-        );
+            );
 
         tickManagerDisposable.add(disposableTrade);
       }

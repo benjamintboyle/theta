@@ -30,24 +30,24 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<String> executeStockMarketOrder(ExecutableOrder order) {
+  public Flowable<String> executeStockOrder(ExecutableOrder order) {
     return Flowable.create(emitter -> {
 
       orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
-      executeOrder(order, orderHandlerMapper.get(order));
+      executeStockOrder(order, orderHandlerMapper.get(order));
 
     }, BackpressureStrategy.BUFFER);
   }
 
   @Override
-  public Flowable<String> cancelStockMarketOrder(ExecutableOrder order) {
+  public Flowable<String> cancelStockOrder(ExecutableOrder order) {
 
     ibController.getController().cancelOrder(order.getBrokerId().get());
 
     return Flowable.empty();
   }
 
-  private void executeOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
+  private void executeStockOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
 
     logger.info("Executing order: {}", order);
 

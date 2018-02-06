@@ -23,7 +23,8 @@ import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Tick;
-import theta.tick.domain.LastTick;
+import theta.tick.domain.DefaultTick;
+import theta.tick.domain.TickType;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class TickManagerTest {
@@ -73,7 +74,7 @@ public class TickManagerTest {
       final double min = theta.getPrice() - TickManagerTest.aroundPricePlusMinus;
       final double max = theta.getPrice() + TickManagerTest.aroundPricePlusMinus;
       final double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-      priceTicks.add(new LastTick(theta.getTicker(), Precision.round(randomAroundPrice, 2),
+      priceTicks.add(new DefaultTick(theta.getTicker(), TickType.LAST, Precision.round(randomAroundPrice, 2),
           Precision.round(randomAroundPrice, 2), Precision.round(randomAroundPrice, 2), ZonedDateTime.now()));
     }
 
@@ -86,7 +87,7 @@ public class TickManagerTest {
     final Theta trade = ThetaTradeTest.buildTestThetaTrade();
     TickManagerTest.logger.debug("Trade to Monitor: {}", trade);
 
-    Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
+    // Mockito.when(handler.getTicker()).thenReturn(trade.getTicker());
     // FIXME
     // Mockito.when(tickSubscriber.addPriceLevelMonitor(trade,
     // ArgumentMatchers.any(TickConsumer.class))).thenReturn(1);

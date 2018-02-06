@@ -6,8 +6,6 @@ import theta.tick.domain.TickType;
 
 public interface Tick {
 
-  public Double getPrice();
-
   public Double getLastPrice();
 
   public Double getBidPrice();

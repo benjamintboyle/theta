@@ -1,11 +1,10 @@
 package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -19,13 +18,13 @@ import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
-import theta.tick.domain.LastTick;
+import theta.tick.processor.TickProcessor;
 
 public class IbTickSubscriber implements TickSubscriber {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
-  private final Map<Ticker, IbLastTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
+  private final Map<Ticker, IbTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -33,16 +32,16 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickConsumer tickConsumer) {
+  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickConsumer tickConsumer, TickProcessor tickProcessor) {
     Integer remainingPriceLevels = 0;
 
     Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
 
     if (ibLastTickHandler.isPresent()) {
-      ibLastTickHandler.get().addPriceLevelMonitor(priceLevel, tickConsumer);
+      ibLastTickHandler.get().addPriceLevelMonitor(priceLevel);
     } else {
-      subscribeTick(priceLevel.getTicker(), tickConsumer);
-      remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickConsumer);
+      subscribeTick(priceLevel.getTicker(), tickConsumer, tickProcessor);
+      remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickConsumer, tickProcessor);
     }
 
     logHandlers();
@@ -73,14 +72,11 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public List<PriceLevel> getPriceLevelsMonitored(Ticker ticker) {
+  public Set<PriceLevel> getPriceLevelsMonitored(Ticker ticker) {
 
-    List<PriceLevel> priceLevels = new ArrayList<>();
-    Optional<TickHandler> optionalTickHandler = getHandler(ticker);
+    Set<PriceLevel> priceLevels = getHandler(ticker).map(TickHandler::getPriceLevelsMonitored).orElse(Set.of());
 
-    if (optionalTickHandler.isPresent()) {
-      priceLevels = optionalTickHandler.get().getPriceLevelsMonitored(ticker);
-    } else {
+    if (priceLevels.size() == 0) {
       logger.warn("No Tick Handler or Price Levels for {}", ticker);
     }
 
@@ -88,30 +84,24 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public Optional<Tick> getLastTick(Ticker ticker) {
+  public Optional<Tick> getLastestTick(Ticker ticker) {
 
-    Optional<Tick> tick = Optional.empty();
+    Optional<Tick> tick = getHandler(ticker).map(TickHandler::getLatestTick);
 
-    Optional<TickHandler> optionalTickHandler = getHandler(ticker);
-
-    if (optionalTickHandler.isPresent()) {
-      final TickHandler tickHandler = optionalTickHandler.get();
-      tick = Optional.of(new LastTick(ticker, tickHandler.getLast(), tickHandler.getBid(), tickHandler.getAsk(),
-          tickHandler.getLastTime()));
-    } else {
+    if (!tick.isPresent()) {
       logger.warn("No Tick Handler for {}", ticker);
     }
 
     return tick;
   }
 
-  private TickHandler subscribeTick(Ticker ticker, TickConsumer tickConsumer) {
+  private TickHandler subscribeTick(Ticker ticker, TickConsumer tickConsumer, TickProcessor tickProcessor) {
 
     logger.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker.toString());
 
-    final IbLastTickHandler ibTickHandler =
-        ibTickHandlers.getOrDefault(ticker, new IbLastTickHandler(ticker, tickConsumer));
+    final IbTickHandler ibTickHandler =
+        ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor, tickConsumer));
     ibTickHandlers.put(ticker, ibTickHandler);
 
     logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
@@ -123,7 +113,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private void unsubscribeTick(Ticker ticker) {
 
-    IbLastTickHandler ibLastTickHandler = ibTickHandlers.remove(ticker);
+    IbTickHandler ibLastTickHandler = ibTickHandlers.remove(ticker);
 
     if (ibLastTickHandler != null) {
 
@@ -142,7 +132,7 @@ public class IbTickSubscriber implements TickSubscriber {
   private void logHandlers() {
 
     logger.info("Current Handlers: {}",
-        ibTickHandlers.values().stream().sorted(Comparator.comparing(IbLastTickHandler::getTicker)).collect(
+        ibTickHandlers.values().stream().sorted(Comparator.comparing(IbTickHandler::getTicker)).collect(
             Collectors.toList()));
 
   }

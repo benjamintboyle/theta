@@ -19,6 +19,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   private final long quantity;
   private final ExecutionAction action;
   private final ExecutionType executionType;
+  private Optional<Double> limitPrice = Optional.empty();
   private Optional<Integer> brokerId = Optional.empty();
 
   public AbstractStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
@@ -27,6 +28,15 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
     this.quantity = quantity;
     this.action = action;
     this.executionType = executionType;
+
+    logger.debug("Built: {}", toString());
+  }
+
+  public AbstractStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
+      Double limitPrice) {
+    this(stock, quantity, action, executionType);
+
+    this.limitPrice = Optional.of(limitPrice);
 
     logger.debug("Built: {}", toString());
   }
@@ -69,6 +79,11 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   @Override
   public ExecutionType getExecutionType() {
     return executionType;
+  }
+
+  @Override
+  public Optional<Double> getLimitPrice() {
+    return limitPrice;
   }
 
   @Override

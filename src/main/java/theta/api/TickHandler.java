@@ -1,27 +1,17 @@
 package theta.api;
 
-import java.time.ZonedDateTime;
-import theta.domain.Ticker;
+import java.util.Set;
+import theta.domain.api.PriceLevel;
+import theta.tick.api.Tick;
 
-public interface TickHandler extends PriceLevelMonitor {
+public interface TickHandler {
 
-  public Ticker getTicker();
+  public Tick getLatestTick();
 
-  public Double getBid();
+  public Integer addPriceLevelMonitor(PriceLevel priceLevel);
 
-  public Double getAsk();
+  public Integer removePriceLevelMonitor(PriceLevel priceLevel);
 
-  public Double getLast();
+  public Set<PriceLevel> getPriceLevelsMonitored();
 
-  public ZonedDateTime getLastTime();
-
-  public Integer getBidSize();
-
-  public Integer getAskSize();
-
-  public Double getClose();
-
-  public Integer getVolume();
-
-  public Boolean isSnapshot();
 }

@@ -16,6 +16,7 @@ import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.Executor;
+import theta.execution.domain.ExecutionType;
 import theta.execution.factory.ExecutableOrderFactory;
 import theta.util.ThetaMarketUtil;
 
@@ -37,11 +38,12 @@ public class ExecutionManager implements Executor {
   }
 
   @Override
-  public Completable reverseTrade(Stock stock) {
+  public Completable reverseTrade(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
 
     logger.info("Reversing Trade: {}", stock.toString());
 
-    final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock);
+    final Optional<ExecutableOrder> validatedOrder =
+        ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
 
     Completable reverseTradeCompletable =
         Completable.error(new IllegalArgumentException("Invalid order built for " + stock));
@@ -61,7 +63,7 @@ public class ExecutionManager implements Executor {
 
           logger.info("Executing order: {}", order);
 
-          final Disposable disposableExecutionHandler = executionHandler.executeStockMarketOrder(order).subscribe(
+          final Disposable disposableExecutionHandler = executionHandler.executeStockOrder(order).subscribe(
 
               message -> {
                 logger.info(message);
@@ -70,7 +72,7 @@ public class ExecutionManager implements Executor {
               // TODO: Should probably correct cancel request
               error -> {
                 logger.error("Order Handler encountered an error", error);
-                Disposable disposableCancelOrder = executionHandler.cancelStockMarketOrder(order).subscribe();
+                Disposable disposableCancelOrder = executionHandler.cancelStockOrder(order).subscribe();
                 compositeDisposable.add(disposableCancelOrder);
 
                 logger.warn("Removing order from active orders: {}", order);
