@@ -52,7 +52,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
             // TODO: Probably just want MARKET order at this point
             if (tick.getAskPrice() < priceLevel.getPrice()) {
-              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: ", priceLevel, tick);
+              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}", priceLevel, tick);
               limitPrice = tick.getAskPrice();
             }
           }
@@ -61,7 +61,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
             shouldReverse = true;
 
             if (tick.getBidPrice() > priceLevel.getPrice()) {
-              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: ", priceLevel, tick);
+              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}", priceLevel, tick);
               limitPrice = tick.getBidPrice();
             }
           }

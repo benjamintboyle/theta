@@ -103,6 +103,12 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
     builder.append(getSecurityType());
     builder.append(", Execution Type: ");
     builder.append(getExecutionType());
+
+    if (getExecutionType() == ExecutionType.LIMIT && getLimitPrice().isPresent()) {
+      builder.append(", Limit Price: ");
+      builder.append(getLimitPrice().get());
+    }
+
     builder.append(", Id: ");
     builder.append(getId());
     builder.append(", Broker Id: ");
