@@ -36,14 +36,10 @@ public class LastTickProcessor implements TickProcessor {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
           if (tick.getLastPrice() < priceLevel.getPrice()) {
             shouldReverse = true;
-          } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}", priceLevel, tick);
           }
         } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
           if (tick.getLastPrice() > priceLevel.getPrice()) {
             shouldReverse = true;
-          } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}", priceLevel, tick);
           }
         } else {
           logger.error("Invalid Price Level: {}", priceLevel.tradeIf());

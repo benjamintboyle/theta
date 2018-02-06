@@ -44,14 +44,10 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
           if (tick.getBidPrice() + (bidAskSpread * DEVIATION) < priceLevel.getPrice()) {
             shouldReverse = true;
-          } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}", priceLevel, tick);
           }
         } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
           if (tick.getAskPrice() - (bidAskSpread * DEVIATION) > priceLevel.getPrice()) {
             shouldReverse = true;
-          } else {
-            logger.error("Unexecuted - PriceLevel: {}, Tick: {}", priceLevel, tick);
           }
         } else {
           logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
