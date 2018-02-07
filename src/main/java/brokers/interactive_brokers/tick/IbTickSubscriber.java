@@ -18,7 +18,7 @@ import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
-import theta.tick.processor.TickProcessor;
+import theta.tick.api.TickProcessor;
 
 public class IbTickSubscriber implements TickSubscriber {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

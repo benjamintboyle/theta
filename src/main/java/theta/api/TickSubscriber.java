@@ -6,7 +6,7 @@ import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
-import theta.tick.processor.TickProcessor;
+import theta.tick.api.TickProcessor;
 
 public interface TickSubscriber {
 

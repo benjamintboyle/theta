@@ -27,7 +27,7 @@ import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
 import theta.tick.api.TickMonitor;
-import theta.tick.processor.TickProcessor;
+import theta.tick.api.TickProcessor;
 import theta.util.ThetaMarketUtil;
 import theta.util.ThetaStartupUtil;
 

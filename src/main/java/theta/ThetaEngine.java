@@ -16,15 +16,8 @@ import theta.tick.manager.TickManager;
 import theta.util.ThetaStartupUtil;
 
 public class ThetaEngine implements Callable<String> {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  // Docker first container: 172.17.0.2, Host IP: 127.0.0.1, AWS: ib-gateway
-  // private static final String BROKER_GATEWAY_ADDRESS = "172.17.0.2";
-  // private static final String BROKER_GATEWAY_ADDRESS =
-  // InetAddress.getLoopbackAddress().getHostAddress();
-  // TWS Paper Trading port = 7497; Operational = 7496; Gateway Operational: 4001, Paper: 4002
-  // private static final int BROKER_GATEWAY_PORT = 4002;
-  // private static final int BROKER_GATEWAY_PORT = 7497;
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Theta managers
   private final ConnectionManager connectionManager;

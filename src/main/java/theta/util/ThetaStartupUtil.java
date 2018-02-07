@@ -6,8 +6,8 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.tick.api.TickProcessor;
 import theta.tick.processor.BidAskSpreadTickProcessor;
-import theta.tick.processor.TickProcessor;
 
 public class ThetaStartupUtil {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

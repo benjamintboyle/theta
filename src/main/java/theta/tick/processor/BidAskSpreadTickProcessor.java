@@ -12,6 +12,7 @@ import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
 import theta.execution.domain.ExecutionType;
 import theta.tick.api.Tick;
+import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
 public class BidAskSpreadTickProcessor implements TickProcessor {

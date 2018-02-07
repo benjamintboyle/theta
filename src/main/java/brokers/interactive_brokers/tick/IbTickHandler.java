@@ -20,8 +20,8 @@ import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
 import theta.tick.api.Tick;
 import theta.tick.api.TickConsumer;
+import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
-import theta.tick.processor.TickProcessor;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
