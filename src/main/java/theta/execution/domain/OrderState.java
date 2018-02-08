@@ -1,5 +1,5 @@
 package theta.execution.domain;
 
 public enum OrderState {
-  BROKERAGE, EXCHANGE, CANCELLED, FILLED
+  PENDING, SUBMITTED, CANCELLED, FILLED
 }

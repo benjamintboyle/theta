@@ -65,12 +65,7 @@ public class IbOrderHandler implements IOrderHandler {
     // this.clientId = clientId;
     // this.whyHeld = whyHeld;
 
-    sendNext();
-
-    if (currentOrderState.status() == OrderStatus.Filled && remaining == 0) {
-      logger.debug("Sending complete for order: {}", order);
-      emitter.onComplete();
-    }
+    processOrderStatus();
   }
 
   @Override
@@ -81,23 +76,44 @@ public class IbOrderHandler implements IOrderHandler {
     // order.getBrokerId().orElse(null)));
   }
 
-  private void sendNext() {
+  private void processOrderStatus() {
 
+    Optional<theta.execution.api.OrderStatus> optionalOrderStatus = buildOrderStatus();
+
+    if (optionalOrderStatus.isPresent()) {
+
+      theta.execution.api.OrderStatus orderStatus = optionalOrderStatus.get();
+
+      emitter.onNext(orderStatus);
+
+      if (orderStatus.getState() == theta.execution.domain.OrderState.FILLED
+          || orderStatus.getState() == theta.execution.domain.OrderState.CANCELLED) {
+        logger.debug("Sending complete for order: {}", orderStatus);
+        emitter.onComplete();
+      }
+    } else {
+      emitter.onError(new IllegalArgumentException("Unknown order status: " + currentOrderState.status()));
+    }
+  }
+
+  private Optional<theta.execution.api.OrderStatus> buildOrderStatus() {
+
+    Optional<theta.execution.api.OrderStatus> optionalOrderStatus = Optional.empty();
     Optional<theta.execution.domain.OrderState> optionalOrderState = Optional.empty();
 
     switch (currentOrderState.status()) {
       case ApiPending:
       case PreSubmitted:
       case PendingSubmit:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.BROKERAGE);
+      case PendingCancel:
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.PENDING);
         break;
       case ApiCancelled:
-      case PendingCancel:
       case Cancelled:
         optionalOrderState = Optional.of(theta.execution.domain.OrderState.CANCELLED);
         break;
       case Submitted:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.EXCHANGE);
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.SUBMITTED);
         break;
       case Filled:
         optionalOrderState = Optional.of(theta.execution.domain.OrderState.FILLED);
@@ -108,13 +124,11 @@ public class IbOrderHandler implements IOrderHandler {
 
     if (optionalOrderState.isPresent()) {
 
-      theta.execution.api.OrderStatus orderStatusToEngine = new DefaultOrderStatus(order, optionalOrderState.get(),
-          currentOrderState.commission(), Math.round(filled), Math.round(remaining), avgFillPrice);
-      emitter.onNext(orderStatusToEngine);
-
-    } else {
-      emitter.onError(new IllegalArgumentException("Unknown order status: " + currentOrderState.status()));
+      optionalOrderStatus = Optional.of(new DefaultOrderStatus(order, optionalOrderState.get(),
+          currentOrderState.commission(), Math.round(filled), Math.round(remaining), avgFillPrice));
     }
+
+    return optionalOrderStatus;
   }
 
 }

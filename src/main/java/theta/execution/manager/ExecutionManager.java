@@ -125,7 +125,7 @@ public class ExecutionManager implements Executor {
 
     // No active order
     if (!optionalActiveOrderStatus.isPresent()) {
-      updateActiveOrderStatus(order, OrderState.BROKERAGE, -1.0, 0, order.getQuantity(), -1.0);
+      updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
       newOrModifiedOrder = Optional.of(order);
     } else {
 
@@ -135,14 +135,14 @@ public class ExecutionManager implements Executor {
       // Active order with different quantities, will be modified
       if (activeOrder.getQuantity() != order.getQuantity()) {
         order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
-        updateActiveOrderStatus(order, OrderState.BROKERAGE, -1.0, 0, order.getQuantity(), -1.0);
+        updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
         newOrModifiedOrder = Optional.of(order);
       }
       // Active order with different Limit Prices, will be modified
       else if ((activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent())
           && activeOrder.getLimitPrice().get() != order.getLimitPrice().get()) {
         order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
-        updateActiveOrderStatus(order, OrderState.BROKERAGE, -1.0, 0, order.getQuantity(), -1.0);
+        updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
         newOrModifiedOrder = Optional.of(order);
       }
       // Active order and new order are the same
