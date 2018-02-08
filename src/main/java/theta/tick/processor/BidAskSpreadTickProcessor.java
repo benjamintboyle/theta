@@ -52,7 +52,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
             // TODO: Probably just want MARKET order at this point
             if (tick.getAskPrice() < priceLevel.getPrice()) {
               logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}", priceLevel, tick);
-              limitPrice = tick.getAskPrice();
+              limitPrice = tick.getBidPrice() + (bidAskSpread * DEVIATION);
             }
           }
         } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
@@ -61,7 +61,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
             if (tick.getBidPrice() > priceLevel.getPrice()) {
               logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}", priceLevel, tick);
-              limitPrice = tick.getBidPrice();
+              limitPrice = tick.getAskPrice() - (bidAskSpread * DEVIATION);
             }
           }
         } else {
@@ -73,8 +73,9 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
       // FIXME: This is a really terrible implementation.
       Double previousLimit = limitPriceByTicker.put(priceLevel.getTicker(), limitPrice);
 
-      if (previousLimit != null && Double.compare(previousLimit, priceLevel.getPrice()) != 0) {
-        logger.error("Processing ticks found different Price Levels: {} and {}", priceLevel, previousLimit);
+      if (previousLimit != null && Double.compare(previousLimit, limitPrice) != 0) {
+        logger.error("Processing ticks found different Price Levels: {} and {} for {}", previousLimit, limitPrice,
+            priceLevel);
       }
     }
 
