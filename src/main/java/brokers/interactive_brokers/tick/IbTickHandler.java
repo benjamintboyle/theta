@@ -6,6 +6,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -14,19 +16,23 @@ import com.ib.client.TickType;
 import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
 import brokers.interactive_brokers.util.IbTickUtil;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import theta.api.TickHandler;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
 import theta.tick.api.Tick;
-import theta.tick.api.TickConsumer;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final TickConsumer tickConsumer;
+  private final Subject<Tick> tickSubject = PublishSubject.create();
 
   private final Ticker ticker;
   private final TickProcessor tickProcessor;
@@ -55,13 +61,18 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
-  public IbTickHandler(Ticker ticker, TickProcessor tickProcessor, TickConsumer tickConsumer) {
+  public IbTickHandler(Ticker ticker, TickProcessor tickProcessor) {
+    this.ticker = Objects.requireNonNull(ticker, "Ticker cannot be null for Tick Processor initialization.");
+    this.tickProcessor =
+        Objects.requireNonNull(tickProcessor, "Ticker Processor cannot be null for Tick Processor initialization.");
 
-    this.ticker = ticker;
-    this.tickProcessor = tickProcessor;
-    this.tickConsumer = tickConsumer;
+    logger.info("Built Interactive Brokers Tick Handler for: {}", ticker);
+  }
 
-    logger.info("Built Interactive Brokers Tick Handler for: {}", this.ticker);
+  @Override
+  public Flowable<Tick> getTicks() {
+
+    return tickSubject.toFlowable(BackpressureStrategy.LATEST);
   }
 
   @Override
@@ -171,12 +182,10 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
           getAsk(), getLastTime());
 
       priceLevels.stream().filter(priceLevel -> tickProcessor.process(latestTick, priceLevel)).findAny().ifPresent(
-          priceLevel -> publishTickNotification());
+          priceLevel -> {
+            tickSubject.onNext(latestTick);
+          });
     }
-  }
-
-  private void publishTickNotification() {
-    tickConsumer.acceptTick(getTicker());
   }
 
   public Ticker getTicker() {
@@ -247,7 +256,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     return isSnapshot;
   }
 
-  @Override
   public Tick getLatestTick() {
     return latestTick;
   }
@@ -301,25 +309,35 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Tick Handler Price Levels for '");
+    builder.append("Tick Handler Price Levels for ");
     builder.append(getTicker());
     builder.append(": ");
 
-    builder.append(PriceLevelDirection.FALLS_BELOW);
-    builder.append(" [ ");
-    builder.append(priceLevels.stream()
+    List<Double> fallsBelow = priceLevels.stream()
         .filter(priceLevel -> priceLevel.tradeIf() == PriceLevelDirection.FALLS_BELOW)
         .map(PriceLevel::getPrice)
-        .collect(Collectors.toList()));
-    builder.append(" ]");
+        .collect(Collectors.toList());
 
-    builder.append(PriceLevelDirection.RISES_ABOVE);
-    builder.append(" [ ");
-    builder.append(priceLevels.stream()
+    List<Double> risesAbove = priceLevels.stream()
         .filter(priceLevel -> priceLevel.tradeIf() == PriceLevelDirection.RISES_ABOVE)
         .map(PriceLevel::getPrice)
-        .collect(Collectors.toList()));
-    builder.append(" ]");
+        .collect(Collectors.toList());
+
+    if (fallsBelow.size() > 0) {
+      builder.append(PriceLevelDirection.FALLS_BELOW);
+      builder.append(" ");
+      builder.append(fallsBelow);
+
+      if (risesAbove.size() > 0) {
+        builder.append(" ");
+      }
+    }
+
+    if (risesAbove.size() > 0) {
+      builder.append(PriceLevelDirection.RISES_ABOVE);
+      builder.append(" ");
+      builder.append(risesAbove);
+    }
 
     return builder.toString();
   }

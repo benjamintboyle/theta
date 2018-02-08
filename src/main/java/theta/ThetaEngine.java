@@ -1,7 +1,6 @@
 package theta;
 
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
-import theta.util.ThetaStartupUtil;
 
 public class ThetaEngine implements Callable<String> {
 
@@ -33,15 +31,10 @@ public class ThetaEngine implements Callable<String> {
     System.out.print("Starting ThetaEngine... ");
     logger.info("Starting ThetaEngine...");
 
-    // Initialize API controller
-    final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
-    // new InetSocketAddress(InetAddress.getByName(BROKER_GATEWAY_ADDRESS), BROKER_GATEWAY_PORT);
-
     // Create Theta Engine
     final ThetaEngine thetaEngine =
-        new ThetaEngine(ThetaManagerFactory.buildConnectionManager(brokerGatewaySocketAddress),
-            ThetaManagerFactory.buildPortfolioManager(), ThetaManagerFactory.buildTickManager(),
-            ThetaManagerFactory.buildExecutionManager());
+        new ThetaEngine(ThetaManagerFactory.buildConnectionManager(), ThetaManagerFactory.buildPortfolioManager(),
+            ThetaManagerFactory.buildTickManager(), ThetaManagerFactory.buildExecutionManager());
 
     final String status = thetaEngine.call();
     logger.info(status);

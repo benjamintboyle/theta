@@ -30,17 +30,6 @@ public class ThetaStartupUtil {
   private static final String NAME_PREFIX = "Thread-";
 
 
-  public static void updateThreadName(String newName) {
-    final String newNameWithSuffix = NAME_PREFIX + newName;
-    final String oldName = Thread.currentThread().getName();
-
-    if (!oldName.equals(newNameWithSuffix)) {
-      logger.info("Renaming Thread: '{}' to '{}'", oldName, newNameWithSuffix);
-
-      Thread.currentThread().setName(newNameWithSuffix);
-    }
-  }
-
   public static InetSocketAddress getGatewayAddress() throws UnknownHostException {
 
     InetAddress gatewayAddress;
@@ -68,4 +57,16 @@ public class ThetaStartupUtil {
   public static TickProcessor getTickProcessor() {
     return TICK_PROCESSOR;
   }
+
+  public static void updateThreadName(String newName) {
+    final String newNameWithSuffix = NAME_PREFIX + newName;
+    final String oldName = Thread.currentThread().getName();
+
+    if (!oldName.equals(newNameWithSuffix)) {
+      logger.info("Renaming Thread: '{}' to '{}'", oldName, newNameWithSuffix);
+
+      Thread.currentThread().setName(newNameWithSuffix);
+    }
+  }
+
 }

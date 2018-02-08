@@ -115,9 +115,9 @@ public class TickManagerTest {
 
     final ArrayList<Tick> priceTicks = generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
 
-    for (final Tick tick : priceTicks) {
-      sut.acceptTick(tick.getTicker());
-    }
+    // for (final Tick tick : priceTicks) {
+    // sut.acceptTick(tick.getTicker());
+    // }
 
     // Mockito
     // .verify(executor,

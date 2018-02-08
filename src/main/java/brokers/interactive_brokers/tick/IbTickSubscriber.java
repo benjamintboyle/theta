@@ -12,19 +12,29 @@ import org.slf4j.LoggerFactory;
 import com.ib.contracts.StkContract;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbStringUtil;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
-import theta.tick.api.TickConsumer;
 import theta.tick.api.TickProcessor;
 
 public class IbTickSubscriber implements TickSubscriber {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private final Subject<Tick> tickSubject = PublishSubject.create();
 
   private final IbController ibController;
   private final Map<Ticker, IbTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
+
+  private final CompositeDisposable tickSubscriberDisposables = new CompositeDisposable();
 
   public IbTickSubscriber(IbController ibController) {
     logger.info("Starting Interactive Brokers Tick Subscriber");
@@ -32,7 +42,12 @@ public class IbTickSubscriber implements TickSubscriber {
   }
 
   @Override
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickConsumer tickConsumer, TickProcessor tickProcessor) {
+  public Flowable<Tick> getTicksAcrossStrikePrices() {
+    return tickSubject.serialize().toFlowable(BackpressureStrategy.BUFFER);
+  }
+
+  @Override
+  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor) {
     Integer remainingPriceLevels = 0;
 
     Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
@@ -40,8 +55,19 @@ public class IbTickSubscriber implements TickSubscriber {
     if (ibLastTickHandler.isPresent()) {
       ibLastTickHandler.get().addPriceLevelMonitor(priceLevel);
     } else {
-      subscribeTick(priceLevel.getTicker(), tickConsumer, tickProcessor);
-      remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickConsumer, tickProcessor);
+      TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
+      Disposable handlerDisposable = handler.getTicks().subscribe(
+
+          tick -> {
+            tickSubject.onNext(tick);
+          },
+
+          exception -> {
+            logger.error("Error with Tick Handler {}", handler, exception);
+          });
+      tickSubscriberDisposables.add(handlerDisposable);
+
+      remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickProcessor);
     }
 
     logHandlers();
@@ -83,25 +109,12 @@ public class IbTickSubscriber implements TickSubscriber {
     return priceLevels;
   }
 
-  @Override
-  public Optional<Tick> getLastestTick(Ticker ticker) {
-
-    Optional<Tick> tick = getHandler(ticker).map(TickHandler::getLatestTick);
-
-    if (!tick.isPresent()) {
-      logger.warn("No Tick Handler for {}", ticker);
-    }
-
-    return tick;
-  }
-
-  private TickHandler subscribeTick(Ticker ticker, TickConsumer tickConsumer, TickProcessor tickProcessor) {
+  private TickHandler subscribeTick(Ticker ticker, TickProcessor tickProcessor) {
 
     logger.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker.toString());
 
-    final IbTickHandler ibTickHandler =
-        ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor, tickConsumer));
+    final IbTickHandler ibTickHandler = ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor));
     ibTickHandlers.put(ticker, ibTickHandler);
 
     logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",

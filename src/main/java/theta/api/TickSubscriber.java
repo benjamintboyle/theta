@@ -1,18 +1,17 @@
 package theta.api;
 
-import java.util.Optional;
 import java.util.Set;
+import io.reactivex.Flowable;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
-import theta.tick.api.TickConsumer;
 import theta.tick.api.TickProcessor;
 
 public interface TickSubscriber {
 
-  public Optional<Tick> getLastestTick(Ticker ticker);
+  public Flowable<Tick> getTicksAcrossStrikePrices();
 
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickConsumer tickConsumer, TickProcessor tickProcessor);
+  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor);
 
   public Integer removePriceLevelMonitor(PriceLevel priceLevel);
 

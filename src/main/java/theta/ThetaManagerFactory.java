@@ -2,6 +2,7 @@ package theta;
 
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import brokers.interactive_brokers.IbHandlerFactory;
@@ -18,8 +19,11 @@ import theta.util.ThetaStartupUtil;
 public class ThetaManagerFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static ConnectionManager buildConnectionManager(InetSocketAddress brokerGatewaySocketAddress) {
+  public static ConnectionManager buildConnectionManager() throws UnknownHostException {
     logger.info("Initializing Connection Manager");
+
+    // Initialize API controller
+    final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
 
     final ConnectionHandler brokerConnectionHandler =
         IbHandlerFactory.buildConnectionHandler(brokerGatewaySocketAddress);

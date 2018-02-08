@@ -4,9 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +17,15 @@ import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
 import theta.domain.Theta;
-import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Tick;
-import theta.tick.api.TickConsumer;
 import theta.tick.api.TickMonitor;
 import theta.tick.api.TickProcessor;
-import theta.util.ThetaMarketUtil;
-import theta.util.ThetaStartupUtil;
 
-public class TickManager implements TickMonitor, TickConsumer {
+public class TickManager implements TickMonitor {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
@@ -43,14 +37,12 @@ public class TickManager implements TickMonitor, TickConsumer {
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
-  private final BlockingQueue<Ticker> tickQueue = new LinkedBlockingQueue<>();
-
-  private final CompositeDisposable tickManagerDisposable = new CompositeDisposable();
+  private final CompositeDisposable tickManagerDisposables = new CompositeDisposable();
 
   public TickManager(TickSubscriber tickSubscriber, TickProcessor tickProcessor) {
     getStatus().changeState(ManagerState.STARTING);
-    this.tickSubscriber = Objects.requireNonNull(tickSubscriber);
-    this.tickProcessor = Objects.requireNonNull(tickProcessor);
+    this.tickSubscriber = Objects.requireNonNull(tickSubscriber, "Tick Subscriber cannot be null.");
+    this.tickProcessor = Objects.requireNonNull(tickProcessor, "Tick Processor cannot be null.");
   }
 
   public Completable startTickProcessing() {
@@ -59,61 +51,33 @@ public class TickManager implements TickMonitor, TickConsumer {
 
     return Completable.create(emitter -> {
 
-      ThetaStartupUtil.updateThreadName(MethodHandles.lookup().lookupClass().getSimpleName());
+      Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices().subscribe(
 
-      getStatus().changeState(ManagerState.RUNNING);
+          tick -> {
+            processTick(tick);
+          },
 
-      while (getStatus().getState() == ManagerState.RUNNING) {
+          exception -> {
+            logger.error("Error in Tick Manager", exception);
+          },
 
-        Ticker ticker = null;
+          () -> {
+            getStatus().changeState(ManagerState.SHUTDOWN);
+          },
 
-        try {
-          // Blocks until tick available
-          logger.info("Waiting for next tick across strike price.");
-          ticker = tickQueue.take();
-        } catch (final InterruptedException exception) {
-          logger.error("Interupted while waiting for tick", exception);
-          emitter.onError(exception);
-        }
+          subscription -> {
+            getStatus().changeState(ManagerState.RUNNING);
+            subscription.request(Long.MAX_VALUE);
+          });
 
-        final Optional<Tick> tick = tickSubscriber.getLastestTick(ticker);
-
-        if (tick.isPresent()) {
-
-          logger.info("Received tick across strike price: {}", tick.get());
-
-          processTick(tick.get());
-        } else {
-          logger.warn("No Tick available for {}", ticker);
-        }
-      }
-
-      getStatus().changeState(ManagerState.SHUTDOWN);
+      tickManagerDisposables.add(tickSubscriberDisposable);
     });
-  }
-
-  @Override
-  public void acceptTick(Ticker ticker) {
-
-    logger.info("Received Tick from Handler: {}", ticker);
-
-    if (ThetaMarketUtil.isDuringMarketHours() && !tickQueue.contains(ticker)) {
-      try {
-
-        tickQueue.put(ticker);
-
-      } catch (final InterruptedException e) {
-
-        logger.error("Interupted without adding Tick", e);
-
-      }
-    }
   }
 
   @Override
   public void addMonitor(PriceLevel priceLevel) {
 
-    tickSubscriber.addPriceLevelMonitor(priceLevel, this, tickProcessor);
+    tickSubscriber.addPriceLevelMonitor(priceLevel, tickProcessor);
   }
 
   @Override
@@ -158,7 +122,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
         );
 
-        tickManagerDisposable.add(disposableTrade);
+        tickManagerDisposables.add(disposableTrade);
       }
 
     } else {
@@ -177,6 +141,7 @@ public class TickManager implements TickMonitor, TickConsumer {
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
+    tickManagerDisposables.dispose();
   }
 
   public void registerExecutor(Executor executor) {
