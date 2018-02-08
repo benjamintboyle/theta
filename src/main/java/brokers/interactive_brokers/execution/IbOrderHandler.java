@@ -23,11 +23,11 @@ public class IbOrderHandler implements IOrderHandler {
   private Double filled = null;
   private Double remaining = null;
   private Double avgFillPrice = null;
-  private Long permId = null;
-  private Integer parentId = null;
-  private Double lastFillPrice = null;
-  private Integer clientId = null;
-  private String whyHeld = null;
+  // private Long permId = null;
+  // private Integer parentId = null;
+  // private Double lastFillPrice = null;
+  // private Integer clientId = null;
+  // private String whyHeld = null;
 
   public IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
     this.order = order;
@@ -59,11 +59,11 @@ public class IbOrderHandler implements IOrderHandler {
     this.filled = filled;
     this.remaining = remaining;
     this.avgFillPrice = avgFillPrice;
-    this.permId = permId;
-    this.parentId = parentId;
-    this.lastFillPrice = lastFillPrice;
-    this.clientId = clientId;
-    this.whyHeld = whyHeld;
+    // this.permId = permId;
+    // this.parentId = parentId;
+    // this.lastFillPrice = lastFillPrice;
+    // this.clientId = clientId;
+    // this.whyHeld = whyHeld;
 
     sendNext();
 
