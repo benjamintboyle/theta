@@ -44,8 +44,6 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
       double limitPrice = priceLevel.getPrice();
 
-      logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
-
       if (priceLevel.getTicker().equals(tick.getTicker())) {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
           if (tick.getBidPrice() + (bidAskSpread * DEVIATION) < priceLevel.getPrice()) {
