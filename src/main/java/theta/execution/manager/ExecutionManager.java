@@ -64,7 +64,7 @@ public class ExecutionManager implements Executor {
       if (ThetaMarketUtil.isDuringMarketHours()) {
 
         Optional<ExecutableOrder> optionalValidOrder = newOrModifiedOrderExists(order);
-        if (optionalValidOrder.isPresent() && optionalValidOrder.get().getBrokerId().isPresent()) {
+        if (optionalValidOrder.isPresent() && !optionalValidOrder.get().getBrokerId().isPresent()) {
 
           logger.info("Executing order: {}", order);
 
