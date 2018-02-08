@@ -3,6 +3,8 @@ package brokers.interactive_brokers.execution;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -16,6 +18,7 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.OrderStatus;
 
 public class IbExecutionHandler implements ExecutionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -30,7 +33,7 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<String> executeStockOrder(ExecutableOrder order) {
+  public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.create(emitter -> {
 
       orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
@@ -40,7 +43,37 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<String> cancelStockOrder(ExecutableOrder order) {
+  public boolean modifyStockOrder(ExecutableOrder order) {
+
+    logger.info("Modifying order: {}", order);
+
+    boolean isOrderExecuted = false;
+
+    if (order.getBrokerId().isPresent()) {
+
+      Optional<IbOrderHandler> ibOrderHandler = orderHandlerMapper.entrySet()
+          .stream()
+          .filter(entry -> entry.getKey().getBrokerId().isPresent())
+          .filter(entry -> entry.getKey().getBrokerId().get().equals(order.getBrokerId().get()))
+          .map(Entry::getValue)
+          .findFirst();
+
+      if (ibOrderHandler.isPresent()) {
+        executeStockOrder(order, ibOrderHandler.get());
+        isOrderExecuted = true;
+      } else {
+        logger.error("Order will not be executed. No Order Handler available for order: {}", order);
+      }
+
+    } else {
+      logger.error("Order will not be executed. Attempting to modify an order without a brokerage Id: {}", order);
+    }
+
+    return isOrderExecuted;
+  }
+
+  @Override
+  public Flowable<OrderStatus> cancelStockOrder(ExecutableOrder order) {
 
     ibController.getController().cancelOrder(order.getBrokerId().get());
 

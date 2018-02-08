@@ -1,6 +1,7 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.OrderState;
@@ -9,15 +10,16 @@ import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.util.IbStringUtil;
 import io.reactivex.FlowableEmitter;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.domain.DefaultOrderStatus;
 
 public class IbOrderHandler implements IOrderHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private final FlowableEmitter<theta.execution.api.OrderStatus> emitter;
+
   private final ExecutableOrder order;
-  private final FlowableEmitter<String> emitter;
 
   private OrderState currentOrderState = null;
-  private OrderStatus currentOrderStatus = null;
   private Double filled = null;
   private Double remaining = null;
   private Double avgFillPrice = null;
@@ -27,12 +29,12 @@ public class IbOrderHandler implements IOrderHandler {
   private Integer clientId = null;
   private String whyHeld = null;
 
-  public IbOrderHandler(ExecutableOrder order, FlowableEmitter<String> emitter) {
+  public IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
     this.order = order;
     this.emitter = emitter;
   }
 
-  public FlowableEmitter<String> getEmitter() {
+  public FlowableEmitter<theta.execution.api.OrderStatus> getEmitter() {
     return emitter;
   }
 
@@ -43,8 +45,6 @@ public class IbOrderHandler implements IOrderHandler {
         order.getTicker(), IbStringUtil.toStringOrderState(orderState));
 
     currentOrderState = orderState;
-
-    sendNext("OrderState");
   }
 
   @Override
@@ -55,7 +55,7 @@ public class IbOrderHandler implements IOrderHandler {
         order.getTicker(), IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId,
             lastFillPrice, clientId, whyHeld));
 
-    currentOrderStatus = status;
+    currentOrderState.status(status);
     this.filled = filled;
     this.remaining = remaining;
     this.avgFillPrice = avgFillPrice;
@@ -65,9 +65,9 @@ public class IbOrderHandler implements IOrderHandler {
     this.clientId = clientId;
     this.whyHeld = whyHeld;
 
-    sendNext("OrderStatus");
+    sendNext();
 
-    if (this.currentOrderStatus == OrderStatus.Filled && this.remaining == 0) {
+    if (currentOrderState.status() == OrderStatus.Filled && remaining == 0) {
       logger.debug("Sending complete for order: {}", order);
       emitter.onComplete();
     }
@@ -81,28 +81,40 @@ public class IbOrderHandler implements IOrderHandler {
     // order.getBrokerId().orElse(null)));
   }
 
-  private void sendNext(String trigger) {
-    final StringBuilder builder = new StringBuilder();
+  private void sendNext() {
 
-    builder.append("Trigger: ");
-    builder.append(trigger);
+    Optional<theta.execution.domain.OrderState> optionalOrderState = Optional.empty();
 
-    builder.append(", Order Id: ");
-    builder.append(order.getBrokerId().orElse(null));
+    switch (currentOrderState.status()) {
+      case ApiPending:
+      case PreSubmitted:
+      case PendingSubmit:
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.BROKERAGE);
+        break;
+      case ApiCancelled:
+      case PendingCancel:
+      case Cancelled:
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.CANCELLED);
+        break;
+      case Submitted:
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.EXCHANGE);
+        break;
+      case Filled:
+        optionalOrderState = Optional.of(theta.execution.domain.OrderState.FILLED);
+        break;
+      default:
+        logger.warn("Unknown order status from brokerage: {}", currentOrderState.status());
+    }
 
-    builder.append(", Ticker: ");
-    builder.append(order.getTicker());
+    if (optionalOrderState.isPresent()) {
 
-    // Order Status
-    builder.append(", Order Status: ");
-    builder.append(IbStringUtil.toStringOrderStatus(currentOrderStatus, filled, remaining, avgFillPrice, permId,
-        parentId, lastFillPrice, clientId, whyHeld));
+      theta.execution.api.OrderStatus orderStatusToEngine = new DefaultOrderStatus(order, optionalOrderState.get(),
+          currentOrderState.commission(), Math.round(filled), Math.round(remaining), avgFillPrice);
+      emitter.onNext(orderStatusToEngine);
 
-    // Order State
-    builder.append(", Order State: ");
-    builder.append(IbStringUtil.toStringOrderState(currentOrderState));
-
-    emitter.onNext(builder.toString());
+    } else {
+      emitter.onError(new IllegalArgumentException("Unknown order status: " + currentOrderState.status()));
+    }
   }
 
 }

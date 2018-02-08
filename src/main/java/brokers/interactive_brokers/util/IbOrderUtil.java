@@ -14,7 +14,12 @@ public class IbOrderUtil {
   public static Order buildIbOrder(ExecutableOrder order) {
     final Order ibOrder = new Order();
 
-    ibOrder.orderId(0);
+    if (order.getBrokerId().isPresent()) {
+      ibOrder.orderId(order.getBrokerId().get());
+    } else {
+      ibOrder.orderId(0);
+    }
+
     ibOrder.totalQuantity(order.getQuantity());
 
     switch (order.getExecutionAction()) {
