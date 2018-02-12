@@ -34,10 +34,6 @@ public class IbOrderHandler implements IOrderHandler {
     this.emitter = emitter;
   }
 
-  public FlowableEmitter<theta.execution.api.OrderStatus> getEmitter() {
-    return emitter;
-  }
-
   @Override
   public void orderState(OrderState orderState) {
 

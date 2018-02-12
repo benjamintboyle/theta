@@ -1,6 +1,7 @@
 package theta.execution.domain;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -118,4 +119,34 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
 
     return builder.toString();
   }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), getTicker(), getQuantity(), getExecutionAction(), getSecurityType(), getSecurityType(),
+        getExecutionType(), getLimitPrice());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    boolean isEqual = false;
+
+    if (obj == this) {
+      isEqual = true;
+    }
+
+    if (obj instanceof AbstractStockOrder) {
+      final AbstractStockOrder other = (AbstractStockOrder) obj;
+
+      isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
+          && Objects.equals(getQuantity(), other.getQuantity())
+          && Objects.equals(getExecutionAction(), other.getExecutionAction())
+          && Objects.equals(getSecurityType(), other.getSecurityType())
+          && Objects.equals(getExecutionType(), other.getExecutionType())
+          && Objects.equals(getLimitPrice(), other.getLimitPrice());
+    }
+
+    return isEqual;
+  }
+
 }

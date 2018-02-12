@@ -19,6 +19,8 @@ import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
+import theta.execution.domain.DefaultOrderStatus;
+import theta.execution.domain.OrderState;
 
 public class IbExecutionHandler implements ExecutionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -34,18 +36,23 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   @Override
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
-    return Flowable.create(emitter -> {
+    return Flowable.<OrderStatus>create(emitter -> {
+
+      OrderStatus initialOrderStatus =
+          new DefaultOrderStatus(order, OrderState.PENDING, 0.0, 0, order.getQuantity(), 0.0);
+
+      emitter.onNext(initialOrderStatus);
 
       orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
       executeStockOrder(order, orderHandlerMapper.get(order));
 
-    }, BackpressureStrategy.BUFFER);
+    }, BackpressureStrategy.BUFFER).doOnComplete(() -> orderHandlerMapper.remove(order));
   }
 
   @Override
   public boolean modifyStockOrder(ExecutableOrder order) {
 
-    logger.info("Modifying order: {}", order);
+    logger.debug("Modifying order: {}", order);
 
     boolean isOrderExecuted = false;
 
@@ -81,8 +88,6 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   private void executeStockOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
-
-    logger.info("Executing order: {}", order);
 
     final Order ibOrder = IbOrderUtil.buildIbOrder(order);
 

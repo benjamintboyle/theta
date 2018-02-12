@@ -1,10 +1,10 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
@@ -17,7 +17,6 @@ import theta.domain.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.Executor;
 import theta.execution.api.OrderStatus;
-import theta.execution.domain.DefaultOrderStatus;
 import theta.execution.domain.ExecutionType;
 import theta.execution.domain.OrderState;
 import theta.execution.factory.ExecutableOrderFactory;
@@ -28,7 +27,7 @@ public class ExecutionManager implements Executor {
 
   private final ExecutionHandler executionHandler;
 
-  private final Map<UUID, OrderStatus> activeOrderStatuses = new ConcurrentHashMap<>();
+  private final ConcurrentMap<UUID, OrderStatus> activeOrderStatuses = new ConcurrentHashMap<>();
 
   private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -63,8 +62,10 @@ public class ExecutionManager implements Executor {
     return Completable.create(emitter -> {
       if (ThetaMarketUtil.isDuringMarketHours()) {
 
-        Optional<ExecutableOrder> optionalValidOrder = newOrModifiedOrderExists(order);
-        if (optionalValidOrder.isPresent() && !optionalValidOrder.get().getBrokerId().isPresent()) {
+        boolean isModifiedOrder = isModifiedOrder(order);
+
+        // New order
+        if (isModifiedOrder && !order.getBrokerId().isPresent()) {
 
           logger.info("Executing order: {}", order);
 
@@ -104,10 +105,15 @@ public class ExecutionManager implements Executor {
               });
 
           compositeDisposable.add(disposableExecutionHandler);
-        } else if (optionalValidOrder.isPresent()) {
-          // Not a new order so modify existing order
-          executionHandler.modifyStockOrder(optionalValidOrder.get());
-        } else {
+        }
+        // Modify existing order
+        else if (isModifiedOrder && activeOrderStatuses.containsKey(order.getId())
+            && activeOrderStatuses.get(order.getId()).getState() != OrderState.FILLED) {
+
+          executionHandler.modifyStockOrder(order);
+        }
+        // Something was wrong with determining if new or modified order
+        else {
           logger.error("Existing order. Order will not be executed: {}", order);
         }
       } else {
@@ -116,34 +122,27 @@ public class ExecutionManager implements Executor {
     });
   }
 
-  private Optional<ExecutableOrder> newOrModifiedOrderExists(ExecutableOrder order) {
-    logger.info("Adding Active Trade: {} to Execution Monitor", order);
+  private boolean isModifiedOrder(ExecutableOrder order) {
 
-    Optional<ExecutableOrder> newOrModifiedOrder = Optional.empty();
+    boolean isModifiedOrder = false;
 
-    Optional<OrderStatus> optionalActiveOrderStatus = Optional.ofNullable(activeOrderStatuses.get(order.getId()));
+    OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
 
     // No active order
-    if (!optionalActiveOrderStatus.isPresent()) {
-      updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
-      newOrModifiedOrder = Optional.of(order);
-    } else {
+    if (activeOrderStatus != null) {
 
-      OrderStatus activeOrderStatus = optionalActiveOrderStatus.get();
       ExecutableOrder activeOrder = activeOrderStatus.getOrder();
 
       // Active order with different quantities, will be modified
       if (activeOrder.getQuantity() != order.getQuantity()) {
         order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
-        updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
-        newOrModifiedOrder = Optional.of(order);
+        isModifiedOrder = true;
       }
       // Active order with different Limit Prices, will be modified
       else if ((activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent())
           && activeOrder.getLimitPrice().get() != order.getLimitPrice().get()) {
         order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
-        updateActiveOrderStatus(order, OrderState.PENDING, -1.0, 0, order.getQuantity(), -1.0);
-        newOrModifiedOrder = Optional.of(order);
+        isModifiedOrder = true;
       }
       // Active order and new order are the same
       else {
@@ -152,18 +151,12 @@ public class ExecutionManager implements Executor {
       }
     }
 
-    return newOrModifiedOrder;
+    return isModifiedOrder;
   }
 
-  public void updateActiveOrderStatus(ExecutableOrder executableOrder, OrderState orderState, double commission,
-      long filled, long remaining, double averagePrice) {
-    activeOrderStatuses.put(executableOrder.getId(),
-        new DefaultOrderStatus(executableOrder, orderState, commission, filled, remaining, averagePrice));
-  }
+  private void updateActiveOrderStatus(OrderStatus orderStatus) {
 
-  public void updateActiveOrderStatus(OrderStatus orderStatus) {
-    updateActiveOrderStatus(orderStatus.getOrder(), orderStatus.getState(), orderStatus.getCommission(),
-        orderStatus.getFilled(), orderStatus.getRemaining(), orderStatus.averagePrice());
+    activeOrderStatuses.put(orderStatus.getOrder().getId(), orderStatus);
   }
 
   public void shutdown() {
