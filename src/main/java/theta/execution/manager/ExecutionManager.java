@@ -65,7 +65,7 @@ public class ExecutionManager implements Executor {
         boolean isModifiedOrder = isModifiedOrder(order);
 
         // New order
-        if (isModifiedOrder && !order.getBrokerId().isPresent()) {
+        if (!isModifiedOrder && !order.getBrokerId().isPresent()) {
 
           logger.info("Executing order: {}", order);
 
@@ -114,7 +114,8 @@ public class ExecutionManager implements Executor {
         }
         // Something was wrong with determining if new or modified order
         else {
-          logger.error("Existing order. Order will not be executed: {}", order);
+          logger.error("Existing order. Existing Order Status: {}. Order will not be executed: {}",
+              activeOrderStatuses.get(order.getId()), order);
         }
       } else {
         logger.warn("Not during market hours. Order will not be executed: {}", order);
