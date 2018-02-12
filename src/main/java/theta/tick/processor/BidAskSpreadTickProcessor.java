@@ -14,7 +14,6 @@ import theta.execution.domain.ExecutionType;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
-import theta.util.ThetaMarketUtil;
 
 public class BidAskSpreadTickProcessor implements TickProcessor {
 
@@ -39,8 +38,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
     boolean shouldReverse = false;
 
-    if (isApplicable(tick.getTickType()) && tick.getAskPrice() > 0 && tick.getBidPrice() > 0
-        && ThetaMarketUtil.isDuringMarketHours()) {
+    if (isApplicable(tick.getTickType()) && tick.getAskPrice() > 0 && tick.getBidPrice() > 0) {
 
       double bidAskSpread = tick.getAskPrice() - tick.getBidPrice();
 

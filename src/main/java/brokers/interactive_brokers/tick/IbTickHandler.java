@@ -27,6 +27,7 @@ import theta.domain.api.PriceLevelDirection;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
+import theta.util.ThetaMarketUtil;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
@@ -57,7 +58,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private Boolean isSnapshot;
 
-  private Tick latestTick;
+  private Tick latestTick = new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(TickType.LAST), getLast(),
+      getBid(), getAsk(), getLastTime());
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
@@ -176,7 +178,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private void checkTick(TickType tickType) {
 
-    if (tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType))) {
+    if (tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType))
+        && ThetaMarketUtil.isDuringMarketHours()) {
 
       latestTick = new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLast(), getBid(),
           getAsk(), getLastTime());

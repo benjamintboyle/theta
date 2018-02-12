@@ -12,7 +12,6 @@ import theta.execution.domain.ExecutionType;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
-import theta.util.ThetaMarketUtil;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
 public class LastTickProcessor implements TickProcessor {
@@ -31,7 +30,7 @@ public class LastTickProcessor implements TickProcessor {
 
     boolean shouldReverse = false;
 
-    if (isApplicable(tick.getTickType()) && tick.getLastPrice() > 0 && ThetaMarketUtil.isDuringMarketHours()) {
+    if (isApplicable(tick.getTickType()) && tick.getLastPrice() > 0) {
 
       logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
 
