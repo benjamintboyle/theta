@@ -108,11 +108,25 @@ public class ExecutionManager implements Executor {
           compositeDisposable.add(disposableExecutionHandler);
         }
         // Modify existing order, if correct attributes are set
-        else if (isModifiedOrder && activeOrderStatuses.containsKey(order.getId())
-            && activeOrderStatuses.get(order.getId()).getState() != OrderState.FILLED
-            && activeOrderStatuses.get(order.getId()).getOrder().getBrokerId().isPresent()) {
+        else if (isModifiedOrder) {
 
-          executionHandler.modifyStockOrder(order);
+          OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
+
+          if (activeOrderStatus != null && activeOrderStatus.getState() != OrderState.FILLED
+              && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
+
+            if (!order.equals(activeOrderStatus.getOrder())) {
+
+              logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order,
+                  activeOrderStatus);
+              executionHandler.modifyStockOrder(order);
+            } else {
+              logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
+                  activeOrderStatus);
+            }
+          } else {
+            logger.warn("Attempted to modify order that has invalid parameters. Order: {}", order);
+          }
         }
         // Something was wrong with determining if new or modified order or their parameters
         else {
@@ -141,6 +155,8 @@ public class ExecutionManager implements Executor {
 
           // Active order with different quantities, will be modified
           if (activeOrder.getQuantity() != order.getQuantity()) {
+
+
             order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
             isModifiedOrder = true;
           }

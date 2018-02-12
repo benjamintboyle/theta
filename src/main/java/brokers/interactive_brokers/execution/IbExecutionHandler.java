@@ -1,10 +1,10 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
@@ -27,7 +27,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   private final IbController ibController;
 
-  private final Map<ExecutableOrder, IbOrderHandler> orderHandlerMapper = new HashMap<>();
+  private final ConcurrentMap<ExecutableOrder, IbOrderHandler> orderHandlerMapper = new ConcurrentHashMap<>();
 
   public IbExecutionHandler(IbController ibController) {
     logger.info("Starting Interactive Brokers Execution Handler");
@@ -46,7 +46,12 @@ public class IbExecutionHandler implements ExecutionHandler {
       orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
       executeStockOrder(order, orderHandlerMapper.get(order));
 
-    }, BackpressureStrategy.BUFFER).doOnComplete(() -> orderHandlerMapper.remove(order));
+    }, BackpressureStrategy.BUFFER).doOnComplete(
+
+        () -> {
+          IbOrderHandler orderHandler = orderHandlerMapper.remove(order);
+          logger.debug("Removed Order Handler: {}", orderHandler);
+        });
   }
 
   @Override
