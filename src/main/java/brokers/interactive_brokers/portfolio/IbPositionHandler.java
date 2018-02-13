@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -129,13 +128,12 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         break;
     }
 
-    final Optional<LocalDate> optionalExpiration =
-        IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
+    final LocalDate expirationDate = IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
 
     final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
     return new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), quantity,
-        contract.strike(), optionalExpiration.get(), avgCost);
+        contract.strike(), expirationDate, avgCost);
   }
 
   private long convertQuantityToLongCheckingIfWholeValue(double quantity, Contract contract) {
