@@ -12,6 +12,7 @@ import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
 
 public class DefaultStockOrder implements ExecutableOrder {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
@@ -24,11 +25,11 @@ public class DefaultStockOrder implements ExecutableOrder {
   private Optional<Integer> brokerId = Optional.empty();
 
   public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
-    id = stock.getId();
-    ticker = stock.getTicker();
+    id = Objects.requireNonNull(stock.getId(), "Stock Id cannot be null");
+    ticker = Objects.requireNonNull(stock.getTicker(), "Stock Ticker cannot be null");
     this.quantity = quantity;
-    this.action = action;
-    this.executionType = executionType;
+    this.action = Objects.requireNonNull(action, "Execution Action cannot be null");
+    this.executionType = Objects.requireNonNull(executionType, "Execution Type cannot be null");
 
     logger.debug("Built: {}", toString());
   }
@@ -37,7 +38,7 @@ public class DefaultStockOrder implements ExecutableOrder {
       Double limitPrice) {
     this(stock, quantity, action, executionType);
 
-    this.limitPrice = Optional.of(limitPrice);
+    this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
     logger.debug("Built: {}", toString());
   }
@@ -123,7 +124,7 @@ public class DefaultStockOrder implements ExecutableOrder {
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), getTicker(), getQuantity(), getExecutionAction(), getSecurityType(), getSecurityType(),
+    return Objects.hash(getTicker(), getQuantity(), getExecutionAction(), getSecurityType(), getSecurityType(),
         getExecutionType(), getLimitPrice());
   }
 
@@ -138,8 +139,7 @@ public class DefaultStockOrder implements ExecutableOrder {
     if (obj instanceof DefaultStockOrder) {
       final DefaultStockOrder other = (DefaultStockOrder) obj;
 
-      isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
-          && Objects.equals(getQuantity(), other.getQuantity())
+      isEqual = Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
           && Objects.equals(getExecutionAction(), other.getExecutionAction())
           && Objects.equals(getSecurityType(), other.getSecurityType())
           && Objects.equals(getExecutionType(), other.getExecutionType())

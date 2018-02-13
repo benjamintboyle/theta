@@ -11,10 +11,6 @@ public interface ExecutableOrder {
 
   public UUID getId();
 
-  public Optional<Integer> getBrokerId();
-
-  public void setBrokerId(Integer orderId);
-
   public Ticker getTicker();
 
   public SecurityType getSecurityType();
@@ -27,4 +23,7 @@ public interface ExecutableOrder {
 
   public long getQuantity();
 
+  public Optional<Integer> getBrokerId();
+
+  public void setBrokerId(Integer orderId);
 }
