@@ -127,4 +127,28 @@ public class IbOrderHandler implements IOrderHandler {
     return optionalOrderStatus;
   }
 
+  @Override
+  public String toString() {
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Order Handler: ");
+
+    builder.append(order);
+
+    builder.append(", Order State: ");
+    builder.append(currentOrderState);
+
+    builder.append(", Filled: ");
+    builder.append(filled);
+
+    builder.append(", Remaining: ");
+    builder.append(remaining);
+
+    builder.append(", Average Price: ");
+    builder.append(avgFillPrice);
+
+    return builder.toString();
+  }
+
 }
