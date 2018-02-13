@@ -66,7 +66,7 @@ public class PortfolioManager implements PositionProvider {
 
       final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
           .map(security -> processSecurity(security))
-          .debounce(1000, TimeUnit.MILLISECONDS, ThetaSchedulersFactory.asyncUnlimittedThread())
+          .debounce(1000, TimeUnit.MILLISECONDS, ThetaSchedulersFactory.ioThread())
           .subscribe(
 
               security -> {

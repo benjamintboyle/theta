@@ -20,6 +20,7 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
+import theta.ThetaSchedulersFactory;
 import theta.api.TickHandler;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
@@ -72,6 +73,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Flowable<Tick> getTicks() {
 
     return tickSubject.toFlowable(BackpressureStrategy.LATEST)
+        // Don't let thread out of IB packages
+        .observeOn(ThetaSchedulersFactory.computeThread())
         // Determine if tick is applicable for tick processor
         .filter(tickType -> tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType)))
         // Determine if time now is during market hours

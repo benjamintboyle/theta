@@ -59,7 +59,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     return getPositionEnd().andThen(subjectPositions.toFlowable(BackpressureStrategy.BUFFER))
         // Don't let IB threads out of brokers.interactive_brokers package
-        .observeOn(ThetaSchedulersFactory.asyncFixedThread());
+        .observeOn(ThetaSchedulersFactory.computeThread());
   }
 
   @Override
@@ -68,7 +68,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         .toCompletable()
         .timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         // Don't let IB threads out of brokers.interactive_brokers package
-        .observeOn(ThetaSchedulersFactory.asyncUnlimittedThread());
+        .observeOn(ThetaSchedulersFactory.ioThread());
   }
 
   @Override

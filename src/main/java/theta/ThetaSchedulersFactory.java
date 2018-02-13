@@ -9,17 +9,12 @@ import io.reactivex.schedulers.Schedulers;
 public class ThetaSchedulersFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Scheduler managerThread() {
-    logger.info("Creating Manager Thread...");
-    return Schedulers.io();
-  }
-
-  public static Scheduler asyncUnlimittedThread() {
+  public static Scheduler ioThread() {
     logger.info("Creating Asynchronous Waiting Thread...");
     return Schedulers.io();
   }
 
-  public static Scheduler asyncFixedThread() {
+  public static Scheduler computeThread() {
     logger.info("Acquiring next available Processing Thread...");
     return Schedulers.computation();
   }
