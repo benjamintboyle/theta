@@ -1,10 +1,6 @@
 package theta.tick.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
-import org.apache.commons.math3.util.Precision;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,17 +15,10 @@ import theta.domain.Theta;
 import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
-import theta.tick.api.Tick;
-import theta.tick.domain.DefaultTick;
-import theta.tick.domain.TickType;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class TickManagerTest {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private static Double aroundPricePlusMinus = 0.05;
-
-  private static Integer numberOfPriceTicks = 10000;
 
   @Mock
   private Executor executor;
@@ -42,20 +31,6 @@ public class TickManagerTest {
 
   @Mock
   private TickSubscriber tickSubscriber;
-
-  private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final Theta theta) {
-    final ArrayList<Tick> priceTicks = new ArrayList<Tick>();
-
-    for (Integer i = 0; i < numberOfTicks; i++) {
-      final double min = theta.getPrice() - TickManagerTest.aroundPricePlusMinus;
-      final double max = theta.getPrice() + TickManagerTest.aroundPricePlusMinus;
-      final double randomAroundPrice = ThreadLocalRandom.current().nextDouble(min, max);
-      priceTicks.add(new DefaultTick(theta.getTicker(), TickType.LAST, Precision.round(randomAroundPrice, 2),
-          Precision.round(randomAroundPrice, 2), Precision.round(randomAroundPrice, 2), ZonedDateTime.now()));
-    }
-
-    return priceTicks;
-  }
 
   @Ignore
   @Test
