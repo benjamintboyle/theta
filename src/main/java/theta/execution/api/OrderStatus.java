@@ -12,6 +12,6 @@ public interface OrderStatus {
 
   public long getRemaining();
 
-  public double averagePrice();
+  public double getAveragePrice();
 
 }

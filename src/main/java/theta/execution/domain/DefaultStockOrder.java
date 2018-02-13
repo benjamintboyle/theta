@@ -118,7 +118,7 @@ public class DefaultStockOrder implements ExecutableOrder {
     builder.append(", Broker Id: ");
     builder.append(getBrokerId().orElse(null));
 
-    builder.append("]");
+    builder.append(" ]");
 
     return builder.toString();
   }

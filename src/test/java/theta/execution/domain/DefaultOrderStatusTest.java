@@ -29,7 +29,7 @@ public class DefaultOrderStatusTest {
     assertThat(orderStatus.getCommission(), is(1.23));
     assertThat(orderStatus.getFilled(), is(123L));
     assertThat(orderStatus.getRemaining(), is(0L));
-    assertThat(orderStatus.averagePrice(), is(123.51));
+    assertThat(orderStatus.getAveragePrice(), is(123.51));
   }
 
 }

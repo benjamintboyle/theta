@@ -50,8 +50,37 @@ public class DefaultOrderStatus implements OrderStatus {
   }
 
   @Override
-  public double averagePrice() {
+  public double getAveragePrice() {
     return averagePrice;
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("Order Status [ ");
+
+    builder.append(getOrder());
+
+    builder.append(", Order State: ");
+    builder.append(getState());
+
+    builder.append(", Commission: ");
+    builder.append(getCommission());
+
+    builder.append(", Filled: ");
+    builder.append(getFilled());
+
+    builder.append(", Remaining: ");
+    builder.append(getRemaining());
+
+    builder.append(", Average Price: ");
+    builder.append(getAveragePrice());
+
+    builder.append(" ]");
+
+    return builder.toString();
   }
 
 }
