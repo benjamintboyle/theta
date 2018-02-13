@@ -3,8 +3,6 @@ package theta.tick.manager;
 import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Ignore;
@@ -12,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,27 +42,6 @@ public class TickManagerTest {
 
   @Mock
   private TickSubscriber tickSubscriber;
-
-  private Integer calculatePriceTransitions(final Double strikePrice, final List<Double> list) {
-    Integer priceTransitions = 0;
-    Boolean isPositionLong = Boolean.TRUE;
-
-    for (Integer i = 0; i < list.size(); i++) {
-      final Double currentTick = list.get(i);
-
-      if ((currentTick > strikePrice) && !isPositionLong) {
-        priceTransitions++;
-        isPositionLong = !isPositionLong;
-      } else if ((currentTick < strikePrice) && isPositionLong) {
-        priceTransitions++;
-        isPositionLong = !isPositionLong;
-      } else {
-        TickManagerTest.logger.error("Possible miscalculated tick");
-      }
-    }
-
-    return priceTransitions;
-  }
 
   private ArrayList<Tick> generatePriceTicksAround(final Integer numberOfTicks, final Theta theta) {
     final ArrayList<Tick> priceTicks = new ArrayList<Tick>();
@@ -100,29 +76,4 @@ public class TickManagerTest {
     // MatcherAssert.assertThat(remainingPriceLevels, Matchers.is(Matchers.equalTo(0)));
   }
 
-  @Ignore
-  @Test
-  public void test_ticks_around_strike_price() {
-    final Theta trade = ThetaTradeTest.buildTestThetaTrade();
-    TickManagerTest.logger.debug("Trade initialized: {}", trade);
-
-    final List<Theta> tradeToReturn = Arrays.asList(trade);
-    Mockito.when(positonProvider.providePositions(trade.getTicker())).thenReturn(tradeToReturn);
-    // Mockito.when(tickSubscriber.addPriceLevelMonitor(trade,
-    // ArgumentMatchers.any(TickConsumer.class))).thenReturn(1);
-
-    // sut.addMonitor(trade);
-
-    final ArrayList<Tick> priceTicks = generatePriceTicksAround(TickManagerTest.numberOfPriceTicks, trade);
-
-    // for (final Tick tick : priceTicks) {
-    // sut.acceptTick(tick.getTicker());
-    // }
-
-    // Mockito
-    // .verify(executor,
-    // Mockito.times(calculatePriceTransitions(trade.getStrikePrice(),
-    // priceTicks.stream().map(Tick::getLastPrice).collect(Collectors.toList()))))
-    // .reverseTrade(ArgumentMatchers.any(Stock.class));
-  }
 }

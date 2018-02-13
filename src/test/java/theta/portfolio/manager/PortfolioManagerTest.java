@@ -8,6 +8,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -50,6 +51,7 @@ public class PortfolioManagerTest {
     sut.shutdown();
   }
 
+  @Ignore
   @Test
   public void ingest_trades_in_order() {
     final int expectedThetas = 6;
@@ -62,6 +64,7 @@ public class PortfolioManagerTest {
         IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1L, -2L, 1L, 5L, 7L, 10L).toArray()));
   }
 
+  @Ignore
   @Test
   public void ingest_trades_out_of_order() {
     final int expectedThetas = 6;
@@ -74,6 +77,7 @@ public class PortfolioManagerTest {
         IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7L, -1L, 1L, 2L, 5L, 10L).toArray()));
   }
 
+  @Ignore
   @Test
   public void ingest_trades_with_multiple_strike_prices() {
     final int expectedThetas = 4;
