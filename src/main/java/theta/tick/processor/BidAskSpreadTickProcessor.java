@@ -73,8 +73,8 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
       Double previousLimit = limitPriceByTicker.put(priceLevel.getTicker(), Math.round(limitPrice * 100.0) / 100.0);
 
       if (previousLimit != null && Double.compare(previousLimit, limitPriceByTicker.get(priceLevel.getTicker())) != 0) {
-        logger.error("Processing ticks found different Price Levels: {} and {} for {}", previousLimit,
-            limitPriceByTicker.get(priceLevel.getTicker()), priceLevel);
+        logger.warn("Processing ticks found different Price Levels: {} and {} for {}",
+            limitPriceByTicker.get(priceLevel.getTicker()), previousLimit, priceLevel);
       }
     }
 
