@@ -8,9 +8,9 @@ import theta.domain.Stock;
 import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.ExecutionAction;
+import theta.execution.api.ExecutionType;
 import theta.execution.domain.DefaultStockOrder;
-import theta.execution.domain.ExecutionAction;
-import theta.execution.domain.ExecutionType;
 
 public class ReverseStockOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

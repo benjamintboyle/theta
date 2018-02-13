@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.domain.api.PriceLevelDirection;
-import theta.execution.domain.ExecutionType;
+import theta.execution.api.ExecutionType;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;

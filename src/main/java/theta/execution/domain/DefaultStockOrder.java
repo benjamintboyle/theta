@@ -10,6 +10,8 @@ import theta.domain.Stock;
 import theta.domain.Ticker;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.ExecutionAction;
+import theta.execution.api.ExecutionType;
 
 public class DefaultStockOrder implements ExecutableOrder {
 

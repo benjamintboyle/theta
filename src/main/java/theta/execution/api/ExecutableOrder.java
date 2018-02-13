@@ -4,8 +4,6 @@ import java.util.Optional;
 import java.util.UUID;
 import theta.domain.Ticker;
 import theta.domain.api.SecurityType;
-import theta.execution.domain.ExecutionAction;
-import theta.execution.domain.ExecutionType;
 
 public interface ExecutableOrder {
 

@@ -8,6 +8,9 @@ import org.junit.Test;
 import theta.domain.Stock;
 import theta.domain.Ticker;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.ExecutionAction;
+import theta.execution.api.ExecutionType;
+import theta.execution.api.OrderState;
 
 public class DefaultOrderStatusTest {
 

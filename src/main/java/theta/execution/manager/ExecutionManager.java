@@ -15,10 +15,10 @@ import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.ExecutionType;
 import theta.execution.api.Executor;
+import theta.execution.api.OrderState;
 import theta.execution.api.OrderStatus;
-import theta.execution.domain.ExecutionType;
-import theta.execution.domain.OrderState;
 import theta.execution.factory.ExecutableOrderFactory;
 import theta.util.ThetaMarketUtil;
 

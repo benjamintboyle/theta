@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.domain.ExecutionType;
+import theta.execution.api.ExecutionType;
 
 public class ExecutableOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

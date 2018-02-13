@@ -1,6 +1,7 @@
 package theta.execution.domain;
 
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.OrderState;
 import theta.execution.api.OrderStatus;
 
 public class DefaultOrderStatus implements OrderStatus {

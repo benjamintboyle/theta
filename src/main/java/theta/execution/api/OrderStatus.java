@@ -1,7 +1,5 @@
 package theta.execution.api;
 
-import theta.execution.domain.OrderState;
-
 public interface OrderStatus {
 
   public ExecutableOrder getOrder();

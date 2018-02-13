@@ -18,9 +18,9 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.api.OrderState;
 import theta.execution.api.OrderStatus;
 import theta.execution.domain.DefaultOrderStatus;
-import theta.execution.domain.OrderState;
 
 public class IbExecutionHandler implements ExecutionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

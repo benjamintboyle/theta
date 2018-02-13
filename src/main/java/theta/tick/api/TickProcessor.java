@@ -3,7 +3,7 @@ package theta.tick.api;
 import java.util.Optional;
 import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
-import theta.execution.domain.ExecutionType;
+import theta.execution.api.ExecutionType;
 import theta.tick.domain.TickType;
 
 public interface TickProcessor {

@@ -82,8 +82,8 @@ public class IbOrderHandler implements IOrderHandler {
 
       emitter.onNext(orderStatus);
 
-      if (orderStatus.getState() == theta.execution.domain.OrderState.FILLED
-          || orderStatus.getState() == theta.execution.domain.OrderState.CANCELLED) {
+      if (orderStatus.getState() == theta.execution.api.OrderState.FILLED
+          || orderStatus.getState() == theta.execution.api.OrderState.CANCELLED) {
         logger.debug("Sending complete for order: {}", orderStatus);
         emitter.onComplete();
       }
@@ -95,24 +95,24 @@ public class IbOrderHandler implements IOrderHandler {
   private Optional<theta.execution.api.OrderStatus> buildOrderStatus() {
 
     Optional<theta.execution.api.OrderStatus> optionalOrderStatus = Optional.empty();
-    Optional<theta.execution.domain.OrderState> optionalOrderState = Optional.empty();
+    Optional<theta.execution.api.OrderState> optionalOrderState = Optional.empty();
 
     switch (currentOrderState.status()) {
       case ApiPending:
       case PreSubmitted:
       case PendingSubmit:
       case PendingCancel:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.PENDING);
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.PENDING);
         break;
       case ApiCancelled:
       case Cancelled:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.CANCELLED);
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.CANCELLED);
         break;
       case Submitted:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.SUBMITTED);
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.SUBMITTED);
         break;
       case Filled:
-        optionalOrderState = Optional.of(theta.execution.domain.OrderState.FILLED);
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.FILLED);
         break;
       default:
         logger.warn("Unknown order status from brokerage: {}", currentOrderState.status());
