@@ -112,20 +112,26 @@ public class ExecutionManager implements Executor {
 
           OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
 
-          if (activeOrderStatus != null && activeOrderStatus.getState() != OrderState.FILLED
-              && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
+          if (activeOrderStatus != null && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
 
-            if (!order.equals(activeOrderStatus.getOrder())) {
+            if (activeOrderStatus.getState() == OrderState.SUBMITTED) {
 
-              logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order,
-                  activeOrderStatus);
-              executionHandler.modifyStockOrder(order);
+              if (!order.equals(activeOrderStatus.getOrder())) {
+
+                logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order,
+                    activeOrderStatus);
+                executionHandler.modifyStockOrder(order);
+              } else {
+                logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
+                    activeOrderStatus);
+              }
             } else {
-              logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
-                  activeOrderStatus);
+              logger.warn(
+                  "Attempted to modify order that is FILLED or not SUBMITTED yet. Modified order: {}, existing Order Statue: {}",
+                  order, activeOrderStatus);
             }
           } else {
-            logger.warn("Attempted to modify order that has invalid parameters. Order: {}", order);
+            logger.warn("Attempted to modify order for which an existing order does not exist. Order: {}", order);
           }
         }
         // Something was wrong with determining if new or modified order or their parameters

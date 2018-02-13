@@ -141,6 +141,7 @@ public class TickManager implements TickMonitor {
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
+    tickSubscriber.unsubscribeAll();
     tickManagerDisposables.dispose();
   }
 

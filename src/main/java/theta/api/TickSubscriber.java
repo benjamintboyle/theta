@@ -17,4 +17,6 @@ public interface TickSubscriber {
 
   public Set<PriceLevel> getPriceLevelsMonitored(Ticker ticker);
 
+  public void unsubscribeAll();
+
 }

@@ -2,10 +2,10 @@ package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class IbTickSubscriber implements TickSubscriber {
   private final Subject<Tick> tickSubject = PublishSubject.create();
 
   private final IbController ibController;
-  private final Map<Ticker, IbTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Ticker, IbTickHandler> ibTickHandlers = new ConcurrentHashMap<>();
 
   private final CompositeDisposable tickSubscriberDisposables = new CompositeDisposable();
 
@@ -50,12 +50,14 @@ public class IbTickSubscriber implements TickSubscriber {
   public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor) {
     Integer remainingPriceLevels = 0;
 
-    Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
+    Optional<TickHandler> ibTickHandler = getHandler(priceLevel.getTicker());
 
-    if (ibLastTickHandler.isPresent()) {
-      ibLastTickHandler.get().addPriceLevelMonitor(priceLevel);
+    if (ibTickHandler.isPresent()) {
+      ibTickHandler.get().addPriceLevelMonitor(priceLevel);
     } else {
+
       TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
+
       Disposable handlerDisposable = handler.getTicks().subscribe(
 
           tick -> {
@@ -64,7 +66,12 @@ public class IbTickSubscriber implements TickSubscriber {
 
           exception -> {
             logger.error("Error with Tick Handler {}", handler, exception);
+          },
+
+          () -> {
+            logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
           });
+
       tickSubscriberDisposables.add(handlerDisposable);
 
       remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickProcessor);
@@ -126,28 +133,39 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private void unsubscribeTick(Ticker ticker) {
 
-    IbTickHandler ibLastTickHandler = ibTickHandlers.remove(ticker);
+    IbTickHandler ibTickHandler = ibTickHandlers.remove(ticker);
 
-    if (ibLastTickHandler != null) {
+    if (ibTickHandler != null) {
 
-      logger.info("Unsubscribing from Tick Handler: {}", ibLastTickHandler.getTicker());
+      logger.info("Unsubscribing from Tick Handler: {}", ibTickHandler);
 
-      ibController.getController().cancelTopMktData(ibLastTickHandler);
+      ibController.getController().cancelTopMktData(ibTickHandler);
+      ibTickHandler.cancel();
     } else {
       logger.warn("IB Last Tick Handler does not exist for {}", ticker);
     }
   }
 
   private Optional<TickHandler> getHandler(Ticker ticker) {
+
     return Optional.ofNullable(ibTickHandlers.get(ticker));
   }
 
   private void logHandlers() {
 
     logger.info("Current Handlers: {}",
-        ibTickHandlers.values().stream().sorted(Comparator.comparing(IbTickHandler::getTicker)).collect(
+        ibTickHandlers.values().stream().sorted(Comparator.comparing(TickHandler::getTicker)).collect(
             Collectors.toList()));
+  }
 
+  @Override
+  public void unsubscribeAll() {
+
+    for (Ticker ticker : ibTickHandlers.keySet()) {
+      unsubscribeTick(ticker);
+    }
+
+    tickSubscriberDisposables.dispose();
   }
 
 }

@@ -33,7 +33,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final Subject<Tick> tickSubject = PublishSubject.create();
+  private final Subject<TickType> tickSubject = PublishSubject.create();
 
   private final Ticker ticker;
   private final TickProcessor tickProcessor;
@@ -41,25 +41,22 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private Double bidPrice = -1.0;
   private Double askPrice = -1.0;
   private Double lastPrice = -1.0;
-  private Double openPrice = -1.0;
-  private Double lowPrice = -1.0;
-  private Double highPrice = -1.0;
-  private Double haltedPrice = -1.0;
+  // private Double openPrice = -1.0;
+  // private Double lowPrice = -1.0;
+  // private Double highPrice = -1.0;
+  // private Double haltedPrice = -1.0;
 
   private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
-  private String bidExchange = "";
-  private String askExchange = "";
+  // private String bidExchange = "";
+  // private String askExchange = "";
+  //
+  // private Integer bidSize = -1;
+  // private Integer askSize = -1;
+  // private Double closePrice = -1.0;
+  // private Integer volume = -1;
+  // private int lastSize = -1;
 
-  private Integer bidSize = -1;
-  private Integer askSize = -1;
-  private Double closePrice = -1.0;
-  private Integer volume = -1;
-  private int lastSize = -1;
-
-  private Boolean isSnapshot;
-
-  private Tick latestTick = new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(TickType.LAST), getLast(),
-      getBid(), getAsk(), getLastTime());
+  // private Boolean isSnapshot;
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
@@ -74,7 +71,15 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   @Override
   public Flowable<Tick> getTicks() {
 
-    return tickSubject.toFlowable(BackpressureStrategy.LATEST);
+    return tickSubject.toFlowable(BackpressureStrategy.LATEST)
+        // Determine if tick is applicable for tick processor
+        .filter(tickType -> tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType)))
+        // Determine if time now is during market hours
+        .filter(tickType -> ThetaMarketUtil.isDuringMarketHours())
+        // Build tick with latest data
+        .map(tickType -> buildTick(tickType))
+        // Process tick to see if it should be propagated up to manager
+        .filter(tick -> processTick(tick));
   }
 
   @Override
@@ -86,30 +91,30 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     switch (tickType) {
       case BID:
         bidPrice = price;
-        checkTick(tickType);
+        tickSubject.onNext(tickType);
         break;
       case ASK:
         askPrice = price;
-        checkTick(tickType);
+        tickSubject.onNext(tickType);
         break;
       case LAST:
         lastPrice = price;
-        checkTick(tickType);
+        tickSubject.onNext(tickType);
         break;
       case CLOSE:
-        closePrice = price;
+        // closePrice = price;
         break;
       case OPEN:
-        openPrice = price;
+        // openPrice = price;
         break;
       case LOW:
-        lowPrice = price;
+        // lowPrice = price;
         break;
       case HIGH:
-        highPrice = price;
+        // highPrice = price;
         break;
       case HALTED:
-        haltedPrice = price;
+        // haltedPrice = price;
         break;
       default:
         logger.warn("'Tick Price' not logged for: {} @ {}", tickType, price);
@@ -119,32 +124,20 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public void tickSize(TickType tickType, int size) {
-    logger.info("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
+    logger.debug("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
         getTicker(), tickType, size);
 
-    switch (tickType) {
-      case BID_SIZE:
-        bidSize = size;
-        break;
-      case ASK_SIZE:
-        askSize = size;
-        break;
-      case VOLUME:
-        volume = size;
-        break;
-      case LAST_SIZE:
-        lastSize = size;
-        break;
-      default:
-        logger.warn("'Tick Size' not logged for: {} with size: {}", tickType, size);
-        break;
-    }
+    /*
+     * switch (tickType) { case BID_SIZE: bidSize = size; break; case ASK_SIZE: askSize = size; break;
+     * case VOLUME: volume = size; break; case LAST_SIZE: lastSize = size; break; default:
+     * logger.warn("'Tick Size' not logged for: {} with size: {}", tickType, size); break; }
+     */
   }
 
   @Override
   public void tickString(TickType tickType, String value) {
 
-    logger.info("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+    logger.debug("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
         getTicker(), tickType, value);
 
     switch (tickType) {
@@ -152,10 +145,10 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ZoneId.systemDefault());
         break;
       case BID_EXCH:
-        bidExchange = value;
+        // bidExchange = value;
         break;
       case ASK_EXCH:
-        askExchange = value;
+        // askExchange = value;
         break;
       default:
         logger.warn("'Tick String' not logged for: {} with value: {}", tickType, value);
@@ -165,102 +158,46 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public void marketDataType(MktDataType marketDataType) {
-    logger.info("Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}", getTicker(),
-        marketDataType);
+    logger.debug("Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}",
+        getTicker(), marketDataType);
 
-    isSnapshot = marketDataType == MktDataType.Frozen;
+    // isSnapshot = marketDataType == MktDataType.Frozen;
   }
 
   @Override
   public void tickSnapshotEnd() {
-    logger.info("Ticker: {}, Tick Snapshot End", getTicker());
+    logger.debug("Ticker: {}, Tick Snapshot End", getTicker());
   }
 
-  private void checkTick(TickType tickType) {
-
-    if (tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType))
-        && ThetaMarketUtil.isDuringMarketHours()) {
-
-      latestTick = new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLast(), getBid(),
-          getAsk(), getLastTime());
-
-      priceLevels.stream().filter(priceLevel -> tickProcessor.process(latestTick, priceLevel)).findAny().ifPresent(
-          priceLevel -> {
-            tickSubject.onNext(latestTick);
-          });
-    }
+  private Tick buildTick(TickType tickType) {
+    return new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLast(), getBid(), getAsk(),
+        getLastTime());
   }
 
+  private boolean processTick(Tick tick) {
+
+    return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.process(tick, priceLevel));
+  }
+
+  @Override
   public Ticker getTicker() {
     return ticker;
   }
 
-  public Double getBid() {
+  private Double getBid() {
     return bidPrice;
   }
 
-  public Double getAsk() {
+  private Double getAsk() {
     return askPrice;
   }
 
-  public Double getLast() {
+  private Double getLast() {
     return lastPrice;
   }
 
-  public Double getOpenPrice() {
-    return openPrice;
-  }
-
-  public Double getLowPrice() {
-    return lowPrice;
-  }
-
-  public Double getHighPrice() {
-    return highPrice;
-  }
-
-  public Double getHaltedPrice() {
-    return haltedPrice;
-  }
-
-  public ZonedDateTime getLastTime() {
+  private ZonedDateTime getLastTime() {
     return lastTime;
-  }
-
-  public String getBidExchange() {
-    return bidExchange;
-  }
-
-  public String getAskExchange() {
-    return askExchange;
-  }
-
-  public Integer getBidSize() {
-    return bidSize;
-  }
-
-  public Integer getAskSize() {
-    return askSize;
-  }
-
-  public Double getClose() {
-    return closePrice;
-  }
-
-  public Integer getVolume() {
-    return volume;
-  }
-
-  public Integer getLastSize() {
-    return lastSize;
-  }
-
-  public Boolean isSnapshot() {
-    return isSnapshot;
-  }
-
-  public Tick getLatestTick() {
-    return latestTick;
   }
 
   @Override
@@ -269,15 +206,13 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     if (priceLevel.getTicker().equals(getTicker())) {
 
       logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          getTicker());
+          toString());
 
       priceLevels.add(priceLevel);
 
     } else {
       logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), getTicker());
     }
-
-    logger.info(toString());
 
     return priceLevels.size();
   }
@@ -288,16 +223,14 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     if (priceLevel.getTicker().equals(getTicker())) {
 
       logger.info("Removing Price Level {} ${} from Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          getTicker());
+          toString());
 
       if (!priceLevels.remove(priceLevel)) {
-        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, getTicker());
+        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, toString());
       }
     } else {
-      logger.error("Attempted to remove PriceLevel for '{}' from '{}' Monitor", priceLevel.getTicker(), getTicker());
+      logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(), toString());
     }
-
-    logger.info(toString());
 
     return priceLevels.size();
   }
@@ -309,10 +242,16 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   @Override
+  public void cancel() {
+
+    tickSubject.onComplete();
+  }
+
+  @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Tick Handler Price Levels for ");
+    builder.append("Tick Handler ");
     builder.append(getTicker());
     builder.append(": ");
 
