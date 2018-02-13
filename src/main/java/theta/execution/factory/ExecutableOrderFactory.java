@@ -8,7 +8,6 @@ import theta.domain.Stock;
 import theta.domain.Theta;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.domain.ExecutionType;
-import theta.execution.domain.ReverseStockOrder;
 
 public class ExecutableOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -17,12 +16,7 @@ public class ExecutableOrderFactory {
       Optional<Double> limitPrice) {
     logger.debug("Reversing Position: {}", stock);
 
-    ExecutableOrder order = ReverseStockOrder.reverse(stock, executionType, limitPrice);
-
-    if (!order.isValid(stock)) {
-      logger.error("Invalid order for Reverse Trade of: {}, for {}", order, stock);
-      order = null;
-    }
+    ExecutableOrder order = ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
 
     return Optional.ofNullable(order);
   }

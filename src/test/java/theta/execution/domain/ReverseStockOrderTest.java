@@ -12,6 +12,7 @@ import theta.domain.Stock;
 import theta.domain.StockTest;
 import theta.domain.Ticker;
 import theta.execution.api.ExecutableOrder;
+import theta.execution.factory.ReverseStockOrderFactory;
 
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ReverseStockOrderTest {
@@ -20,11 +21,11 @@ public class ReverseStockOrderTest {
   private final Stock wrongQuantityStock = Stock.of(Ticker.from("CHK"), 101L, 10.0);
   private final Stock shortStock = Stock.of(Ticker.from("CHK"), -100L, 10.0);
 
-  private final ExecutableOrder sutLong = ReverseStockOrder.reverse(longStock, ExecutionType.MARKET, Optional.empty());
+  private final ExecutableOrder sutLong = ReverseStockOrderFactory.reverse(longStock, ExecutionType.MARKET, Optional.empty());
   private final ExecutableOrder sutQuantity =
-      ReverseStockOrder.reverse(wrongQuantityStock, ExecutionType.MARKET, Optional.empty());
+      ReverseStockOrderFactory.reverse(wrongQuantityStock, ExecutionType.MARKET, Optional.empty());
   private final ExecutableOrder sutShort =
-      ReverseStockOrder.reverse(shortStock, ExecutionType.MARKET, Optional.empty());
+      ReverseStockOrderFactory.reverse(shortStock, ExecutionType.MARKET, Optional.empty());
 
   @Test
   public void validateLongToLongFailureTest() {

@@ -11,7 +11,7 @@ import theta.domain.Ticker;
 import theta.domain.api.SecurityType;
 import theta.execution.api.ExecutableOrder;
 
-public abstract class AbstractStockOrder implements ExecutableOrder {
+public class DefaultStockOrder implements ExecutableOrder {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
@@ -23,7 +23,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
   private Optional<Double> limitPrice = Optional.empty();
   private Optional<Integer> brokerId = Optional.empty();
 
-  public AbstractStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
+  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
     id = stock.getId();
     ticker = stock.getTicker();
     this.quantity = quantity;
@@ -33,7 +33,7 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
     logger.debug("Built: {}", toString());
   }
 
-  public AbstractStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
+  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
       Double limitPrice) {
     this(stock, quantity, action, executionType);
 
@@ -135,8 +135,8 @@ public abstract class AbstractStockOrder implements ExecutableOrder {
       isEqual = true;
     }
 
-    if (obj instanceof AbstractStockOrder) {
-      final AbstractStockOrder other = (AbstractStockOrder) obj;
+    if (obj instanceof DefaultStockOrder) {
+      final DefaultStockOrder other = (DefaultStockOrder) obj;
 
       isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
           && Objects.equals(getQuantity(), other.getQuantity())
