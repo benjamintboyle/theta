@@ -105,7 +105,6 @@ public class TickManager implements TickMonitor {
               Collectors.toList());
 
       // FIXME: This doesn't correctly calculate limit price
-
       for (final Stock stock : StockUtil.consolidateStock(thetasToReverse)) {
 
         Disposable disposableTrade = executor
