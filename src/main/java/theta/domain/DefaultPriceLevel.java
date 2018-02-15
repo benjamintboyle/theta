@@ -86,7 +86,7 @@ public class DefaultPriceLevel implements PriceLevel {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Price Level [ Ticker: ");
+    builder.append("[ Ticker: ");
     builder.append(getTicker());
 
     builder.append(", Price: ");

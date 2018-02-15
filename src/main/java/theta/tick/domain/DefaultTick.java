@@ -61,8 +61,7 @@ public class DefaultTick implements Tick {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Tick [");
-    builder.append("Ticker: ");
+    builder.append("[ Ticker: ");
     builder.append(getTicker());
     builder.append(", Last Price: ");
     builder.append(getLastPrice());
@@ -75,7 +74,7 @@ public class DefaultTick implements Tick {
     builder.append(", Type: ");
     builder.append(getTickType());
 
-    builder.append("]");
+    builder.append(" ]");
 
     return builder.toString();
   }

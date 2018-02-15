@@ -72,6 +72,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
           () -> {
             logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
+            unsubscribeTick(priceLevel.getTicker());
           });
 
       tickSubscriberDisposables.add(handlerDisposable);
@@ -92,11 +93,9 @@ public class IbTickSubscriber implements TickSubscriber {
     Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
 
     if (ibLastTickHandler.isPresent()) {
+
       remainingPriceLevels = ibLastTickHandler.get().removePriceLevelMonitor(priceLevel);
 
-      if (remainingPriceLevels == 0) {
-        unsubscribeTick(priceLevel.getTicker());
-      }
     } else {
       logger.warn("IB Last Tick Handler does not exist for {}", priceLevel.getTicker());
     }

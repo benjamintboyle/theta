@@ -68,7 +68,7 @@ public class ExecutionManager implements Executor {
         // New order
         if (!isModifiedOrder && !order.getBrokerId().isPresent()) {
 
-          logger.info("Executing order: {}", order);
+          logger.info("Executing Order {}", order);
 
           final Disposable disposableExecutionHandler = executionHandler.executeStockOrder(order).subscribe(
 

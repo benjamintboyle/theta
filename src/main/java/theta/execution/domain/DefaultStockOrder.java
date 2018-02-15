@@ -32,8 +32,6 @@ public class DefaultStockOrder implements ExecutableOrder {
     this.quantity = quantity;
     this.action = Objects.requireNonNull(action, "Execution Action cannot be null");
     this.executionType = Objects.requireNonNull(executionType, "Execution Type cannot be null");
-
-    logger.debug("Built: {}", toString());
   }
 
   public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
@@ -42,7 +40,7 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
-    logger.debug("Built: {}", toString());
+    logger.debug("Built {}", toString());
   }
 
   @Override
@@ -95,7 +93,7 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Stock Order [");
+    builder.append("[ ");
 
     builder.append("Ticker: ");
     builder.append(getTicker());

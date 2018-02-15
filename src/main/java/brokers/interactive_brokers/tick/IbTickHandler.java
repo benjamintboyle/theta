@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,10 @@ import com.ib.client.Types.MktDataType;
 import com.ib.controller.ApiController.ITopMktDataHandler;
 import brokers.interactive_brokers.util.IbTickUtil;
 import io.reactivex.BackpressureStrategy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import theta.ThetaSchedulersFactory;
@@ -60,6 +64,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   // private Boolean isSnapshot;
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
+
+  private final CompositeDisposable tickHandlerDisposables = new CompositeDisposable();
 
   public IbTickHandler(Ticker ticker, TickProcessor tickProcessor) {
     this.ticker = Objects.requireNonNull(ticker, "Ticker cannot be null for Tick Processor initialization.");
@@ -231,6 +237,27 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       if (!priceLevels.remove(priceLevel)) {
         logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, toString());
       }
+
+      // Wait a second and then check if there are no price levels to monitor. Cancel if price level count
+      // is 0.
+      if (priceLevels.size() == 0) {
+
+        Disposable cancelDisposable =
+            Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread()).subscribe(
+
+                () -> {
+                  if (priceLevels.size() == 0) {
+                    cancel();
+                  }
+                },
+
+                exception -> {
+                  logger.error("Issue with cancelling Tick Handler", exception);
+                });
+
+        tickHandlerDisposables.add(cancelDisposable);
+      }
+
     } else {
       logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(), toString());
     }
@@ -247,16 +274,22 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   @Override
   public void cancel() {
 
-    tickSubject.onComplete();
+    if (!tickSubject.hasComplete()) {
+      tickSubject.onComplete();
+    }
+
+    if (!tickHandlerDisposables.isDisposed()) {
+      tickHandlerDisposables.dispose();
+    }
+
   }
 
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Tick Handler ");
     builder.append(getTicker());
-    builder.append(": ");
+    builder.append(" ");
 
     List<Double> fallsBelow = priceLevels.stream()
         .filter(priceLevel -> priceLevel.tradeIf() == PriceLevelDirection.FALLS_BELOW)
@@ -270,7 +303,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     if (fallsBelow.size() > 0) {
       builder.append(PriceLevelDirection.FALLS_BELOW);
-      builder.append(" ");
+      builder.append("=");
       builder.append(fallsBelow);
 
       if (risesAbove.size() > 0) {
@@ -280,7 +313,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     if (risesAbove.size() > 0) {
       builder.append(PriceLevelDirection.RISES_ABOVE);
-      builder.append(" ");
+      builder.append("=");
       builder.append(risesAbove);
     }
 
