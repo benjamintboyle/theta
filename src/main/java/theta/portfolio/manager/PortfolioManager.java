@@ -114,18 +114,7 @@ public class PortfolioManager implements PositionProvider {
 
     logger.info("Processing Position: {}", security);
 
-    removePositionIfExists(security).stream()
-        // Filter out price levels that still exist in thetas
-        .filter(
-
-            deletablePriceLevel -> thetaIdMap.values().stream().map(DefaultPriceLevel::of).noneMatch(
-                existingPriceLevel -> existingPriceLevel.equals(deletablePriceLevel)))
-        .distinct()
-        .forEach(priceLevel -> {
-
-          logger.info("Removing monitor. No more positions for Price Level: {}", priceLevel);
-          monitor.deleteMonitor(priceLevel);
-        });
+    removePositionIfExists(security);
 
     if (security.getQuantity() != 0) {
       securityIdMap.put(security.getId(), security);

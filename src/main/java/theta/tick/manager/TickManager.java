@@ -113,6 +113,14 @@ public class TickManager implements TickMonitor {
 
                 () -> {
                   logger.info("Trade complete for {}", stock);
+
+                  thetasToReverse.stream()
+                      .filter(theta -> theta.getStock().getId().equals(stock.getId()))
+                      .map(DefaultPriceLevel::of)
+                      .distinct()
+                      .forEach(
+
+                          priceLevel -> deleteMonitor(priceLevel));
                 },
 
                 exception -> {
@@ -122,14 +130,6 @@ public class TickManager implements TickMonitor {
         );
 
         tickManagerDisposables.add(disposableTrade);
-      }
-
-    } else {
-      logger.warn("Unsubscribing Tick Monitor for {}. Received 0 Positions from Position Provider for Tick: {}",
-          tick.getTicker(), tick);
-
-      for (PriceLevel priceLevel : tickSubscriber.getPriceLevelsMonitored(tick.getTicker())) {
-        tickSubscriber.removePriceLevelMonitor(priceLevel);
       }
     }
   }

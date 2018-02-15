@@ -35,27 +35,27 @@ public class StockUtil {
 
   public static List<Stock> consolidateStock(List<Theta> thetasToConvert) {
 
-    final Map<UUID, Stock> thetasToReverse = new HashMap<>();
+    final Map<UUID, Stock> stocksToReverse = new HashMap<>();
 
     for (final Theta theta : thetasToConvert) {
 
-      if (thetasToReverse.containsKey(theta.getStock().getId())) {
+      if (stocksToReverse.containsKey(theta.getStock().getId())) {
 
         final Optional<Stock> combinedStock =
-            StockUtil.of(thetasToReverse.get(theta.getStock().getId()), theta.getStock());
+            StockUtil.of(stocksToReverse.get(theta.getStock().getId()), theta.getStock());
 
         if (combinedStock.isPresent()) {
-          thetasToReverse.put(theta.getStock().getId(), combinedStock.get());
+          stocksToReverse.put(theta.getStock().getId(), combinedStock.get());
         } else {
           logger.error("Stock with same Id cannot be combined: {} {}", theta.getStock(),
-              thetasToReverse.get(theta.getId()));
+              stocksToReverse.get(theta.getId()));
         }
       } else {
-        thetasToReverse.put(theta.getStock().getId(), theta.getStock());
+        stocksToReverse.put(theta.getStock().getId(), theta.getStock());
       }
     }
 
-    return new ArrayList<>(thetasToReverse.values());
+    return new ArrayList<>(stocksToReverse.values());
   }
 
   @Deprecated
