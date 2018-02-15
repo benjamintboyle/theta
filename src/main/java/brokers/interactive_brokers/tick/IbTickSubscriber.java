@@ -55,7 +55,11 @@ public class IbTickSubscriber implements TickSubscriber {
     Optional<TickHandler> ibTickHandler = getHandler(priceLevel.getTicker());
 
     if (ibTickHandler.isPresent()) {
+
       ibTickHandler.get().addPriceLevelMonitor(priceLevel);
+
+      logHandlers();
+
     } else {
 
       TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
@@ -79,8 +83,6 @@ public class IbTickSubscriber implements TickSubscriber {
 
       remainingPriceLevels = addPriceLevelMonitor(priceLevel, tickProcessor);
     }
-
-    logHandlers();
 
     return remainingPriceLevels;
   }
