@@ -247,6 +247,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
                 () -> {
                   if (priceLevels.size() == 0) {
+                    logger.debug("Unsubscribing Tick Handler: {}", toString());
                     cancel();
                   }
                 },

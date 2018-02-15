@@ -127,7 +127,7 @@ public class ExecutionManager implements Executor {
               }
             } else {
               logger.warn(
-                  "Attempted to modify order that is FILLED or not SUBMITTED yet. Modified order: {}, existing Order Statue: {}",
+                  "Attempted to modify order that is not SUBMITTED or FILLED. Modified order: {}, existing Order Statue: {}",
                   order, activeOrderStatus);
             }
           } else {

@@ -73,8 +73,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void position(String account, Contract contract, double position, double avgCost) {
-    logger.debug(
-        "Handler has received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
+    logger.debug("Received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
         position, IbStringUtil.toStringContract(contract), account, avgCost);
 
     processIbPosition(contract, position, avgCost);

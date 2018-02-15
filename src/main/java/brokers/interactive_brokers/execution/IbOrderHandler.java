@@ -132,12 +132,11 @@ public class IbOrderHandler implements IOrderHandler {
 
     StringBuilder builder = new StringBuilder();
 
-    builder.append("Order Handler: ");
-
+    builder.append("Order: ");
     builder.append(order);
 
     builder.append(", Order State: ");
-    builder.append(currentOrderState);
+    builder.append(IbStringUtil.toStringOrderState(currentOrderState));
 
     builder.append(", Filled: ");
     builder.append(filled);
