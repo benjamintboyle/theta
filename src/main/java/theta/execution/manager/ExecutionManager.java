@@ -115,11 +115,11 @@ public class ExecutionManager implements Executor {
         },
 
         () -> {
-          logger.info("Order successfully filled: {}", order);
-          Optional<OrderStatus> filledOrder = Optional.ofNullable(activeOrderStatuses.remove(order.getId()));
 
-          if (filledOrder.isPresent()) {
-            logger.info("Order removed from active orders list: {}", order);
+          logger.info("Order successfully filled: {}", order);
+
+          if (activeOrderStatuses.remove(order.getId()) != null) {
+            logger.debug("Order removed from active orders list: {}", order);
           } else {
             logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
           }
