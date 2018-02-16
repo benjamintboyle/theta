@@ -1,6 +1,7 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +21,27 @@ public class IbOrderHandler implements IOrderHandler {
   private final ExecutableOrder order;
 
   private OrderState currentOrderState = null;
-  private Double filled = null;
-  private Double remaining = null;
-  private Double avgFillPrice = null;
-  // private Long permId = null;
-  // private Integer parentId = null;
-  // private Double lastFillPrice = null;
-  // private Integer clientId = null;
+  private double filled = 0.0;
+  private double remaining = 0.0;
+  private double avgFillPrice = 0.0;
+  // private long permId = 0L;
+  // private int parentId = 0;
+  // private double lastFillPrice = 0.0;
+  // private int clientId = 0;
   // private String whyHeld = null;
 
   public IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
-    this.order = order;
-    this.emitter = emitter;
+    this.order = Objects.requireNonNull(order, "Order cannot be null");
+    this.emitter = Objects.requireNonNull(emitter, "Emitter for Order Handler must not be null");
+  }
+
+  public static IbOrderHandler of(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
+
+    IbOrderHandler handler = new IbOrderHandler(order, emitter);
+
+    handler.sendInitialOrderStatus();
+
+    return handler;
   }
 
   @Override
@@ -125,6 +135,17 @@ public class IbOrderHandler implements IOrderHandler {
     }
 
     return optionalOrderStatus;
+  }
+
+  public void sendInitialOrderStatus() {
+
+    logger.debug("Sending initial Order Status");
+
+    if (!(currentOrderState.status() == OrderStatus.Filled)) {
+      orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
+    } else {
+      logger.warn("Not sending Initial OrderStatus as state already indicates Filled");
+    }
   }
 
   @Override

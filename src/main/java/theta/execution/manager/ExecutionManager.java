@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.api.ExecutionHandler;
@@ -70,79 +71,88 @@ public class ExecutionManager implements Executor {
 
           logger.info("Executing Order {}", order);
 
-          final Disposable disposableExecutionHandler = executionHandler.executeStockOrder(order).subscribe(
-
-              orderStatus -> {
-                logger.info("Order Status: {}, State: {}, Commission: {}, Filled: {}, Remaining: {}",
-                    orderStatus.getOrder(), orderStatus.getState(), orderStatus.getCommission(),
-                    orderStatus.getFilled(), orderStatus.getRemaining());
-                updateActiveOrderStatus(orderStatus);
-              },
-
-              // TODO: Should probably correct cancel request
-              error -> {
-                logger.error("Order Handler encountered an error", error);
-                Disposable disposableCancelOrder = executionHandler.cancelStockOrder(order).subscribe();
-                compositeDisposable.add(disposableCancelOrder);
-
-                logger.warn("Removing order from active orders: {}", order);
-                activeOrderStatuses.remove(order.getId());
-
-                emitter.onError(error);
-              },
-
-              () -> {
-                logger.info("Order successfully filled: {}", order);
-                Optional<OrderStatus> filledOrder = Optional.ofNullable(activeOrderStatuses.remove(order.getId()));
-
-                if (filledOrder.isPresent()) {
-                  logger.info("Order removed from active orders list: {}", order);
-                } else {
-                  logger.warn("Received filled order notification for which there is no Active Order record: {}",
-                      order);
-                }
-
-                emitter.onComplete();
-              });
+          final Disposable disposableExecutionHandler = executeStockOrderWithSubscription(order, emitter);
 
           compositeDisposable.add(disposableExecutionHandler);
         }
         // Modify existing order, if correct attributes are set
         else if (isModifiedOrder) {
 
-          OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
-
-          if (activeOrderStatus != null && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
-
-            if (activeOrderStatus.getState() == OrderState.SUBMITTED) {
-
-              if (!order.equals(activeOrderStatus.getOrder())) {
-
-                logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order,
-                    activeOrderStatus);
-                executionHandler.modifyStockOrder(order);
-              } else {
-                logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
-                    activeOrderStatus);
-              }
-            } else {
-              logger.warn(
-                  "Attempted to modify order that is not SUBMITTED or FILLED. Modified order: {}, existing Order Statue: {}",
-                  order, activeOrderStatus);
-            }
-          } else {
-            logger.warn("Attempted to modify order for which an existing order does not exist. Order: {}", order);
-          }
+          modifyStockOrder(order);
         }
         // Something was wrong with determining if new or modified order or their parameters
         else {
           logger.error("Existing order. Existing Order Status: {}. Order will not be executed: {}",
               activeOrderStatuses.get(order.getId()), order);
         }
-      } else {
+      }
+      // Market not open
+      else {
         logger.warn("Not during market hours. Order will not be executed: {}", order);
       }
     });
+  }
+
+  private Disposable executeStockOrderWithSubscription(ExecutableOrder order, CompletableEmitter emitter) {
+    return executionHandler.executeStockOrder(order).subscribe(
+
+        orderStatus -> {
+          logger.info("Order Status: {}, State: {}, Commission: {}, Filled: {}, Remaining: {}", orderStatus.getOrder(),
+              orderStatus.getState(), orderStatus.getCommission(), orderStatus.getFilled(), orderStatus.getRemaining());
+          updateActiveOrderStatus(orderStatus);
+        },
+
+        // TODO: Should probably correct cancel request
+        error -> {
+          logger.error("Order Handler encountered an error", error);
+          Disposable disposableCancelOrder = executionHandler.cancelStockOrder(order).subscribe();
+          compositeDisposable.add(disposableCancelOrder);
+
+          logger.warn("Removing order from active orders: {}", order);
+          activeOrderStatuses.remove(order.getId());
+
+          emitter.onError(error);
+        },
+
+        () -> {
+          logger.info("Order successfully filled: {}", order);
+          Optional<OrderStatus> filledOrder = Optional.ofNullable(activeOrderStatuses.remove(order.getId()));
+
+          if (filledOrder.isPresent()) {
+            logger.info("Order removed from active orders list: {}", order);
+          } else {
+            logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
+          }
+
+          emitter.onComplete();
+        });
+  }
+
+  private void modifyStockOrder(ExecutableOrder order) {
+
+    OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
+
+    if (activeOrderStatus != null && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
+
+      if (activeOrderStatus.getState() == OrderState.SUBMITTED) {
+
+        if (!order.equals(activeOrderStatus.getOrder())) {
+
+          logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order, activeOrderStatus);
+          executionHandler.modifyStockOrder(order);
+        } else {
+          logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
+              activeOrderStatus);
+        }
+      } else {
+        logger.warn(
+            "Attempted to modify order that is not SUBMITTED or FILLED. Modified order: {}, existing Order Statue: {}",
+            order, activeOrderStatus);
+      }
+    } else {
+      logger.warn("Attempted to modify order for which an existing order does not exist. Order: {}", order);
+    }
+
   }
 
   private boolean isModifiedOrder(ExecutableOrder order) {

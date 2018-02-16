@@ -18,9 +18,7 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.api.OrderState;
 import theta.execution.api.OrderStatus;
-import theta.execution.domain.DefaultOrderStatus;
 
 public class IbExecutionHandler implements ExecutionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -38,20 +36,18 @@ public class IbExecutionHandler implements ExecutionHandler {
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.<OrderStatus>create(emitter -> {
 
-      OrderStatus initialOrderStatus =
-          new DefaultOrderStatus(order, OrderState.PENDING, 0.0, 0, order.getQuantity(), 0.0);
-
-      emitter.onNext(initialOrderStatus);
-
       orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
+
       executeStockOrder(order, orderHandlerMapper.get(order));
 
-    }, BackpressureStrategy.BUFFER).doOnComplete(
+    }, BackpressureStrategy.BUFFER)
 
-        () -> {
-          IbOrderHandler orderHandler = orderHandlerMapper.remove(order);
-          logger.debug("Removed Order Handler: {}", orderHandler);
-        });
+        .doOnComplete(
+
+            () -> {
+              IbOrderHandler orderHandler = orderHandlerMapper.remove(order);
+              logger.debug("Removed Order Handler: {}", orderHandler);
+            });
   }
 
   @Override
@@ -71,8 +67,13 @@ public class IbExecutionHandler implements ExecutionHandler {
           .findFirst();
 
       if (ibOrderHandler.isPresent()) {
+
         executeStockOrder(order, ibOrderHandler.get());
+
+        ibOrderHandler.get().sendInitialOrderStatus();
+
         isOrderExecuted = true;
+
       } else {
         logger.error("Order will not be executed. No Order Handler available for order: {}", order);
       }
