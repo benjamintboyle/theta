@@ -14,21 +14,21 @@ public class Option implements Security {
 
   private UUID id = UUID.randomUUID();
   private final SecurityType type;
-  private final Ticker backingTicker;
+  private final Ticker ticker;
   private final long quantity;
-  private final Double strikePrice;
+  private final double strikePrice;
   private final LocalDate expiration;
-  private final Double averageTradePrice;
+  private final double averageTradePrice;
 
-  public Option(UUID id, SecurityType type, Ticker backingTicker, long quantity, Double strikePrice,
-      LocalDate expiration, Double averageTradePrice) {
+  public Option(UUID id, SecurityType type, Ticker ticker, long quantity, double strikePrice, LocalDate expiration,
+      double averageTradePrice) {
 
-    this.id = id;
-    this.type = type;
-    this.backingTicker = backingTicker;
+    this.id = Objects.requireNonNull(id, "Id must not be null");
+    this.type = Objects.requireNonNull(type, "Security Type must not be null");
+    this.ticker = Objects.requireNonNull(ticker, "Ticker must not be null");
     this.quantity = quantity;
     this.strikePrice = strikePrice;
-    this.expiration = expiration;
+    this.expiration = Objects.requireNonNull(expiration, "Expiration Date must not be null");
     this.averageTradePrice = averageTradePrice;
 
     logger.debug("Built {}", toString());
@@ -46,7 +46,7 @@ public class Option implements Security {
 
   @Override
   public Ticker getTicker() {
-    return backingTicker;
+    return ticker;
   }
 
   @Override
@@ -54,12 +54,12 @@ public class Option implements Security {
     return quantity;
   }
 
-  public Double getStrikePrice() {
+  public double getStrikePrice() {
     return strikePrice;
   }
 
   @Override
-  public Double getPrice() {
+  public double getPrice() {
     return getStrikePrice();
   }
 
@@ -67,7 +67,7 @@ public class Option implements Security {
     return expiration;
   }
 
-  public Double getAverageTradePrice() {
+  public double getAverageTradePrice() {
     return averageTradePrice;
   }
 
@@ -105,22 +105,22 @@ public class Option implements Security {
 
   @Override
   public boolean equals(Object obj) {
+
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
+
+    if (obj instanceof Option) {
+
+      final Option other = (Option) obj;
+
+      return Objects.equals(getId(), other.getId()) && Objects.equals(getSecurityType(), other.getSecurityType())
+          && Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
+          && Objects.equals(getStrikePrice(), other.getStrikePrice())
+          && Objects.equals(getExpiration(), other.getExpiration())
+          && Objects.equals(getAverageTradePrice(), other.getAverageTradePrice());
     }
 
-    final Option other = (Option) obj;
-
-    return Objects.equals(getId(), other.getId()) && Objects.equals(getSecurityType(), other.getSecurityType())
-        && Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
-        && Objects.equals(getStrikePrice(), other.getStrikePrice())
-        && Objects.equals(getExpiration(), other.getExpiration())
-        && Objects.equals(getAverageTradePrice(), other.getAverageTradePrice());
+    return false;
   }
 }

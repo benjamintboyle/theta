@@ -4,6 +4,9 @@ import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,7 @@ import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
 import theta.domain.Theta;
+import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
@@ -33,6 +37,8 @@ public class TickManager implements TickMonitor {
 
   private PositionProvider positionProvider;
   private Executor executor;
+
+  private final ConcurrentMap<Ticker, Set<Theta>> ibTickHandlers = new ConcurrentHashMap<>();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);

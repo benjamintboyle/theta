@@ -42,7 +42,7 @@ public class Stock implements Security {
   }
 
   @Override
-  public Double getPrice() {
+  public double getPrice() {
     return averageTradePrice;
   }
 
@@ -112,4 +112,5 @@ public class Stock implements Security {
 
     return builder.toString();
   }
+
 }

@@ -69,7 +69,7 @@ public class ThetaTradeFactory {
     for (final Option call : calls) {
       final List<Option> straddlablePuts = puts.stream()
           .filter(put -> put.getExpiration().equals(call.getExpiration()))
-          .filter(put -> put.getStrikePrice().equals(call.getStrikePrice()))
+          .filter(put -> Double.compare(put.getStrikePrice(), call.getStrikePrice()) == 0)
           .collect(Collectors.toList());
 
       if (straddlablePuts.size() > 1) {
@@ -79,11 +79,7 @@ public class ThetaTradeFactory {
       final Optional<Option> put = straddlablePuts.stream().findFirst();
 
       if (put.isPresent()) {
-        final Optional<ShortStraddle> straddle = ShortStraddle.of(call, put.get());
-
-        if (straddle.isPresent()) {
-          straddleList.add(straddle.get());
-        }
+        straddleList.add(ShortStraddle.of(call, put.get()));
       }
     }
 

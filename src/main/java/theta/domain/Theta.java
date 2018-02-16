@@ -17,22 +17,15 @@ public class Theta implements Security {
   private final ShortStraddle straddle;
 
   private Theta(Stock stock, ShortStraddle straddle) {
-    this.stock = stock;
-    this.straddle = straddle;
-    logger.info("Built Theta: {}", this);
+    this.stock = Objects.requireNonNull(stock, "Stock must not be null");
+    this.straddle = Objects.requireNonNull(straddle, "Straddle must not be null");
+
+    logger.debug("Built Theta: {}", this);
   }
 
   public static Optional<Theta> of(Stock stock, Option call, Option put) {
 
-    final Optional<ShortStraddle> straddle = ShortStraddle.of(call, put);
-
-    Optional<Theta> theta = Optional.empty();
-
-    if (straddle.isPresent()) {
-      theta = Theta.of(stock, straddle.get());
-    }
-
-    return theta;
+    return Theta.of(stock, ShortStraddle.of(call, put));
   }
 
   public static Optional<Theta> of(Stock stock, ShortStraddle straddle) {
@@ -64,7 +57,7 @@ public class Theta implements Security {
   }
 
   @Override
-  public Double getPrice() {
+  public double getPrice() {
     return getStraddle().getPrice();
   }
 
@@ -157,14 +150,16 @@ public class Theta implements Security {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == this) {
+
+    if (this == obj) {
       return true;
     }
 
     if (obj instanceof Theta) {
       final Theta other = (Theta) obj;
 
-      return Objects.equals(getStock(), other.getStock()) && Objects.equals(getStraddle(), other.getStraddle());
+      return Objects.equals(getId(), other.getId()) && Objects.equals(getStock(), other.getStock())
+          && Objects.equals(getStraddle(), other.getStraddle());
     }
 
     return false;

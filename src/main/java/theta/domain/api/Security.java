@@ -13,7 +13,7 @@ public interface Security {
 
   public long getQuantity();
 
-  public Double getPrice();
+  public double getPrice();
 
   @Override
   public String toString();

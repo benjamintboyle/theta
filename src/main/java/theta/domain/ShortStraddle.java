@@ -2,7 +2,7 @@ package theta.domain;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,19 +23,15 @@ public class ShortStraddle implements Security {
     this.put = put;
   }
 
-  public static Optional<ShortStraddle> of(Option call, Option put) {
+  public static ShortStraddle of(Option call, Option put) {
 
-    Optional<ShortStraddle> straddle = Optional.empty();
+    ShortStraddle straddle = new ShortStraddle(call, put);
 
-    if (ShortStraddle.isValidStraddle(call, put)) {
-      straddle = Optional.of(new ShortStraddle(call, put));
+    if (!straddle.isValid()) {
+      logger.error("Short Straddle invalid: {}", straddle);
     }
 
-    if (straddle.isPresent()) {
-      logger.debug("Built {}", straddle.get());
-    } else {
-      logger.warn("Could not build Short Straddle with: {}, {}", call, put);
-    }
+    logger.debug("Built {}", straddle);
 
     return straddle;
   }
@@ -61,7 +57,7 @@ public class ShortStraddle implements Security {
   }
 
   @Override
-  public Double getPrice() {
+  public double getPrice() {
     return getStrikePrice();
   }
 
@@ -90,50 +86,50 @@ public class ShortStraddle implements Security {
    * @param put
    * @return
    */
-  private static boolean isValidStraddle(Option call, Option put) {
+  private boolean isValid() {
 
     boolean isValidShortStraddle = true;
     final String prefixMessage = "Short Straddle - ";
 
     // Are equal tickers
-    if (!call.getTicker().equals(put.getTicker())) {
-      logger.error("{}Tickers are not equal - Call: {}, Put: {}", prefixMessage, call, put);
+    if (!getCall().getTicker().equals(put.getTicker())) {
+      logger.error("{}Tickers are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
 
     // Is CALL
-    if (call.getSecurityType() != SecurityType.CALL) {
-      logger.error("{}Option is not a CALL: {}", prefixMessage, call);
+    if (getCall().getSecurityType() != SecurityType.CALL) {
+      logger.error("{}Option is not a CALL: {}", prefixMessage, getCall());
       isValidShortStraddle = false;
     }
 
     // Is PUT
-    if (put.getSecurityType() != SecurityType.PUT) {
-      logger.error("{}Option is not a PUT: {}", prefixMessage, put);
+    if (getPut().getSecurityType() != SecurityType.PUT) {
+      logger.error("{}Option is not a PUT: {}", prefixMessage, getPut());
       isValidShortStraddle = false;
     }
 
     // Are equal quantities
-    if (!(call.getQuantity() == (put.getQuantity()))) {
-      logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, call, put);
+    if (!(getCall().getQuantity() == (getPut().getQuantity()))) {
+      logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
 
     // Quantity must be less than 0 (becasue it is a SHORT straddle)
-    if (call.getQuantity() >= 0 || put.getQuantity() >= 0) {
-      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage, call, put);
+    if (getCall().getQuantity() >= 0 || getPut().getQuantity() >= 0) {
+      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
 
     // Are equal strike price
-    if (!call.getStrikePrice().equals(put.getStrikePrice())) {
-      logger.error("{}Strike Prices are not equal - Call: {}, Put: {}", prefixMessage, call, put);
+    if (Double.compare(getCall().getStrikePrice(), getPut().getStrikePrice()) == 0) {
+      logger.error("{}Strike Prices are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
 
     // Are equal expiration price
-    if (!call.getExpiration().equals(put.getExpiration())) {
-      logger.error("{}Expirations are not equal - Call: {}, Put: {}", prefixMessage, call, put);
+    if (!getCall().getExpiration().equals(getPut().getExpiration())) {
+      logger.error("{}Expirations are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
 
@@ -157,6 +153,30 @@ public class ShortStraddle implements Security {
     builder.append("]");
 
     return builder.toString();
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), getCall(), getPut());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+
+    if (this == obj) {
+      return true;
+    }
+
+    if (obj instanceof ShortStraddle) {
+
+      ShortStraddle other = (ShortStraddle) obj;
+
+      return Objects.equals(getId(), other.getId()) && Objects.equals(getCall(), other.getCall())
+          && Objects.equals(getPut(), other.getPut());
+    }
+
+    return false;
   }
 
 }
