@@ -53,7 +53,8 @@ public class ShortStraddle implements Security {
 
   @Override
   public long getQuantity() {
-    return call.getQuantity();
+    // Quantity of SHORT Straddles should always be positive
+    return Math.abs(call.getQuantity());
   }
 
   @Override
@@ -121,8 +122,8 @@ public class ShortStraddle implements Security {
       isValidShortStraddle = false;
     }
 
-    // Are equal strike price
-    if (Double.compare(getCall().getStrikePrice(), getPut().getStrikePrice()) == 0) {
+    // Strike prices must be equal
+    if (Double.compare(getCall().getStrikePrice(), getPut().getStrikePrice()) != 0) {
       logger.error("{}Strike Prices are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }
@@ -158,7 +159,7 @@ public class ShortStraddle implements Security {
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), getCall(), getPut());
+    return Objects.hash(getCall(), getPut());
   }
 
   @Override
@@ -172,8 +173,7 @@ public class ShortStraddle implements Security {
 
       ShortStraddle other = (ShortStraddle) obj;
 
-      return Objects.equals(getId(), other.getId()) && Objects.equals(getCall(), other.getCall())
-          && Objects.equals(getPut(), other.getPut());
+      return Objects.equals(getCall(), other.getCall()) && Objects.equals(getPut(), other.getPut());
     }
 
     return false;

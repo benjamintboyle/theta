@@ -99,7 +99,7 @@ public class Option implements Security {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId(), getSecurityType(), getTicker(), getQuantity(), getStrikePrice(), getExpiration(),
+    return Objects.hash(getSecurityType(), getTicker(), getQuantity(), getStrikePrice(), getExpiration(),
         getAverageTradePrice());
   }
 
@@ -114,7 +114,7 @@ public class Option implements Security {
 
       final Option other = (Option) obj;
 
-      return Objects.equals(getId(), other.getId()) && Objects.equals(getSecurityType(), other.getSecurityType())
+      return Objects.equals(getSecurityType(), other.getSecurityType())
           && Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
           && Objects.equals(getStrikePrice(), other.getStrikePrice())
           && Objects.equals(getExpiration(), other.getExpiration())
