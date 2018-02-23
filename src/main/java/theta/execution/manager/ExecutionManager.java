@@ -79,16 +79,19 @@ public class ExecutionManager implements Executor {
         else if (isModifiedOrder) {
 
           modifyStockOrder(order);
+          emitter.onComplete();
         }
         // Something was wrong with determining if new or modified order or their parameters
         else {
           logger.error("Existing order. Existing Order Status: {}. Order will not be executed: {}",
               activeOrderStatuses.get(order.getId()), order);
+          emitter.onComplete();
         }
       }
       // Market not open
       else {
         logger.warn("Not during market hours. Order will not be executed: {}", order);
+        emitter.onComplete();
       }
     });
   }

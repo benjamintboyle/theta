@@ -1,8 +1,6 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -25,7 +23,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   private final IbController ibController;
 
-  private final ConcurrentMap<ExecutableOrder, IbOrderHandler> orderHandlerMapper = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Integer, IbOrderHandler> orderHandlerMapper = new ConcurrentHashMap<>();
 
   public IbExecutionHandler(IbController ibController) {
     logger.info("Starting Interactive Brokers Execution Handler");
@@ -36,16 +34,18 @@ public class IbExecutionHandler implements ExecutionHandler {
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.<OrderStatus>create(emitter -> {
 
-      orderHandlerMapper.put(order, IbOrderHandler.of(order, emitter));
+      IbOrderHandler orderHandler = IbOrderHandler.of(order, emitter);
 
-      executeStockOrder(order, orderHandlerMapper.get(order));
+      int orderId = executeStockOrder(order, orderHandler);
 
-    }, BackpressureStrategy.BUFFER)
+      orderHandlerMapper.put(orderId, IbOrderHandler.of(order, emitter));
+
+    }, BackpressureStrategy.LATEST)
 
         .doOnComplete(
 
             () -> {
-              IbOrderHandler orderHandler = orderHandlerMapper.remove(order);
+              IbOrderHandler orderHandler = orderHandlerMapper.remove(order.getBrokerId().get());
               logger.debug("Removed Order Handler: {}", orderHandler);
             });
   }
@@ -59,18 +59,11 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     if (order.getBrokerId().isPresent()) {
 
-      Optional<IbOrderHandler> ibOrderHandler = orderHandlerMapper.entrySet()
-          .stream()
-          .filter(entry -> entry.getKey().getBrokerId().isPresent())
-          .filter(entry -> entry.getKey().getBrokerId().get().equals(order.getBrokerId().get()))
-          .map(Entry::getValue)
-          .findFirst();
+      IbOrderHandler ibOrderHandler = orderHandlerMapper.get(order.getBrokerId().get());
 
-      if (ibOrderHandler.isPresent()) {
+      if (ibOrderHandler != null) {
 
-        executeStockOrder(order, ibOrderHandler.get());
-
-        ibOrderHandler.get().sendInitialOrderStatus();
+        executeStockOrder(order, ibOrderHandler);
 
         isOrderExecuted = true;
 
@@ -93,7 +86,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     return Flowable.empty();
   }
 
-  private void executeStockOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
+  private int executeStockOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
 
     final Order ibOrder = IbOrderUtil.buildIbOrder(order);
 
@@ -105,11 +98,13 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     if (order.getBrokerId().isPresent()) {
       logger.debug("Order #{} sent to Broker Servers for: {}", order.getBrokerId().get(), order);
-    } else {
-      logger.warn(
-          "Order Id not set for Order. May indicate an internal error. ExecutableOrder: {}, IB Contract: {}, IB Order: {}",
-          order, IbStringUtil.toStringContract(ibContract), IbStringUtil.toStringOrder(ibOrder));
     }
+
+    return order.getBrokerId().orElseThrow(() -> {
+      return new IllegalStateException(
+          "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order + ", IB Contract: "
+              + IbStringUtil.toStringContract(ibContract) + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder));
+    });
   }
 
 }
