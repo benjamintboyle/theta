@@ -20,7 +20,8 @@ public class IbOrderHandler implements IOrderHandler {
 
   private final ExecutableOrder order;
 
-  private Optional<OrderState> currentOrderState = Optional.empty();
+  private OrderStatus ibOrderStatus = OrderStatus.ApiPending;
+  private double commission = 0.0;
   private double filled = 0.0;
   private double remaining = 0.0;
   private double avgFillPrice = 0.0;
@@ -50,7 +51,8 @@ public class IbOrderHandler implements IOrderHandler {
     logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", order.getBrokerId().orElse(null),
         order.getTicker(), IbStringUtil.toStringOrderState(orderState));
 
-    currentOrderState = Optional.of(orderState);
+    ibOrderStatus = orderState.status();
+    commission = orderState.commission();
   }
 
   @Override
@@ -61,7 +63,7 @@ public class IbOrderHandler implements IOrderHandler {
         order.getTicker(), IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId,
             lastFillPrice, clientId, whyHeld));
 
-    currentOrderState.ifPresent(state -> state.status(status));
+    ibOrderStatus = status;
     this.filled = filled;
     this.remaining = remaining;
     this.avgFillPrice = avgFillPrice;
@@ -98,11 +100,7 @@ public class IbOrderHandler implements IOrderHandler {
         emitter.onComplete();
       }
     } else {
-      emitter.onError(new IllegalArgumentException("Unknown order status: " + currentOrderState.orElseGet(
-
-          () -> {
-            return null;
-          })));
+      emitter.onError(new IllegalArgumentException("Unknown order status: " + this));
     }
   }
 
@@ -111,33 +109,31 @@ public class IbOrderHandler implements IOrderHandler {
     Optional<theta.execution.api.OrderStatus> optionalOrderStatus = Optional.empty();
     Optional<theta.execution.api.OrderState> optionalOrderState = Optional.empty();
 
-    if (currentOrderState.isPresent()) {
-      switch (currentOrderState.get().status()) {
-        case ApiPending:
-        case PreSubmitted:
-        case PendingSubmit:
-        case PendingCancel:
-          optionalOrderState = Optional.of(theta.execution.api.OrderState.PENDING);
-          break;
-        case ApiCancelled:
-        case Cancelled:
-          optionalOrderState = Optional.of(theta.execution.api.OrderState.CANCELLED);
-          break;
-        case Submitted:
-          optionalOrderState = Optional.of(theta.execution.api.OrderState.SUBMITTED);
-          break;
-        case Filled:
-          optionalOrderState = Optional.of(theta.execution.api.OrderState.FILLED);
-          break;
-        default:
-          logger.warn("Unknown order status from brokerage: {}", currentOrderState.get().status());
-      }
+    switch (ibOrderStatus) {
+      case ApiPending:
+      case PreSubmitted:
+      case PendingSubmit:
+      case PendingCancel:
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.PENDING);
+        break;
+      case ApiCancelled:
+      case Cancelled:
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.CANCELLED);
+        break;
+      case Submitted:
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.SUBMITTED);
+        break;
+      case Filled:
+        optionalOrderState = Optional.of(theta.execution.api.OrderState.FILLED);
+        break;
+      default:
+        logger.warn("Unknown order status from brokerage: {}", ibOrderStatus);
+    }
 
-      if (optionalOrderState.isPresent()) {
+    if (optionalOrderState.isPresent()) {
 
-        optionalOrderStatus = Optional.of(new DefaultOrderStatus(order, optionalOrderState.get(),
-            currentOrderState.get().commission(), Math.round(filled), Math.round(remaining), avgFillPrice));
-      }
+      optionalOrderStatus = Optional.of(new DefaultOrderStatus(order, optionalOrderState.get(), commission,
+          Math.round(filled), Math.round(remaining), avgFillPrice));
     }
 
     return optionalOrderStatus;
@@ -147,7 +143,7 @@ public class IbOrderHandler implements IOrderHandler {
 
     logger.debug("Sending initial Order Status");
 
-    if (!currentOrderState.isPresent() || !(currentOrderState.get().status() == OrderStatus.Filled)) {
+    if (!(ibOrderStatus == OrderStatus.Filled)) {
       orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
     } else {
       logger.warn("Not sending Initial OrderStatus as state already indicates Filled");
@@ -162,8 +158,11 @@ public class IbOrderHandler implements IOrderHandler {
     builder.append("Order: ");
     builder.append(order);
 
-    builder.append(", Order State: ");
-    builder.append(IbStringUtil.toStringOrderState(currentOrderState.get()));
+    builder.append(", Order Status: ");
+    builder.append(ibOrderStatus);
+
+    builder.append(", Commission: ");
+    builder.append(commission);
 
     builder.append(", Filled: ");
     builder.append(filled);
