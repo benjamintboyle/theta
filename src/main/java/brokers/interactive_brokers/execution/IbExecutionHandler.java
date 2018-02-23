@@ -36,7 +36,7 @@ public class IbExecutionHandler implements ExecutionHandler {
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.<OrderStatus>create(emitter -> {
 
-      orderHandlerMapper.put(order, new IbOrderHandler(order, emitter));
+      orderHandlerMapper.put(order, IbOrderHandler.of(order, emitter));
 
       executeStockOrder(order, orderHandlerMapper.get(order));
 

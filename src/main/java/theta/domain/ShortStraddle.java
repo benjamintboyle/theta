@@ -142,7 +142,7 @@ public class ShortStraddle implements Security {
     final StringBuilder builder = new StringBuilder();
 
     builder.append(getSecurityType());
-    builder.append(" [ ");
+    builder.append(" [");
 
     builder.append(getCall());
     builder.append(", ");

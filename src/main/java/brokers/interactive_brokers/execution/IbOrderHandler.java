@@ -30,7 +30,7 @@ public class IbOrderHandler implements IOrderHandler {
   // private int clientId = 0;
   // private String whyHeld = null;
 
-  public IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
+  private IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
     this.order = Objects.requireNonNull(order, "Order cannot be null");
     this.emitter = Objects.requireNonNull(emitter, "Emitter for Order Handler must not be null");
   }
