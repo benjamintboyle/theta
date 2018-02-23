@@ -141,7 +141,7 @@ public class IbOrderHandler implements IOrderHandler {
 
     logger.debug("Sending initial Order Status");
 
-    if (!(currentOrderState.status() == OrderStatus.Filled)) {
+    if (currentOrderState == null || !(currentOrderState.status() == OrderStatus.Filled)) {
       orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
     } else {
       logger.warn("Not sending Initial OrderStatus as state already indicates Filled");
