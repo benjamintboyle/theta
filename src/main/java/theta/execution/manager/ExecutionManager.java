@@ -100,8 +100,9 @@ public class ExecutionManager implements Executor {
     return executionHandler.executeStockOrder(order).subscribe(
 
         orderStatus -> {
-          logger.info("Order Status: {}, State: {}, Commission: {}, Filled: {}, Remaining: {}", orderStatus.getOrder(),
-              orderStatus.getState(), orderStatus.getCommission(), orderStatus.getFilled(), orderStatus.getRemaining());
+          logger.info("Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
+              orderStatus.getOrder().getBrokerId(), orderStatus.getState(), orderStatus.getCommission(),
+              orderStatus.getFilled(), orderStatus.getRemaining(), orderStatus.getOrder());
           updateActiveOrderStatus(orderStatus);
         },
 
