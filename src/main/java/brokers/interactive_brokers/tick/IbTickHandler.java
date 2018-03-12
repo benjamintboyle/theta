@@ -2,8 +2,6 @@ package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -43,25 +41,27 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private final Ticker ticker;
   private final TickProcessor tickProcessor;
 
-  private Double bidPrice = -1.0;
-  private Double askPrice = -1.0;
-  private Double lastPrice = -1.0;
-  // private Double openPrice = -1.0;
-  // private Double lowPrice = -1.0;
-  // private Double highPrice = -1.0;
-  // private Double haltedPrice = -1.0;
+  private double bidPrice = -1.0;
+  private double askPrice = -1.0;
+  private double lastPrice = -1.0;
+  // private double openPrice = -1.0;
+  // private double lowPrice = -1.0;
+  // private double highPrice = -1.0;
+  // private double haltedPrice = -1.0;
 
-  private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+  private ZonedDateTime bidTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
+  private ZonedDateTime askTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
+  private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
   // private String bidExchange = "";
   // private String askExchange = "";
   //
-  // private Integer bidSize = -1;
-  // private Integer askSize = -1;
-  // private Double closePrice = -1.0;
-  // private Integer volume = -1;
+  // private int bidSize = -1;
+  // private int askSize = -1;
+  // private double closePrice = -1.0;
+  // private int volume = -1;
   // private int lastSize = -1;
 
-  // private Boolean isSnapshot;
+  // private boolean isSnapshot;
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
@@ -83,8 +83,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         .observeOn(ThetaSchedulersFactory.computeThread())
         // Determine if tick is applicable for tick processor
         .filter(tickType -> tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType)))
-        // Determine if time now is during market hours
-        .filter(tickType -> ThetaMarketUtil.isDuringMarketHours())
         // Build tick with latest data
         .map(tickType -> buildTick(tickType))
         // Process tick to see if it should be propagated up to manager
@@ -99,10 +97,12 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     switch (tickType) {
       case BID:
+        bidTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
         bidPrice = price;
         tickSubject.onNext(tickType);
         break;
       case ASK:
+        askTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
         askPrice = price;
         tickSubject.onNext(tickType);
         break;
@@ -151,7 +151,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     switch (tickType) {
       case LAST_TIMESTAMP:
-        lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ZoneId.systemDefault());
+        lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ThetaMarketUtil.MARKET_TIMEZONE);
         break;
       case BID_EXCH:
         // bidExchange = value;
@@ -180,11 +180,10 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private Tick buildTick(TickType tickType) {
     return new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLast(), getBid(), getAsk(),
-        getLastTime());
+        getTickTime(tickType));
   }
 
   private boolean processTick(Tick tick) {
-
     return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.process(tick, priceLevel));
   }
 
@@ -193,20 +192,37 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     return ticker;
   }
 
-  private Double getBid() {
+  private double getBid() {
     return bidPrice;
   }
 
-  private Double getAsk() {
+  private double getAsk() {
     return askPrice;
   }
 
-  private Double getLast() {
+  private double getLast() {
     return lastPrice;
   }
 
-  private ZonedDateTime getLastTime() {
-    return lastTime;
+  private ZonedDateTime getTickTime(TickType tickType) {
+
+    ZonedDateTime tickTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
+
+    switch (tickType) {
+      case LAST:
+        tickTime = lastTime;
+        break;
+      case BID:
+        tickTime = bidTime;
+        break;
+      case ASK:
+        tickTime = askTime;
+        break;
+      default:
+        logger.warn("When determining TickTime, could not determine TickType of {}. Using time now.", tickType);
+    }
+
+    return tickTime;
   }
 
   @Override

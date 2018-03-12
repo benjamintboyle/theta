@@ -4,9 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,13 +17,13 @@ import theta.domain.ManagerStatus;
 import theta.domain.Stock;
 import theta.domain.StockUtil;
 import theta.domain.Theta;
-import theta.domain.Ticker;
 import theta.domain.api.PriceLevel;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Tick;
 import theta.tick.api.TickMonitor;
 import theta.tick.api.TickProcessor;
+import theta.util.ThetaMarketUtil;
 
 public class TickManager implements TickMonitor {
 
@@ -37,8 +34,6 @@ public class TickManager implements TickMonitor {
 
   private PositionProvider positionProvider;
   private Executor executor;
-
-  private final ConcurrentMap<Ticker, Set<Theta>> ibTickHandlers = new ConcurrentHashMap<>();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
@@ -57,24 +52,27 @@ public class TickManager implements TickMonitor {
 
     return Completable.create(emitter -> {
 
-      Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices().subscribe(
+      Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
+          // Determine if time now is during market hours
+          .filter(tickFilter -> ThetaMarketUtil.isDuringMarketHours())
+          .subscribe(
 
-          tick -> {
-            processTick(tick);
-          },
+              tick -> {
+                processTick(tick);
+              },
 
-          exception -> {
-            logger.error("Error in Tick Manager", exception);
-          },
+              exception -> {
+                logger.error("Error in Tick Manager", exception);
+              },
 
-          () -> {
-            getStatus().changeState(ManagerState.SHUTDOWN);
-          },
+              () -> {
+                getStatus().changeState(ManagerState.SHUTDOWN);
+              },
 
-          subscription -> {
-            getStatus().changeState(ManagerState.RUNNING);
-            subscription.request(Long.MAX_VALUE);
-          });
+              subscription -> {
+                getStatus().changeState(ManagerState.RUNNING);
+                subscription.request(Long.MAX_VALUE);
+              });
 
       tickManagerDisposables.add(tickSubscriberDisposable);
     });
