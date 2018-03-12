@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
+import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.api.ExecutionHandler;
@@ -43,21 +44,22 @@ public class ExecutionManager implements Executor {
   @Override
   public Completable reverseTrade(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
 
-    logger.info("Reversing Trade: {}", stock.toString());
+    return Single.<ExecutableOrder>create(emitter -> {
+      logger.info("Reversing Trade: {}", stock.toString());
 
-    final Optional<ExecutableOrder> validatedOrder =
-        ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
+      final Optional<ExecutableOrder> validatedOrder =
+          ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
 
-    Completable reverseTradeCompletable =
-        Completable.error(new IllegalArgumentException("Invalid order built for " + stock));
+      if (validatedOrder.isPresent()) {
+        emitter.onSuccess(validatedOrder.get());
+      } else {
+        emitter.onError(new IllegalArgumentException("Invalid order built for " + stock));
+      }
 
-    if (validatedOrder.isPresent()) {
-      reverseTradeCompletable = executeOrder(validatedOrder.get());
-    }
-
-    return reverseTradeCompletable;
+    }).flatMapCompletable(order -> executeOrder(order));
   }
 
+  // May need to be converted to Maybe? Could be better design than Maybe?
   private Completable executeOrder(ExecutableOrder order) {
 
     return Completable.create(emitter -> {
@@ -79,18 +81,18 @@ public class ExecutionManager implements Executor {
         else if (isModifiedOrder) {
 
           modifyStockOrder(order);
-          emitter.onComplete();
+          // TODO: Need to possibly cancel for multiple iterations; possibly convert to Maybe
         }
         // Something was wrong with determining if new or modified order or their parameters
         else {
           logger.error("Existing order. Existing Order Status: {}. Order will not be executed: {}",
               activeOrderStatuses.get(order.getId()), order);
-          emitter.onComplete();
         }
       }
       // Market not open
       else {
         logger.warn("Not during market hours. Order will not be executed: {}", order);
+        // TODO: Make sure order is cancelled here
         emitter.onComplete();
       }
     });
