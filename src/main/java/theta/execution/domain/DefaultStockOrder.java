@@ -26,12 +26,17 @@ public class DefaultStockOrder implements ExecutableOrder {
   private Optional<Double> limitPrice = Optional.empty();
   private Optional<Integer> brokerId = Optional.empty();
 
-  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
-    id = Objects.requireNonNull(stock.getId(), "Stock Id cannot be null");
-    ticker = Objects.requireNonNull(stock.getTicker(), "Stock Ticker cannot be null");
+  public DefaultStockOrder(Ticker ticker, UUID stockId, long quantity, ExecutionAction action,
+      ExecutionType executionType) {
+    id = Objects.requireNonNull(stockId, "Stock Id cannot be null");
+    this.ticker = Objects.requireNonNull(ticker, "Stock Ticker cannot be null");
     this.quantity = quantity;
     this.action = Objects.requireNonNull(action, "Execution Action cannot be null");
     this.executionType = Objects.requireNonNull(executionType, "Execution Type cannot be null");
+  }
+
+  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
+    this(stock.getTicker(), stock.getId(), quantity, action, executionType);
   }
 
   public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,

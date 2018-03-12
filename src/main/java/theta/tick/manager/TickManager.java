@@ -138,6 +138,12 @@ public class TickManager implements TickMonitor {
         tickManagerDisposables.add(disposableTrade);
       }
     }
+    // If we are still getting ticks, but there are no positions provided, assume partial order fill and
+    // convert rest to market order
+    else {
+      logger.warn("Received Tick, but no positions were provided. Attempting to convert to MARKET order.");
+      executor.convertToMarketOrderIfExists(tick.getTicker());
+    }
   }
 
   public ManagerStatus getStatus() {

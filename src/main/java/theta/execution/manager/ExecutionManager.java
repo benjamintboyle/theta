@@ -16,11 +16,13 @@ import theta.api.ExecutionHandler;
 import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 import theta.domain.Stock;
+import theta.domain.Ticker;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 import theta.execution.api.Executor;
 import theta.execution.api.OrderState;
 import theta.execution.api.OrderStatus;
+import theta.execution.domain.DefaultStockOrder;
 import theta.execution.factory.ExecutableOrderFactory;
 import theta.util.ThetaMarketUtil;
 
@@ -31,7 +33,7 @@ public class ExecutionManager implements Executor {
 
   private final ConcurrentMap<UUID, OrderStatus> activeOrderStatuses = new ConcurrentHashMap<>();
 
-  private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+  private final CompositeDisposable executionManagerDisposables = new CompositeDisposable();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
@@ -59,6 +61,40 @@ public class ExecutionManager implements Executor {
     }).flatMapCompletable(order -> executeOrder(order));
   }
 
+  // TODO: Should probably try to remove this method; don't think it is necessary, but possibly not
+  // quick fix
+  @Override
+  public void convertToMarketOrderIfExists(Ticker ticker) {
+
+    activeOrderStatuses.values()
+        .stream()
+        .filter(orderStatus -> orderStatus.getOrder().getTicker().equals(ticker))
+        .forEach(
+
+            orderStatus -> {
+              ExecutableOrder existingOrder = orderStatus.getOrder();
+
+              if (existingOrder.getExecutionType() != ExecutionType.MARKET) {
+
+                ExecutableOrder modifiedToMarketOrder =
+                    new DefaultStockOrder(existingOrder.getTicker(), existingOrder.getId(), existingOrder.getQuantity(),
+                        existingOrder.getExecutionAction(), ExecutionType.MARKET);
+
+                Disposable convertToMarketDisposable = executeOrder(modifiedToMarketOrder).subscribe(
+
+                    () -> {
+                      logger.info("Successfully modified to Market Order: {}", modifiedToMarketOrder);
+                    },
+
+                    error -> {
+                      logger.error("Error converting to Market Order: {}", modifiedToMarketOrder, error);
+                    });
+
+                executionManagerDisposables.add(convertToMarketDisposable);
+              }
+            });
+  }
+
   // May need to be converted to Maybe? Could be better design than Maybe?
   private Completable executeOrder(ExecutableOrder order) {
 
@@ -73,9 +109,9 @@ public class ExecutionManager implements Executor {
 
           logger.info("Executing Order {}", order);
 
-          final Disposable disposableExecutionHandler = executeStockOrderWithSubscription(order, emitter);
+          final Disposable disposableExecutionHandler = subscribeExecuteStockOrder(order, emitter);
 
-          compositeDisposable.add(disposableExecutionHandler);
+          executionManagerDisposables.add(disposableExecutionHandler);
         }
         // Modify existing order, if correct attributes are set
         else if (isModifiedOrder) {
@@ -98,7 +134,7 @@ public class ExecutionManager implements Executor {
     });
   }
 
-  private Disposable executeStockOrderWithSubscription(ExecutableOrder order, CompletableEmitter emitter) {
+  private Disposable subscribeExecuteStockOrder(ExecutableOrder order, CompletableEmitter emitter) {
     return executionHandler.executeStockOrder(order).subscribe(
 
         orderStatus -> {
@@ -112,7 +148,7 @@ public class ExecutionManager implements Executor {
         error -> {
           logger.error("Order Handler encountered an error", error);
           Disposable disposableCancelOrder = executionHandler.cancelStockOrder(order).subscribe();
-          compositeDisposable.add(disposableCancelOrder);
+          executionManagerDisposables.add(disposableCancelOrder);
 
           logger.warn("Removing order from active orders: {}", order);
           activeOrderStatuses.remove(order.getId());
@@ -188,6 +224,11 @@ public class ExecutionManager implements Executor {
             order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
             isModifiedOrder = true;
           }
+          // Active order with different ExecutionType, will be modified (i.e. LIMIT -> MARKET)
+          else if ((activeOrder.getExecutionType() != order.getExecutionType())) {
+            order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
+            isModifiedOrder = true;
+          }
           // Active order and new order are the same
           else {
             logger.warn("Active Order exists for {}, Active Order Status: {}, New Order Request: {}", order.getTicker(),
@@ -214,7 +255,7 @@ public class ExecutionManager implements Executor {
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
-    compositeDisposable.dispose();
+    executionManagerDisposables.dispose();
   }
 
   public ManagerStatus getStatus() {
