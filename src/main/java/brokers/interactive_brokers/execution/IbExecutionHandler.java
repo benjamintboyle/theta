@@ -34,6 +34,7 @@ public class IbExecutionHandler implements ExecutionHandler {
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.<OrderStatus>create(emitter -> {
 
+      // TODO: Call to "of" should not be duplicated here and a few lines below in the put
       IbOrderHandler orderHandler = IbOrderHandler.of(order, emitter);
 
       int orderId = executeStockOrder(order, orderHandler);

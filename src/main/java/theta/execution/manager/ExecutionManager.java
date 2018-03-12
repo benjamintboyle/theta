@@ -103,7 +103,7 @@ public class ExecutionManager implements Executor {
 
         orderStatus -> {
           logger.info("Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
-              orderStatus.getOrder().getBrokerId(), orderStatus.getState(), orderStatus.getCommission(),
+              orderStatus.getOrder().getBrokerId().orElse(null), orderStatus.getState(), orderStatus.getCommission(),
               orderStatus.getFilled(), orderStatus.getRemaining(), orderStatus.getOrder());
           updateActiveOrderStatus(orderStatus);
         },
