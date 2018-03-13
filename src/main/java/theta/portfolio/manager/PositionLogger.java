@@ -3,6 +3,7 @@ package theta.portfolio.manager;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -65,34 +66,43 @@ public class PositionLogger {
 
     logThetaPositions(thetaIdMap.values());
 
-    logger.info("End Theta Logging");
-
     logUnmatchedPositions(securityThetaLink.keySet(), securityIdMap.values());
-
-    logger.info("End Unmatched Positions");
 
     logAllSecurities(securityIdMap.values());
 
     logger.info("Position Logging Complete");
-
   }
 
   public static void logThetaPositions(Collection<Theta> thetas) {
-    for (final Theta position : thetas.stream().sorted(Comparator.comparing(Theta::getTicker)).collect(
-        Collectors.toList())) {
+
+    List<Theta> thetasSorted =
+        thetas.stream().sorted(Comparator.comparing(Theta::getTicker)).collect(Collectors.toList());
+
+    for (final Theta position : thetasSorted) {
       logger.info("Current position: {}", position);
+    }
+
+    if (thetasSorted.size() == 0) {
+      logger.info("No Thetas");
     }
   }
 
   public static void logUnmatchedPositions(Collection<UUID> matchedPositionIds, Collection<Security> allSecurities) {
-    for (final Security security : allSecurities.stream()
+
+    List<Security> unmatched = allSecurities.stream()
         .filter(security -> !matchedPositionIds.contains(security.getId()))
         .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
             .thenComparing(byOptionExpiration)
             .thenComparing(byPrice)
             .thenComparing(byCallIsGreaterThanPut))
-        .collect(Collectors.toList())) {
-      logger.info("Unmatched security: {}", security);
+        .collect(Collectors.toList());
+
+    for (final Security security : unmatched) {
+      logger.warn("Unmatched security: {}", security);
+    }
+
+    if (unmatched.size() == 0) {
+      logger.info("No Unmatched Positions");
     }
   }
 
