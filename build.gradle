@@ -8,8 +8,21 @@ group = 'theta'
 // Removed (possibly temporarily) so distribution isn't always changing filename
 // version = '0.2'
 
+// Dependency versions
+ext.slf4jVersion         = '1.8.+'
+ext.log4jVersion         = '2.11.+'
+ext.rxJavaVersion        = '2.1.+'
+
+// Test dependency versions
+ext.hamcrestVersion      = '2.0.+'
+ext.mockitoVersion       = '2.18.+'
+ext.junit4Version        = '4.12'
+ext.junitVintageVersion  = '5.2.+'
+ext.junitPlatformVersion = '1.2.+'
+ext.junitJupiterVersion  = '5.2.+'
+
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 sourceCompatibility = 9
@@ -17,23 +30,48 @@ targetCompatibility = 9
 
 dependencies {
     // Production code dependencies
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '+'
-    implementation group: 'org.apache.commons', name: 'commons-math3', version: '+'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '+'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '+'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '+'
-    implementation group: 'io.reactivex.rxjava2', name: 'rxjava', version: '+'
+    implementation("org.slf4j:slf4j-api:${slf4jVersion}")
+    implementation("org.apache.logging.log4j:log4j-api:${log4jVersion}")
+    implementation("org.apache.logging.log4j:log4j-core:${log4jVersion}")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}")
+    implementation("io.reactivex.rxjava2:rxjava:${rxJavaVersion}")
 
     implementation files('libs/interactive-brokers-api-9.72.18.jar')
 
     // Test code dependencies
-    testImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '+'
-    testImplementation group: 'junit', name: 'junit', version: '+'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '+'
+    testImplementation("org.hamcrest:java-hamcrest:${hamcrestVersion}")
+    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
+
+    // Junit 5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+
+    // For legacy Junit tests. Delete when all tests have been converted to Junit 5.
+    testImplementation("junit:junit:${junit4Version}")
+    testImplementation("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}") {
+        because 'allows JUnit 3 and JUnit 4 tests to run'
+    }
+    testImplementation("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}") {
+        because 'allows tests to run from IDEs that bundle older version of launcher'
+    }
+}
+
+test {
+	useJUnitPlatform()
+
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+
+	reports {
+		html.enabled = true
+	}
+}
+
+distZip {
+    enabled = false
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.6'
+    gradleVersion = '4.7'
 }
-
-distZip.enabled = false
