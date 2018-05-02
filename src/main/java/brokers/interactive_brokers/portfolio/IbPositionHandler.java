@@ -95,7 +95,13 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         break;
       case OPT:
         final Option option = generateOption(contract, position, avgCost);
-        subjectPositions.onNext(option);
+
+        if (option != null) {
+          subjectPositions.onNext(option);
+        } else {
+          logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
+              IbStringUtil.toStringContract(contract), position, avgCost);
+        }
 
         break;
       default:
@@ -131,8 +137,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
-    return new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), quantity,
-        contract.strike(), expirationDate, avgCost);
+    Option option = null;
+
+    if (securityType != null) {
+      option = new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), quantity,
+          contract.strike(), expirationDate, avgCost);
+    }
+
+    return option;
   }
 
   private long convertQuantityToLongCheckingIfWholeValue(double quantity, Contract contract) {
