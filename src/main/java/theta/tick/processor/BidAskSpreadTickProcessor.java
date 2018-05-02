@@ -34,7 +34,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
   }
 
   @Override
-  public boolean process(Tick tick, PriceLevel priceLevel) {
+  public boolean processTick(Tick tick, PriceLevel priceLevel) {
 
     boolean shouldReverse = false;
 

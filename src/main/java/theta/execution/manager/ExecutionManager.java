@@ -82,13 +82,9 @@ public class ExecutionManager implements Executor {
 
                 Disposable convertToMarketDisposable = executeOrder(modifiedToMarketOrder).subscribe(
 
-                    () -> {
-                      logger.info("Successfully modified to Market Order: {}", modifiedToMarketOrder);
-                    },
+                    () -> logger.info("Successfully modified to Market Order: {}", modifiedToMarketOrder),
 
-                    error -> {
-                      logger.error("Error converting to Market Order: {}", modifiedToMarketOrder, error);
-                    });
+                    error -> logger.error("Error converting to Market Order: {}", modifiedToMarketOrder, error));
 
                 executionManagerDisposables.add(convertToMarketDisposable);
               }
@@ -213,8 +209,6 @@ public class ExecutionManager implements Executor {
 
           // Active order with different quantities, will be modified
           if (activeOrder.getQuantity() != order.getQuantity()) {
-
-
             order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
             isModifiedOrder = true;
           }

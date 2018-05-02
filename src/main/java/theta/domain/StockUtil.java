@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import theta.domain.api.Security;
 
 public class StockUtil {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private StockUtil() {}
 
   // Combine two stocks if everything the same except quantity and average price
   public static Optional<Stock> of(Stock stock1, Stock stock2) {
@@ -56,23 +59,6 @@ public class StockUtil {
     }
 
     return new ArrayList<>(stocksToReverse.values());
-  }
-
-  @Deprecated
-  public static Stock adjustStockQuantity(Stock stock, ShortStraddle straddle) {
-    Stock adjustedStock = stock;
-
-    // If there is an exact quantity match for stocks
-    if (stock.getQuantity() / 100 > straddle.getQuantity()) {
-      // If not exact match for quantity, then use only part of it to cover
-      final long quantity = stock.getQuantity() / stock.getQuantity() * straddle.getQuantity() * 100;
-      adjustedStock = Stock.of(stock.getId(), stock.getTicker(), quantity, stock.getPrice());
-    }
-
-    logger.debug("Stock adjusted from Initial: {}, to Adjusted: {}, based on Straddle: {}", stock, adjustedStock,
-        straddle);
-
-    return adjustedStock;
   }
 
   public static Optional<Stock> adjustStockQuantity(Stock stock, long adjustment) {

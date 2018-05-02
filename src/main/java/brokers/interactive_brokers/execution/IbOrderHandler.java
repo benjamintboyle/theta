@@ -3,6 +3,7 @@ package brokers.interactive_brokers.execution;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.OrderState;
@@ -25,11 +26,6 @@ public class IbOrderHandler implements IOrderHandler {
   private double filled = 0.0;
   private double remaining = 0.0;
   private double avgFillPrice = 0.0;
-  // private long permId = 0L;
-  // private int parentId = 0;
-  // private double lastFillPrice = 0.0;
-  // private int clientId = 0;
-  // private String whyHeld = null;
 
   private IbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
     this.order = Objects.requireNonNull(order, "Order cannot be null");
@@ -48,8 +44,10 @@ public class IbOrderHandler implements IOrderHandler {
   @Override
   public void orderState(OrderState orderState) {
 
+    Supplier<String> lazyToString = () -> IbStringUtil.toStringOrderState(orderState);
+
     logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", order.getBrokerId().orElse(null),
-        order.getTicker(), IbStringUtil.toStringOrderState(orderState));
+        order.getTicker(), lazyToString);
 
     ibOrderStatus = orderState.status();
     commission = orderState.commission();
@@ -59,19 +57,16 @@ public class IbOrderHandler implements IOrderHandler {
   public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
       int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
+    Supplier<String> lazyToString = () -> IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice,
+        permId, parentId, lastFillPrice, clientId, whyHeld);
+
     logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", order.getBrokerId().orElse(null),
-        order.getTicker(), IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice, permId, parentId,
-            lastFillPrice, clientId, whyHeld));
+        order.getTicker(), lazyToString);
 
     ibOrderStatus = status;
     this.filled = filled;
     this.remaining = remaining;
     this.avgFillPrice = avgFillPrice;
-    // this.permId = permId;
-    // this.parentId = parentId;
-    // this.lastFillPrice = lastFillPrice;
-    // this.clientId = clientId;
-    // this.whyHeld = whyHeld;
 
     processOrderStatus();
   }
@@ -143,7 +138,7 @@ public class IbOrderHandler implements IOrderHandler {
 
     logger.debug("Sending initial Order Status");
 
-    if (!(ibOrderStatus == OrderStatus.Filled)) {
+    if (ibOrderStatus != OrderStatus.Filled) {
       orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
     } else {
       logger.warn("Not sending Initial OrderStatus as state already indicates Filled");

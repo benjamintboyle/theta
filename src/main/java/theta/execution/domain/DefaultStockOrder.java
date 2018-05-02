@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
@@ -45,7 +46,9 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
-    logger.debug("Built {}", toString());
+    Supplier<String> lazyToString = this::toString;
+
+    logger.debug("Built {}", lazyToString);
   }
 
   @Override
@@ -111,9 +114,10 @@ public class DefaultStockOrder implements ExecutableOrder {
     builder.append(", Execution Type: ");
     builder.append(getExecutionType());
 
-    if (getExecutionType() == ExecutionType.LIMIT && getLimitPrice().isPresent()) {
+    Optional<Double> optionalLimitPrice = getLimitPrice();
+    if (getExecutionType() == ExecutionType.LIMIT && optionalLimitPrice.isPresent()) {
       builder.append(", Limit Price: ");
-      builder.append(getLimitPrice().get());
+      builder.append(optionalLimitPrice.get());
     }
 
     builder.append(", Id: ");

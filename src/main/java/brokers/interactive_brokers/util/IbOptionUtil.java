@@ -5,8 +5,9 @@ import java.time.format.DateTimeFormatter;
 
 public class IbOptionUtil {
 
-  public static LocalDate convertExpiration(String date) {
+  private IbOptionUtil() {}
 
+  public static LocalDate convertExpiration(String date) {
     return LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE);
   }
 }

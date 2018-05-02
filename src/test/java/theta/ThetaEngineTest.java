@@ -1,8 +1,6 @@
 package theta;
 
 import java.time.ZonedDateTime;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,9 +43,8 @@ public class ThetaEngineTest {
 
     Mockito.when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
 
-    final String returnValue = sut.call();
-
-    MatcherAssert.assertThat(returnValue, Matchers.is(Matchers.equalTo("Completed startup")));
+    sut.run();
+    // MatcherAssert.assertThat(returnValue, Matchers.is(Matchers.equalTo("Completed startup")));
   }
 
   @Ignore
@@ -58,7 +55,7 @@ public class ThetaEngineTest {
 
     Mockito.when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
 
-    sut.call();
+    sut.run();
 
     Mockito.verify(mockPortfolioManager).registerTickMonitor(mockTickManager);
 

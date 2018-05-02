@@ -14,6 +14,10 @@ public class IbHandlerFactory {
 
   private static IbConnectionHandler ibConnectionHandler;
 
+  private static String EXCEPTION_MESSAGE = "IbConnectionHandler is null.";
+
+  private IbHandlerFactory() {}
+
   public static ConnectionHandler buildConnectionHandler(InetSocketAddress brokerGatewaySocketAddress) {
     ibConnectionHandler = new IbConnectionHandler(brokerGatewaySocketAddress);
 
@@ -22,21 +26,21 @@ public class IbHandlerFactory {
 
   public static PositionHandler buildPortfolioHandler() {
     if (ibConnectionHandler == null) {
-      throw new IllegalArgumentException("IbConnectionHandler is null.");
+      throw new IllegalArgumentException(EXCEPTION_MESSAGE);
     }
     return new IbPositionHandler(ibConnectionHandler);
   }
 
   public static TickSubscriber buildTickSubscriber() {
     if (ibConnectionHandler == null) {
-      throw new IllegalArgumentException("IbConnectionHandler is null.");
+      throw new IllegalArgumentException(EXCEPTION_MESSAGE);
     }
     return new IbTickSubscriber(ibConnectionHandler);
   }
 
   public static ExecutionHandler buildExecutionHandler() {
     if (ibConnectionHandler == null) {
-      throw new IllegalArgumentException("IbConnectionHandler is null.");
+      throw new IllegalArgumentException(EXCEPTION_MESSAGE);
     }
     return new IbExecutionHandler(ibConnectionHandler);
   }

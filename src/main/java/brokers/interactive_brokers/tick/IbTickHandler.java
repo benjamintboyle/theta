@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,28 +45,16 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private double bidPrice = -1.0;
   private double askPrice = -1.0;
   private double lastPrice = -1.0;
-  // private double openPrice = -1.0;
-  // private double lowPrice = -1.0;
-  // private double highPrice = -1.0;
-  // private double haltedPrice = -1.0;
 
   private ZonedDateTime bidTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
   private ZonedDateTime askTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
   private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
-  // private String bidExchange = "";
-  // private String askExchange = "";
-  //
-  // private int bidSize = -1;
-  // private int askSize = -1;
-  // private double closePrice = -1.0;
-  // private int volume = -1;
-  // private int lastSize = -1;
-
-  // private boolean isSnapshot;
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
   private final CompositeDisposable tickHandlerDisposables = new CompositeDisposable();
+
+  private Supplier<String> lazyToString = this::toString;
 
   public IbTickHandler(Ticker ticker, TickProcessor tickProcessor) {
     this.ticker = Objects.requireNonNull(ticker, "Ticker cannot be null for Tick Processor initialization.");
@@ -84,9 +73,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         // Determine if tick is applicable for tick processor
         .filter(tickType -> tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType)))
         // Build tick with latest data
-        .map(tickType -> buildTick(tickType))
+        .map(this::buildTick)
         // Process tick to see if it should be propagated up to manager
-        .filter(tick -> processTick(tick));
+        .filter(this::processTick);
   }
 
   @Override
@@ -111,19 +100,14 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         tickSubject.onNext(tickType);
         break;
       case CLOSE:
-        // closePrice = price;
         break;
       case OPEN:
-        // openPrice = price;
         break;
       case LOW:
-        // lowPrice = price;
         break;
       case HIGH:
-        // highPrice = price;
         break;
       case HALTED:
-        // haltedPrice = price;
         break;
       default:
         logger.warn("'Tick Price' not logged for: {} @ {}", tickType, price);
@@ -135,12 +119,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public void tickSize(TickType tickType, int size) {
     logger.debug("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
         getTicker(), tickType, size);
-
-    /*
-     * switch (tickType) { case BID_SIZE: bidSize = size; break; case ASK_SIZE: askSize = size; break;
-     * case VOLUME: volume = size; break; case LAST_SIZE: lastSize = size; break; default:
-     * logger.warn("'Tick Size' not logged for: {} with size: {}", tickType, size); break; }
-     */
   }
 
   @Override
@@ -154,10 +132,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ThetaMarketUtil.MARKET_TIMEZONE);
         break;
       case BID_EXCH:
-        // bidExchange = value;
         break;
       case ASK_EXCH:
-        // askExchange = value;
         break;
       default:
         logger.warn("'Tick String' not logged for: {} with value: {}", tickType, value);
@@ -169,8 +145,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public void marketDataType(MktDataType marketDataType) {
     logger.debug("Received Market Data from Interactive Brokers servers - Ticker: {}, Market Date Type: {}",
         getTicker(), marketDataType);
-
-    // isSnapshot = marketDataType == MktDataType.Frozen;
   }
 
   @Override
@@ -184,7 +158,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   private boolean processTick(Tick tick) {
-    return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.process(tick, priceLevel));
+    return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.processTick(tick, priceLevel));
   }
 
   @Override
@@ -229,9 +203,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Integer addPriceLevelMonitor(PriceLevel priceLevel) {
 
     if (priceLevel.getTicker().equals(getTicker())) {
-
       logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          toString());
+          lazyToString);
 
       priceLevels.add(priceLevel);
 
@@ -248,35 +221,34 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     if (priceLevel.getTicker().equals(getTicker())) {
 
       logger.info("Removing Price Level {} ${} from Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          toString());
+          lazyToString);
 
       if (!priceLevels.remove(priceLevel)) {
-        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, toString());
+        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, lazyToString);
       }
 
       // Wait a second and then check if there are no price levels to monitor. Cancel if price level count
       // is 0.
-      if (priceLevels.size() == 0) {
+      if (priceLevels.isEmpty()) {
 
         Disposable cancelDisposable =
             Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread()).subscribe(
 
                 () -> {
-                  if (priceLevels.size() == 0) {
+                  if (priceLevels.isEmpty()) {
                     logger.debug("Unsubscribing Tick Handler: {}", toString());
                     cancel();
                   }
                 },
 
-                exception -> {
-                  logger.error("Issue with cancelling Tick Handler", exception);
-                });
+                exception -> logger.error("Issue with cancelling Tick Handler", exception));
 
         tickHandlerDisposables.add(cancelDisposable);
       }
 
     } else {
-      logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(), toString());
+      logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(),
+          lazyToString);
     }
 
     return priceLevels.size();
@@ -318,17 +290,17 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
         .map(PriceLevel::getPrice)
         .collect(Collectors.toList());
 
-    if (fallsBelow.size() > 0) {
+    if (!fallsBelow.isEmpty()) {
       builder.append(PriceLevelDirection.FALLS_BELOW);
       builder.append("=");
       builder.append(fallsBelow);
 
-      if (risesAbove.size() > 0) {
+      if (!risesAbove.isEmpty()) {
         builder.append(" ");
       }
     }
 
-    if (risesAbove.size() > 0) {
+    if (!risesAbove.isEmpty()) {
       builder.append(PriceLevelDirection.RISES_ABOVE);
       builder.append("=");
       builder.append(risesAbove);

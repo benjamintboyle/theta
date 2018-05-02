@@ -3,6 +3,7 @@ package theta.domain;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.api.Security;
@@ -16,7 +17,8 @@ public class Stock implements Security {
   private final long quantity;
   private final Double averageTradePrice;
 
-  private final SecurityType type = SecurityType.STOCK;
+  private static final SecurityType type = SecurityType.STOCK;
+  private Supplier<String> lazyToString = this::toString;
 
   private Stock(final UUID id, final Ticker ticker, final long quantity, final Double averageTradePrice) {
 
@@ -25,7 +27,7 @@ public class Stock implements Security {
     this.quantity = Objects.requireNonNull(quantity, "Stock 'Quantity' must not be null.");
     this.averageTradePrice = Objects.requireNonNull(averageTradePrice, "Stock 'Average Price' must not be null.");
 
-    logger.debug("Built {}", toString());
+    logger.debug("Built {}", lazyToString);
   }
 
   public static Stock of(final UUID id, final Ticker ticker, final long quantity, final Double averageTradePrice) {
@@ -62,7 +64,7 @@ public class Stock implements Security {
   }
 
   public Stock reversePosition() {
-    logger.info("Building Reverse of Stock: {}", toString());
+    logger.info("Building Reverse of Stock: {}", lazyToString);
     return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
   }
 

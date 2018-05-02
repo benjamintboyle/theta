@@ -10,7 +10,10 @@ import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 
 public class ExecutableOrderFactory {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private ExecutableOrderFactory() {}
 
   public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock, ExecutionType executionType,
       Optional<Double> limitPrice) {

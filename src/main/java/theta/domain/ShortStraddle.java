@@ -111,7 +111,7 @@ public class ShortStraddle implements Security {
     }
 
     // Are equal quantities
-    if (!(getCall().getQuantity() == (getPut().getQuantity()))) {
+    if (getCall().getQuantity() != (getPut().getQuantity())) {
       logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
       isValidShortStraddle = false;
     }

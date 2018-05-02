@@ -65,15 +65,11 @@ public class PortfolioManager implements PositionProvider {
     return Completable.create(emitter -> {
 
       final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
-          .map(security -> processSecurity(security))
+          .map(this::processSecurity)
           .debounce(1000, TimeUnit.MILLISECONDS, ThetaSchedulersFactory.ioThread())
           .subscribe(
 
-              security -> {
-
-                PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap());
-
-              },
+              security -> PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(), getSecurityIdMap()),
 
               exception -> {
                 logger.error("Issue with Received Positions from Brokerage", exception);
@@ -168,10 +164,10 @@ public class PortfolioManager implements PositionProvider {
         getUnallocatedSecuritiesOf(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
             Collectors.toList());
 
-    if (unallocatedStocks.size() > 0 && unallocatedCalls.size() > 0 && unallocatedPuts.size() > 0) {
+    if (!unallocatedStocks.isEmpty() && !unallocatedCalls.isEmpty() && !unallocatedPuts.isEmpty()) {
       ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts)
           .stream()
-          .map(theta -> updateSecurityMaps(theta))
+          .map(this::updateSecurityMaps)
           .distinct()
           .forEach(priceLevel -> monitor.addMonitor(priceLevel));
     }

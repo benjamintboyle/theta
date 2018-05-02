@@ -8,10 +8,10 @@ public class Ticker implements Comparable<Ticker> {
 
   private static ConcurrentMap<String, Ticker> mapOfTickers = new ConcurrentHashMap<>();
 
-  private final String ticker;
+  private final String tickerSymbol;
 
   private Ticker(String ticker) {
-    this.ticker = ticker;
+    this.tickerSymbol = ticker;
   }
 
   public static Ticker from(String ticker) {
@@ -21,13 +21,13 @@ public class Ticker implements Comparable<Ticker> {
 
   @Override
   public String toString() {
-    return ticker;
+    return tickerSymbol;
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(this.ticker);
+    return Objects.hash(this.tickerSymbol);
   }
 
   @Override
@@ -44,12 +44,12 @@ public class Ticker implements Comparable<Ticker> {
 
     final Ticker other = (Ticker) obj;
 
-    return Objects.equals(this.ticker, other.ticker);
+    return Objects.equals(this.tickerSymbol, other.tickerSymbol);
   }
 
   @Override
   public int compareTo(Ticker other) {
 
-    return this.ticker.compareTo(other.ticker);
+    return this.tickerSymbol.compareTo(other.tickerSymbol);
   }
 }

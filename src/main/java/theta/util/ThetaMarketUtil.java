@@ -12,6 +12,8 @@ public class ThetaMarketUtil {
   private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
   private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 00);
 
+  private ThetaMarketUtil() {}
+
   public static boolean isDuringMarketHours() {
     ZonedDateTime marketTimeNow = ZonedDateTime.now(MARKET_TIMEZONE);
 

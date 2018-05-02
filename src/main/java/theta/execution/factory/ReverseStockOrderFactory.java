@@ -15,6 +15,8 @@ import theta.execution.domain.DefaultStockOrder;
 public class ReverseStockOrderFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private ReverseStockOrderFactory() {}
+
   public static ExecutableOrder reverse(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
 
     ExecutionAction action = ExecutionAction.BUY;
@@ -26,7 +28,7 @@ public class ReverseStockOrderFactory {
 
     DefaultStockOrder executableOrder;
 
-    if (executionType == ExecutionType.LIMIT) {
+    if (executionType == ExecutionType.LIMIT && limitPrice.isPresent()) {
       executableOrder = new DefaultStockOrder(stock, reversedQuantity, action, executionType, limitPrice.get());
     } else {
       executableOrder = new DefaultStockOrder(stock, reversedQuantity, action, executionType);
@@ -91,7 +93,6 @@ public class ReverseStockOrderFactory {
         }
         break;
       default:
-        isValidAction = false;
         logger.error("Invalid execution action: {}", order.getExecutionAction());
     }
 

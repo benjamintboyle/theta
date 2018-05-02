@@ -9,6 +9,8 @@ import io.reactivex.schedulers.Schedulers;
 public class ThetaSchedulersFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private ThetaSchedulersFactory() {}
+
   public static Scheduler ioThread() {
     logger.info("Creating Asynchronous Waiting Thread...");
     return Schedulers.io();

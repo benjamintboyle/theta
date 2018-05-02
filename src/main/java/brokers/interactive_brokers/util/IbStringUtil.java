@@ -14,6 +14,8 @@ public class IbStringUtil {
 
   private static final String DELIMITTER = ", ";
 
+  private IbStringUtil() {}
+
   public static String toStringOrderState(OrderState orderState) {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Order Status: [");
@@ -485,7 +487,7 @@ public class IbStringUtil {
       stringBuilder.append(DELIMITTER);
       stringBuilder.append("Legs: [ ");
 
-      if (comboLegList.size() > 0) {
+      if (!comboLegList.isEmpty()) {
 
         for (int i = 0; i < comboLegList.size(); i++) {
 

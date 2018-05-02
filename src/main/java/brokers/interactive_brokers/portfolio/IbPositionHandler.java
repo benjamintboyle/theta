@@ -33,7 +33,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Map IB Id to Internal Id
-  private final Map<Integer, UUID> contractIdMap = new HashMap<Integer, UUID>();
+  private final Map<Integer, UUID> contractIdMap = new HashMap<>();
 
   private final IbController controller;
 
@@ -114,9 +114,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
-    final Stock stock = Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), quantity, avgCost);
-
-    return stock;
+    return Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), quantity, avgCost);
   }
 
   private Option generateOption(Contract contract, double position, Double avgCost) {

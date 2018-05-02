@@ -57,17 +57,11 @@ public class TickManager implements TickMonitor {
           .filter(tickFilter -> ThetaMarketUtil.isDuringMarketHours())
           .subscribe(
 
-              tick -> {
-                processTick(tick);
-              },
+              this::processTick,
 
-              exception -> {
-                logger.error("Error in Tick Manager", exception);
-              },
+              exception -> logger.error("Error in Tick Manager", exception),
 
-              () -> {
-                getStatus().changeState(ManagerState.SHUTDOWN);
-              },
+              () -> getStatus().changeState(ManagerState.SHUTDOWN),
 
               subscription -> {
                 getStatus().changeState(ManagerState.RUNNING);
@@ -100,12 +94,12 @@ public class TickManager implements TickMonitor {
 
     final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
 
-    if (tradesToCheck.size() > 0) {
+    if (!tradesToCheck.isEmpty()) {
 
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
       final List<Theta> thetasToReverse =
-          tradesToCheck.stream().filter(theta -> tickProcessor.process(tick, DefaultPriceLevel.of(theta))).collect(
+          tradesToCheck.stream().filter(theta -> tickProcessor.processTick(tick, DefaultPriceLevel.of(theta))).collect(
               Collectors.toList());
 
       // FIXME: This doesn't correctly calculate limit price
@@ -124,12 +118,10 @@ public class TickManager implements TickMonitor {
                       .distinct()
                       .forEach(
 
-                          priceLevel -> deleteMonitor(priceLevel));
+                          this::deleteMonitor);
                 },
 
-                exception -> {
-                  logger.error("Error with Trade of {}", stock);
-                }
+                exception -> logger.error("Error with Trade of {}", stock)
 
         );
 

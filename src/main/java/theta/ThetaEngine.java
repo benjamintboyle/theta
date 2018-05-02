@@ -2,7 +2,6 @@ package theta;
 
 import java.lang.invoke.MethodHandles;
 import java.net.UnknownHostException;
-import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.disposables.CompositeDisposable;
@@ -13,7 +12,7 @@ import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
-public class ThetaEngine implements Callable<String> {
+public class ThetaEngine implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -28,7 +27,6 @@ public class ThetaEngine implements Callable<String> {
   // Entry point for application
   public static void main(final String[] args) throws UnknownHostException {
 
-    System.out.print("Starting ThetaEngine... ");
     logger.info("Starting ThetaEngine...");
 
     // Create Theta Engine
@@ -36,10 +34,9 @@ public class ThetaEngine implements Callable<String> {
         new ThetaEngine(ThetaManagerFactory.buildConnectionManager(), ThetaManagerFactory.buildPortfolioManager(),
             ThetaManagerFactory.buildTickManager(), ThetaManagerFactory.buildExecutionManager());
 
-    final String status = thetaEngine.call();
-    logger.info(status);
+    thetaEngine.run();
 
-    System.out.println(status);
+    logger.info("Completed startup");
   }
 
   public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
@@ -58,24 +55,20 @@ public class ThetaEngine implements Callable<String> {
   }
 
   @Override
-  public String call() {
+  public void run() {
 
     final Disposable portfolioManagerDisposable = startPortfolioManager();
     managerDisposables.add(portfolioManagerDisposable);
 
     final Disposable tickManagerDisposable = startTickManager();
     managerDisposables.add(tickManagerDisposable);
-
-    return "Completed startup";
   }
 
   private Disposable startPortfolioManager() {
 
     return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
 
-        () -> {
-          logger.info("Portfolio Manager has Shutdown");
-        },
+        () -> logger.info("Portfolio Manager has Shutdown"),
 
         error -> {
           logger.error("Portfolio Manager Error", error);
@@ -87,9 +80,7 @@ public class ThetaEngine implements Callable<String> {
 
     return portfolioManager.getPositionEnd().andThen(tickManager.startTickProcessing()).subscribe(
 
-        () -> {
-          logger.info("Tick Manager has Shutdown");
-        },
+        () -> logger.info("Tick Manager has Shutdown"),
 
         error -> {
           logger.error("Tick Manager Error", error);

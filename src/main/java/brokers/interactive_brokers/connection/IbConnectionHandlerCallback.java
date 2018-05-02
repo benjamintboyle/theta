@@ -42,7 +42,8 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
   public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
 
     return connectionStatus.filter(status -> status.getState().equals(waitUntilState))
-        .map(connectionStatus -> connectionStatus.getTime()).firstOrError()
+        .map(status -> status.getTime())
+        .firstOrError()
         .timeout(timeout.getSeconds(), TimeUnit.SECONDS);
   }
 
@@ -78,12 +79,15 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   @Override
   public void message(int id, int messageCode, String message) {
+
+    String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
+
     if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
-      logger.info("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
+      logger.info(messageTemplate, id, messageCode, message);
     } else if (messageCode >= 2100 && messageCode <= 2110) {
-      logger.warn("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
+      logger.warn(messageTemplate, id, messageCode, message);
     } else {
-      logger.error("Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'", id, messageCode, message);
+      logger.error(messageTemplate, id, messageCode, message);
     }
   }
 

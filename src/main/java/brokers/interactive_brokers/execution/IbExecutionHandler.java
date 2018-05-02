@@ -1,6 +1,7 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -58,9 +59,10 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     boolean isOrderExecuted = false;
 
-    if (order.getBrokerId().isPresent()) {
+    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    if (optionalBrokerId.isPresent()) {
 
-      IbOrderHandler ibOrderHandler = orderHandlerMapper.get(order.getBrokerId().get());
+      IbOrderHandler ibOrderHandler = orderHandlerMapper.get(optionalBrokerId.get());
 
       if (ibOrderHandler != null) {
 
@@ -82,7 +84,12 @@ public class IbExecutionHandler implements ExecutionHandler {
   @Override
   public Flowable<OrderStatus> cancelStockOrder(ExecutableOrder order) {
 
-    ibController.getController().cancelOrder(order.getBrokerId().get());
+    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    if (optionalBrokerId.isPresent()) {
+      ibController.getController().cancelOrder(optionalBrokerId.get());
+    } else {
+      logger.warn("Can not cancel stock order with empty broker id for: {}", order);
+    }
 
     return Flowable.empty();
   }
@@ -97,15 +104,15 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     order.setBrokerId(ibOrder.orderId());
 
-    if (order.getBrokerId().isPresent()) {
-      logger.debug("Order #{} sent to Broker Servers for: {}", order.getBrokerId().get(), order);
+    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    if (optionalBrokerId.isPresent()) {
+      logger.debug("Order #{} sent to Broker Servers for: {}", optionalBrokerId.get(), order);
     }
 
-    return order.getBrokerId().orElseThrow(() -> {
-      return new IllegalStateException(
-          "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order + ", IB Contract: "
-              + IbStringUtil.toStringContract(ibContract) + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder));
-    });
+    return order.getBrokerId()
+        .orElseThrow(() -> new IllegalStateException(
+            "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order + ", IB Contract: "
+                + IbStringUtil.toStringContract(ibContract) + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder)));
   }
 
 }

@@ -5,8 +5,6 @@ import theta.domain.Ticker;
 import theta.tick.api.Tick;
 
 public class DefaultTick implements Tick {
-  // private static final Logger logger =
-  // LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Ticker ticker;
   private final TickType type;
@@ -23,8 +21,6 @@ public class DefaultTick implements Tick {
     this.bidPrice = bidPrice;
     this.askPrice = askPrice;
     this.timestamp = timestamp;
-
-    // logger.debug("Built: {}", toString());
   }
 
   @Override

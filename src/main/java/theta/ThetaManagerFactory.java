@@ -19,6 +19,8 @@ import theta.util.ThetaStartupUtil;
 public class ThetaManagerFactory {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private ThetaManagerFactory() {}
+
   public static ConnectionManager buildConnectionManager() throws UnknownHostException {
     logger.info("Initializing Connection Manager");
 
@@ -28,9 +30,7 @@ public class ThetaManagerFactory {
     final ConnectionHandler brokerConnectionHandler =
         IbHandlerFactory.buildConnectionHandler(brokerGatewaySocketAddress);
 
-    final ConnectionManager connectionManager = new ConnectionManager(brokerConnectionHandler);
-
-    return connectionManager;
+    return new ConnectionManager(brokerConnectionHandler);
   }
 
   public static PortfolioManager buildPortfolioManager() {
@@ -38,9 +38,7 @@ public class ThetaManagerFactory {
 
     final PositionHandler brokerPositionHandler = IbHandlerFactory.buildPortfolioHandler();
 
-    final PortfolioManager portfolioManager = new PortfolioManager(brokerPositionHandler);
-
-    return portfolioManager;
+    return new PortfolioManager(brokerPositionHandler);
   }
 
   public static TickManager buildTickManager() {
@@ -48,9 +46,7 @@ public class ThetaManagerFactory {
 
     final TickSubscriber brokerTickSubscriber = IbHandlerFactory.buildTickSubscriber();
 
-    final TickManager tickManager = new TickManager(brokerTickSubscriber, ThetaStartupUtil.getTickProcessor());
-
-    return tickManager;
+    return new TickManager(brokerTickSubscriber, ThetaStartupUtil.getTickProcessor());
   }
 
   public static ExecutionManager buildExecutionManager() {
@@ -58,8 +54,6 @@ public class ThetaManagerFactory {
 
     final ExecutionHandler brokerExecutionHandler = IbHandlerFactory.buildExecutionHandler();
 
-    final ExecutionManager executionManager = new ExecutionManager(brokerExecutionHandler);
-
-    return executionManager;
+    return new ExecutionManager(brokerExecutionHandler);
   }
 }

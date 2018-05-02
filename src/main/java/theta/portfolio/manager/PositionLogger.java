@@ -59,6 +59,8 @@ public class PositionLogger {
     }
   };
 
+  private PositionLogger() {}
+
   public static void logPositions(Map<UUID, Theta> thetaIdMap, Map<UUID, Set<UUID>> securityThetaLink,
       Map<UUID, Security> securityIdMap) {
 
@@ -82,7 +84,7 @@ public class PositionLogger {
       logger.info("Current position: {}", position);
     }
 
-    if (thetasSorted.size() == 0) {
+    if (thetasSorted.isEmpty()) {
       logger.info("No Thetas");
     }
   }
@@ -101,7 +103,7 @@ public class PositionLogger {
       logger.warn("Unmatched security: {}", security);
     }
 
-    if (unmatched.size() == 0) {
+    if (unmatched.isEmpty()) {
       logger.info("No Unmatched Positions");
     }
   }

@@ -8,6 +8,8 @@ public class IbTickUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private IbTickUtil() {}
+
   public static theta.tick.domain.TickType convertToEngineTickType(com.ib.client.TickType ibTickType) {
 
     theta.tick.domain.TickType engineTickType = null;

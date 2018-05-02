@@ -10,7 +10,7 @@ public interface TickProcessor {
 
   public boolean isApplicable(TickType tickType);
 
-  public boolean process(Tick tick, PriceLevel priceLevel);
+  public boolean processTick(Tick tick, PriceLevel priceLevel);
 
   public ExecutionType getExecutionType();
 

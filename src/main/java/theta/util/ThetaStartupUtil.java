@@ -19,16 +19,12 @@ public class ThetaStartupUtil {
   private static final int TWS_PORT = 7497;
   // Operational: 4001, Paper: 4002
   private static final int GATEWAY_PORT = 4002;
-
-
   // Tick Manager Configuration
   private static final TickProcessor TICK_PROCESSOR = new BidAskSpreadTickProcessor();
-  // private static final TickProcessor TICK_PROCESSOR = new LastTickProcessor();
-
-
   // Thread Configuration
   private static final String NAME_PREFIX = "Thread-";
 
+  private ThetaStartupUtil() {}
 
   public static InetSocketAddress getGatewayAddress() throws UnknownHostException {
 

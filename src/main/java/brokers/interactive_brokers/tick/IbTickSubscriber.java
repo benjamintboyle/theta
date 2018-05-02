@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,13 +67,9 @@ public class IbTickSubscriber implements TickSubscriber {
 
       Disposable handlerDisposable = handler.getTicks().subscribe(
 
-          tick -> {
-            tickSubject.onNext(tick);
-          },
+          tickSubject::onNext,
 
-          exception -> {
-            logger.error("Error with Tick Handler {}", handler, exception);
-          },
+          exception -> logger.error("Error with Tick Handler {}", handler, exception),
 
           () -> {
             logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
@@ -112,7 +109,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
     Set<PriceLevel> priceLevels = getHandler(ticker).map(TickHandler::getPriceLevelsMonitored).orElse(Set.of());
 
-    if (priceLevels.size() == 0) {
+    if (priceLevels.isEmpty()) {
       logger.warn("No Tick Handler or Price Levels for {}", ticker);
     }
 
@@ -127,8 +124,9 @@ public class IbTickSubscriber implements TickSubscriber {
     final IbTickHandler ibTickHandler = ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor));
     ibTickHandlers.put(ticker, ibTickHandler);
 
-    logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
-        IbStringUtil.toStringContract(contract));
+    Supplier<String> lazyToString = () -> IbStringUtil.toStringContract(contract);
+
+    logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}", lazyToString);
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
     return ibTickHandler;
