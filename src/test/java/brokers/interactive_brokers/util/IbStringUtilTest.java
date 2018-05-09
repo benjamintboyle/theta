@@ -16,7 +16,7 @@ import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
 import com.ib.contracts.StkContract;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.domain.ExecutionDomainBuilderUtil;
+import theta.execution.domain.ExecutionDomainFactory;
 
 class IbStringUtilTest {
 
@@ -67,7 +67,7 @@ class IbStringUtilTest {
   @Test
   void testToStringOrder() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestDefaultStockOrderNewBuyLimit();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestDefaultStockOrderNewBuyLimit();
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
     String toStringOrder = IbStringUtil.toStringOrder(order);

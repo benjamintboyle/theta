@@ -9,14 +9,14 @@ group = 'theta'
 // version = '0.2'
 
 // Dependency versions
-ext.slf4jVersion         = '1.8.+'
-ext.log4jVersion         = '2.11.+'
-ext.rxJavaVersion        = '2.1.+'
+ext.slf4jVersion         = '1.+'
+ext.log4jVersion         = '2.+'
+ext.rxJavaVersion        = '2.+'
 
 // Test dependency versions
-ext.hamcrestVersion      = '2.0.+'
-ext.mockitoVersion       = '2.18.+'
-ext.junitJupiterVersion  = '5.2.+'
+ext.hamcrestVersion      = '2.+'
+ext.mockitoVersion       = '2.+'
+ext.junitJupiterVersion  = '5.+'
 
 repositories {
     mavenCentral()
@@ -38,10 +38,12 @@ dependencies {
     // Test code dependencies
     testImplementation("org.hamcrest:java-hamcrest:${hamcrestVersion}")
     testImplementation("org.mockito:mockito-core:${mockitoVersion}")
+    testImplementation("org.mockito:mockito-junit-jupiter:${mockitoVersion}")
 
     // Junit 5
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:+")
 }
 
 test {

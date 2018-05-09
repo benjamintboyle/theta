@@ -16,7 +16,9 @@ public class ThetaEngine implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  // Theta managers
+  private static final String APP_NAME = MethodHandles.lookup().lookupClass().getSimpleName();
+
+  // Managers
   private final ConnectionManager connectionManager;
   private final PortfolioManager portfolioManager;
   private final TickManager tickManager;
@@ -27,7 +29,7 @@ public class ThetaEngine implements Runnable {
   // Entry point for application
   public static void main(final String[] args) throws UnknownHostException {
 
-    logger.info("Starting ThetaEngine...");
+    logger.info("Starting {}...", APP_NAME);
 
     // Create Theta Engine
     final ThetaEngine thetaEngine =
@@ -36,7 +38,7 @@ public class ThetaEngine implements Runnable {
 
     thetaEngine.run();
 
-    logger.info("Completed startup");
+    logger.info("{} startup complete.", APP_NAME);
   }
 
   public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
@@ -93,18 +95,21 @@ public class ThetaEngine implements Runnable {
     if (!managerDisposables.isDisposed()) {
 
       logger.info("Calling shutdown for all managers.");
-      connectionManager.shutdown();
-      portfolioManager.shutdown();
-      tickManager.shutdown();
       executionManager.shutdown();
-
-      Schedulers.shutdown();
+      tickManager.shutdown();
+      portfolioManager.shutdown();
+      connectionManager.shutdown();
 
       logger.info("Disposing of {} Managers", managerDisposables.size());
       managerDisposables.dispose();
+
+      logger.info("Shutting down Schedulers.");
+      Schedulers.shutdown();
+
     } else {
-      logger.warn("Tried to dispose of already disposed of Manager Disposable");
+      logger.warn("Tried to dispose of already disposed of {} Composite Manager Disposable", APP_NAME);
     }
+
   }
 
   private void attachShutdownHook() {

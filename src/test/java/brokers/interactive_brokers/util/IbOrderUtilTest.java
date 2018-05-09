@@ -7,14 +7,14 @@ import com.ib.client.Order;
 import com.ib.client.OrderType;
 import com.ib.client.Types.Action;
 import theta.execution.api.ExecutableOrder;
-import theta.execution.domain.ExecutionDomainBuilderUtil;
+import theta.execution.domain.ExecutionDomainFactory;
 
 class IbOrderUtilTest {
 
   @Test
   void testBuildIbOrderNewBuyMarket() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewBuyMarket();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderNewBuyMarket();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -27,7 +27,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderModifiedBuyMarket() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderModifiedBuyMarket();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderModifiedBuyMarket();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -40,7 +40,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderNewSellMarket() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewSellMarket();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderNewSellMarket();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -53,7 +53,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderModifiedSellMarket() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderModifiedSellMarket();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderModifiedSellMarket();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -66,7 +66,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderNewBuyLimit() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewBuyLimit();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderNewBuyLimit();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -80,7 +80,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderModifiedBuyLimit() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderModifiedBuyLimit();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderModifiedBuyLimit();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -94,7 +94,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderNewSellLimit() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewSellLimit();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderNewSellLimit();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
@@ -108,7 +108,7 @@ class IbOrderUtilTest {
   @Test
   void testBuildIbOrderModifiedSellLimit() {
 
-    ExecutableOrder executableOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderModifiedSellLimit();
+    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestExecutableOrderModifiedSellLimit();
 
     Order order = IbOrderUtil.buildIbOrder(executableOrder);
 

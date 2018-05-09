@@ -1,19 +1,22 @@
 package theta;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.time.ZonedDateTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import theta.connection.domain.ConnectionState;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
+@ExtendWith(MockitoExtension.class)
 public class ThetaEngineTest {
 
   @Mock
@@ -29,35 +32,44 @@ public class ThetaEngineTest {
 
   @BeforeEach
   public void setup() {
+    when(mockConnectionManager.connect()).thenReturn(Single.just(ZonedDateTime.now()));
+    when(mockPortfolioManager.startPositionProcessing()).thenReturn(Completable.complete());
+    when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
+    when(mockTickManager.startTickProcessing()).thenReturn(Completable.complete());
+
     sut = new ThetaEngine(mockConnectionManager, mockPortfolioManager, mockTickManager, mockExecutionManager);
   }
 
-  @Disabled
-  @Test
-  public void testCallReturnSuccessful() {
-    Mockito.when(mockConnectionManager.waitUntil(ConnectionState.CONNECTED))
-        .thenReturn(Single.just(ZonedDateTime.now()));
-
-    Mockito.when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
-
-    sut.run();
-    // MatcherAssert.assertThat(returnValue, Matchers.is(Matchers.equalTo("Completed startup")));
+  @AfterEach
+  public void cleanup() {
+    sut.shutdown();
   }
 
-  @Disabled
   @Test
-  public void testCrossRegistration() {
-    Mockito.when(mockConnectionManager.waitUntil(ConnectionState.CONNECTED))
-        .thenReturn(Single.just(ZonedDateTime.now()));
-
-    Mockito.when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
+  public void testRun() {
 
     sut.run();
 
-    Mockito.verify(mockPortfolioManager).registerTickMonitor(mockTickManager);
+    verify(mockPortfolioManager).registerTickMonitor(mockTickManager);
+    verify(mockTickManager).registerPositionProvider(mockPortfolioManager);
+    verify(mockTickManager).registerExecutor(mockExecutionManager);
 
-    Mockito.verify(mockTickManager).registerPositionProvider(mockPortfolioManager);
-    Mockito.verify(mockTickManager).registerExecutor(mockExecutionManager);
+    verify(mockConnectionManager).connect();
+    verify(mockPortfolioManager).startPositionProcessing();
+    verify(mockPortfolioManager).getPositionEnd();
+    verify(mockTickManager).startTickProcessing();
+  }
+
+  @Test
+  public void testShutdown() {
+
+    sut.run();
+    sut.shutdown();
+
+    verify(mockConnectionManager).shutdown();
+    verify(mockPortfolioManager).shutdown();
+    verify(mockTickManager).shutdown();
+    verify(mockExecutionManager).shutdown();
   }
 
 }

@@ -1,14 +1,15 @@
 package theta.execution.domain;
 
 import theta.domain.Stock;
-import theta.domain.ThetaDomainBuilderUtil;
+import theta.domain.ThetaDomainFactory;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
+import theta.execution.domain.DefaultStockOrder;
 
-public class ExecutionDomainBuilderUtil {
+public class ExecutionDomainFactory {
 
-  private static Stock standardStock = ThetaDomainBuilderUtil.buildTestStock();
+  private static Stock standardStock = ThetaDomainFactory.buildTestStock();
   private static double standardLimitPrice = 123.5;
   private static int standardBrokerId = 1234;
 

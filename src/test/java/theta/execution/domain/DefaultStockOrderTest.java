@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.is;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import theta.domain.Stock;
-import theta.domain.ThetaDomainBuilderUtil;
+import theta.domain.ThetaDomainFactory;
 import theta.execution.api.ExecutableOrder;
 
 public class DefaultStockOrderTest {
@@ -16,10 +16,10 @@ public class DefaultStockOrderTest {
   @Test
   public void testDefaultStockOrder() {
 
-    ExecutableOrder expectedOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewBuyLimit();
+    ExecutableOrder expectedOrder = ExecutionDomainFactory.buildTestExecutableOrderNewBuyLimit();
 
     DefaultStockOrder order =
-        new DefaultStockOrder(ThetaDomainBuilderUtil.buildTestStock(), expectedOrder.getQuantity(),
+        new DefaultStockOrder(ThetaDomainFactory.buildTestStock(), expectedOrder.getQuantity(),
             expectedOrder.getExecutionAction(), expectedOrder.getExecutionType(), expectedOrder.getLimitPrice().get());
 
     assertThat("Security Type does not match", order.getSecurityType(), is(expectedOrder.getSecurityType()));
@@ -33,7 +33,7 @@ public class DefaultStockOrderTest {
   @Test
   public void testSetGetBrokerId() {
 
-    ExecutableOrder expectedOrder = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewBuyLimit();
+    ExecutableOrder expectedOrder = ExecutionDomainFactory.buildTestExecutableOrderNewBuyLimit();
 
     expectedOrder.setBrokerId(expectedBrokerId);
 
@@ -43,7 +43,7 @@ public class DefaultStockOrderTest {
   @Test
   public void testHashCode() {
 
-    ExecutableOrder order = ExecutionDomainBuilderUtil.buildTestExecutableOrderNewBuyLimit();
+    ExecutableOrder order = ExecutionDomainFactory.buildTestExecutableOrderNewBuyLimit();
 
     int expectedHash = Objects.hash(order.getTicker(), order.getQuantity(), order.getExecutionAction(),
         order.getSecurityType(), order.getSecurityType(), order.getExecutionType(), order.getLimitPrice());
@@ -54,7 +54,7 @@ public class DefaultStockOrderTest {
   @Test
   public void testEqualsObject() {
 
-    DefaultStockOrder expectedOrder = ExecutionDomainBuilderUtil.buildTestDefaultStockOrderNewBuyLimit();
+    DefaultStockOrder expectedOrder = ExecutionDomainFactory.buildTestDefaultStockOrderNewBuyLimit();
 
     Stock stock = Stock.of(expectedOrder.getTicker(), expectedOrder.getQuantity(), 123.5);
 
