@@ -2,12 +2,9 @@ package theta.domain;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class ThetaTradeTest {
   public static Theta buildTestThetaTrade() {
     final Stock stock = StockTest.buildTestStock();
@@ -29,7 +26,7 @@ public class ThetaTradeTest {
     return trade;
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void stockThetaTradeTest() {
     final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
@@ -37,7 +34,7 @@ public class ThetaTradeTest {
     MatcherAssert.assertThat(thetaTrade.getStock(), Matchers.is(Matchers.equalTo(StockTest.buildTestStock())));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void callThetaTradeTest() {
     final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
@@ -46,7 +43,7 @@ public class ThetaTradeTest {
         Matchers.is(Matchers.equalTo(OptionTest.buildTestShortCallOption())));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void putThetaTradeTest() {
     final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();

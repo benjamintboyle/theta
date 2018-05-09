@@ -19,15 +19,19 @@ public class Ticker implements Comparable<Ticker> {
     return mapOfTickers.computeIfAbsent(ticker, Ticker::new);
   }
 
+  public String getSymbol() {
+    return tickerSymbol;
+  }
+
   @Override
   public String toString() {
-    return tickerSymbol;
+    return getSymbol();
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(this.tickerSymbol);
+    return Objects.hash(getSymbol());
   }
 
   @Override
@@ -44,12 +48,12 @@ public class Ticker implements Comparable<Ticker> {
 
     final Ticker other = (Ticker) obj;
 
-    return Objects.equals(this.tickerSymbol, other.tickerSymbol);
+    return Objects.equals(getSymbol(), other.getSymbol());
   }
 
   @Override
   public int compareTo(Ticker other) {
 
-    return this.tickerSymbol.compareTo(other.tickerSymbol);
+    return getSymbol().compareTo(other.getSymbol());
   }
 }

@@ -14,7 +14,7 @@ public class IbHandlerFactory {
 
   private static IbConnectionHandler ibConnectionHandler;
 
-  private static String EXCEPTION_MESSAGE = "IbConnectionHandler is null.";
+  private static final String EXCEPTION_MESSAGE = "IbConnectionHandler is null.";
 
   private IbHandlerFactory() {}
 

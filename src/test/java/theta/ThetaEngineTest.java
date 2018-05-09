@@ -1,13 +1,11 @@
 package theta;
 
 import java.time.ZonedDateTime;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import theta.connection.domain.ConnectionState;
@@ -16,7 +14,6 @@ import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ThetaEngineTest {
 
   @Mock
@@ -30,12 +27,12 @@ public class ThetaEngineTest {
 
   private ThetaEngine sut = null;
 
-  @Before
+  @BeforeEach
   public void setup() {
     sut = new ThetaEngine(mockConnectionManager, mockPortfolioManager, mockTickManager, mockExecutionManager);
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testCallReturnSuccessful() {
     Mockito.when(mockConnectionManager.waitUntil(ConnectionState.CONNECTED))
@@ -47,7 +44,7 @@ public class ThetaEngineTest {
     // MatcherAssert.assertThat(returnValue, Matchers.is(Matchers.equalTo("Completed startup")));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testCrossRegistration() {
     Mockito.when(mockConnectionManager.waitUntil(ConnectionState.CONNECTED))

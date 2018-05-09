@@ -1,6 +1,7 @@
 package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import com.ib.client.Contract;
 import com.ib.client.Order;
 import com.ib.contracts.StkContract;
-import com.ib.controller.ApiController.IOrderHandler;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
@@ -28,19 +28,16 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   public IbExecutionHandler(IbController ibController) {
     logger.info("Starting Interactive Brokers Execution Handler");
-    this.ibController = ibController;
+    this.ibController = Objects.requireNonNull(ibController, "Controller cannot be null");
   }
 
   @Override
   public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
     return Flowable.<OrderStatus>create(emitter -> {
 
-      // TODO: Call to "of" should not be duplicated here and a few lines below in the put
-      IbOrderHandler orderHandler = IbOrderHandler.of(order, emitter);
+      IbOrderHandler orderHandler = DefaultIbOrderHandler.of(order, emitter);
 
-      int orderId = executeStockOrder(order, orderHandler);
-
-      orderHandlerMapper.put(orderId, IbOrderHandler.of(order, emitter));
+      executeStockOrder(orderHandler);
 
     }, BackpressureStrategy.LATEST)
 
@@ -66,7 +63,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
       if (ibOrderHandler != null) {
 
-        executeStockOrder(order, ibOrderHandler);
+        executeStockOrder(ibOrderHandler);
 
         isOrderExecuted = true;
 
@@ -94,25 +91,32 @@ public class IbExecutionHandler implements ExecutionHandler {
     return Flowable.empty();
   }
 
-  private int executeStockOrder(ExecutableOrder order, IOrderHandler ibOrderHandler) {
+  private void executeStockOrder(IbOrderHandler ibOrderHandler) {
 
-    final Order ibOrder = IbOrderUtil.buildIbOrder(order);
+    final Order ibOrder = IbOrderUtil.buildIbOrder(ibOrderHandler.getExecutableOrder());
 
-    final Contract ibContract = new StkContract(order.getTicker().toString());
+    final Contract ibContract = new StkContract(ibOrderHandler.getExecutableOrder().getTicker().getSymbol());
 
     ibController.getController().placeOrModifyOrder(ibContract, ibOrder, ibOrderHandler);
 
-    order.setBrokerId(ibOrder.orderId());
+    if (ibOrder.orderId() > 0) {
+      ibOrderHandler.getExecutableOrder().setBrokerId(ibOrder.orderId());
 
-    Optional<Integer> optionalBrokerId = order.getBrokerId();
-    if (optionalBrokerId.isPresent()) {
-      logger.debug("Order #{} sent to Broker Servers for: {}", optionalBrokerId.get(), order);
+      logger.debug("Order #{} sent to Broker Servers for: {}", ibOrder.orderId(), ibOrderHandler.getExecutableOrder());
+
+      orderHandlerMapper.put(ibOrder.orderId(), ibOrderHandler);
+
+    } else {
+
+      IllegalStateException noOrderIdException =
+          new IllegalStateException("Order Id not set for Order. May indicate an internal error. ExecutableOrder: "
+              + ibOrderHandler.getExecutableOrder() + ", IB Contract: " + IbStringUtil.toStringContract(ibContract)
+              + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder));
+
+      logger.warn("Id not set for Order", noOrderIdException);
+
+      throw noOrderIdException;
     }
-
-    return order.getBrokerId()
-        .orElseThrow(() -> new IllegalStateException(
-            "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order + ", IB Contract: "
-                + IbStringUtil.toStringContract(ibContract) + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder)));
   }
 
 }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +52,6 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
   private final CompositeDisposable tickHandlerDisposables = new CompositeDisposable();
-
-  private Supplier<String> lazyToString = this::toString;
 
   public IbTickHandler(Ticker ticker, TickProcessor tickProcessor) {
     this.ticker = Objects.requireNonNull(ticker, "Ticker cannot be null for Tick Processor initialization.");
@@ -203,8 +200,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Integer addPriceLevelMonitor(PriceLevel priceLevel) {
 
     if (priceLevel.getTicker().equals(getTicker())) {
-      logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          lazyToString);
+      logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(), this);
 
       priceLevels.add(priceLevel);
 
@@ -221,10 +217,10 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     if (priceLevel.getTicker().equals(getTicker())) {
 
       logger.info("Removing Price Level {} ${} from Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(),
-          lazyToString);
+          this);
 
       if (!priceLevels.remove(priceLevel)) {
-        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, lazyToString);
+        logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}", priceLevel, this);
       }
 
       // Wait a second and then check if there are no price levels to monitor. Cancel if price level count
@@ -236,7 +232,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
                 () -> {
                   if (priceLevels.isEmpty()) {
-                    logger.debug("Unsubscribing Tick Handler: {}", toString());
+                    logger.debug("Unsubscribing Tick Handler: {}", this);
                     cancel();
                   }
                 },
@@ -247,8 +243,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       }
 
     } else {
-      logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(),
-          lazyToString);
+      logger.error("Attempted to remove PriceLevel for '{}' from Tick Handler: {}", priceLevel.getTicker(), this);
     }
 
     return priceLevels.size();

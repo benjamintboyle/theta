@@ -17,7 +17,9 @@ public class IbStringUtil {
   private IbStringUtil() {}
 
   public static String toStringOrderState(OrderState orderState) {
+
     final StringBuilder stringBuilder = new StringBuilder();
+
     stringBuilder.append("Order Status: [");
 
     if (orderState != null) {
@@ -66,8 +68,8 @@ public class IbStringUtil {
     return stringBuilder.toString();
   }
 
-  public static String toStringOrderStatus(OrderStatus status, Double filled, Double remaining, Double avgFillPrice,
-      Long permId, Integer parentId, Double lastFillPrice, Integer clientId, String whyHeld) {
+  public static String toStringOrderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
+      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
     final StringBuilder stringBuilder = new StringBuilder();
 
@@ -114,6 +116,7 @@ public class IbStringUtil {
   }
 
   public static String toStringOrder(Order order) {
+
     final StringBuilder stringBuilder = new StringBuilder();
 
     stringBuilder.append("Action: ");
@@ -403,6 +406,7 @@ public class IbStringUtil {
   }
 
   public static String toStringContract(Contract contract) {
+
     final StringBuilder stringBuilder = new StringBuilder();
 
     if (contract != null) {
@@ -522,6 +526,7 @@ public class IbStringUtil {
   }
 
   public static String toStringDeltaNeutralContract(DeltaNeutralContract deltaNeutralContract) {
+
     final StringBuilder stringBuilder = new StringBuilder();
 
     if (deltaNeutralContract != null) {
@@ -545,6 +550,7 @@ public class IbStringUtil {
   }
 
   public static String toStringComboLeg(ComboLeg comboLeg) {
+
     final StringBuilder stringBuilder = new StringBuilder();
 
     if (comboLeg != null) {

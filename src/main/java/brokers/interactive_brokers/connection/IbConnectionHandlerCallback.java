@@ -42,7 +42,7 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
   public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
 
     return connectionStatus.filter(status -> status.getState().equals(waitUntilState))
-        .map(status -> status.getTime())
+        .map(ConnectionStatus::getTime)
         .firstOrError()
         .timeout(timeout.getSeconds(), TimeUnit.SECONDS);
   }

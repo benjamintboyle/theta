@@ -1,19 +1,17 @@
 package theta.tick.manager;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
 import java.time.ZonedDateTime;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import io.reactivex.observers.TestObserver;
 import theta.api.TickSubscriber;
 import theta.domain.DefaultPriceLevel;
@@ -26,7 +24,6 @@ import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.TickProcessor;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TickManagerTest2 {
 
   @Mock
@@ -41,7 +38,7 @@ public class TickManagerTest2 {
 
   private TickManager sut = null;
 
-  @Before
+  @BeforeEach
   public void setup() {
 
     sut = new TickManager(mockTickSubscriber, mockTickProcessor);
@@ -50,13 +47,14 @@ public class TickManagerTest2 {
     sut.registerExecutor(mockExecutor);
   }
 
+  @Disabled
   @Test
   public void testTickManagerStateStarting() {
     assertThat("After construction, Tick Manager should be in STARTING state.", sut.getStatus().getState(),
         is(equalTo(ManagerState.STARTING)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testTickManagerStateRunning() {
 
@@ -67,13 +65,14 @@ public class TickManagerTest2 {
         is(equalTo(ManagerState.RUNNING)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testStartTickProcessing() {
 
     fail("Not yet implemented");
   }
 
+  @Disabled
   @Test
   public void testAddMonitor() {
     PriceLevel priceLevel = DefaultPriceLevel.from(Ticker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
@@ -83,6 +82,7 @@ public class TickManagerTest2 {
     verify(mockTickSubscriber).addPriceLevelMonitor(priceLevel, mockTickProcessor);
   }
 
+  @Disabled
   @Test
   public void testDeleteMonitor() {
     PriceLevel priceLevel = DefaultPriceLevel.from(Ticker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
@@ -92,7 +92,7 @@ public class TickManagerTest2 {
     verify(mockTickSubscriber).removePriceLevelMonitor(priceLevel);
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testGetStatus() {
     ManagerStatus tickManagerStatus = sut.getStatus();
@@ -105,6 +105,7 @@ public class TickManagerTest2 {
         is(lessThan(ZonedDateTime.now())));
   }
 
+  @Disabled
   @Test
   public void testShutdownStateStopping() {
     sut.shutdown();
@@ -113,7 +114,7 @@ public class TickManagerTest2 {
         is(equalTo(ManagerState.STOPPING)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testShutdownStateShutdown() {
     sut.startTickProcessing();

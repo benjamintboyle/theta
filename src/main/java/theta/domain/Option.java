@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.api.Security;
@@ -32,9 +31,7 @@ public class Option implements Security {
     this.expiration = Objects.requireNonNull(expiration, "Expiration Date must not be null");
     this.averageTradePrice = averageTradePrice;
 
-    Supplier<String> lazyToString = this::toString;
-
-    logger.debug("Built {}", lazyToString);
+    logger.debug("Built {}", this);
   }
 
   @Override

@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.Stock;
@@ -46,9 +45,7 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
-    Supplier<String> lazyToString = this::toString;
-
-    logger.debug("Built {}", lazyToString);
+    logger.debug("Built {}", this);
   }
 
   @Override

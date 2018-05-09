@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,14 +118,13 @@ public class IbTickSubscriber implements TickSubscriber {
   private TickHandler subscribeTick(Ticker ticker, TickProcessor tickProcessor) {
 
     logger.info("Subscribing to Ticks for: {}", ticker);
-    final StkContract contract = new StkContract(ticker.toString());
+    final StkContract contract = new StkContract(ticker.getSymbol());
 
     final IbTickHandler ibTickHandler = ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor));
     ibTickHandlers.put(ticker, ibTickHandler);
 
-    Supplier<String> lazyToString = () -> IbStringUtil.toStringContract(contract);
-
-    logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}", lazyToString);
+    logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
+        IbStringUtil.toStringContract(contract));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
     return ibTickHandler;

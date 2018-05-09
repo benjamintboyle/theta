@@ -2,7 +2,6 @@ package brokers.interactive_brokers.util;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.Order;
@@ -69,9 +68,7 @@ public class IbOrderUtil {
         logger.error("Expected MARKET, LIMIT, STOP, STOP_LIMIT, or TRAILING_STOP for ExecutionType: {}", order);
     }
 
-    Supplier<String> lazyToString = () -> IbStringUtil.toStringOrder(ibOrder);
-
-    logger.debug("Built Interactive Brokers Order: {}", lazyToString);
+    logger.debug("Built Interactive Brokers Order: {}", IbStringUtil.toStringOrder(ibOrder));
 
     return ibOrder;
   }

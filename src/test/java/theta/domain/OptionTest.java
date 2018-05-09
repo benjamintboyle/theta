@@ -4,13 +4,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import theta.domain.api.SecurityType;
 
-@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class OptionTest {
 
   private static final LocalDate expiration = LocalDate.now().plusDays(30);
@@ -31,7 +28,7 @@ public class OptionTest {
     return new Option(UUID.randomUUID(), SecurityType.PUT, Ticker.from("CHK"), -1L, 15.0, OptionTest.expiration, 0.7);
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void quantityCallTest() {
     final Option call = OptionTest.buildTestCallOption();
@@ -39,7 +36,7 @@ public class OptionTest {
     MatcherAssert.assertThat(call.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void quantityShortCallTest() {
     final Option shortCall = OptionTest.buildTestShortCallOption();
@@ -47,7 +44,7 @@ public class OptionTest {
     MatcherAssert.assertThat(shortCall.getQuantity(), Matchers.is(Matchers.equalTo(-1.0)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void quantityPutTest() {
     final Option put = OptionTest.buildTestPutOption();
@@ -55,7 +52,7 @@ public class OptionTest {
     MatcherAssert.assertThat(put.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void quantityShortPutTest() {
     final Option shortPut = OptionTest.buildTestShortPutOption();

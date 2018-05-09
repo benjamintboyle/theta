@@ -6,15 +6,13 @@ import java.util.stream.Collectors;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.api.PositionHandler;
@@ -22,7 +20,6 @@ import theta.domain.Theta;
 import theta.domain.api.Security;
 import theta.tick.api.TickMonitor;
 
-@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class PortfolioManagerTest {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -38,7 +35,7 @@ public class PortfolioManagerTest {
 
   private PortfolioManager sut;
 
-  @Before
+  @BeforeEach
   public void initializeManager() {
     sut = new PortfolioManager(mockPositionHandler);
     sut.registerTickMonitor(mockTickManager);
@@ -46,12 +43,12 @@ public class PortfolioManagerTest {
     sut.startPositionProcessing().subscribe();
   }
 
-  @After
+  @AfterEach
   public void shutdownManager() {
     sut.shutdown();
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void ingest_trades_in_order() {
     final int expectedThetas = 6;
@@ -64,7 +61,7 @@ public class PortfolioManagerTest {
         IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1L, -2L, 1L, 5L, 7L, 10L).toArray()));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void ingest_trades_out_of_order() {
     final int expectedThetas = 6;
@@ -77,7 +74,7 @@ public class PortfolioManagerTest {
         IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7L, -1L, 1L, 2L, 5L, 10L).toArray()));
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void ingest_trades_with_multiple_strike_prices() {
     final int expectedThetas = 4;

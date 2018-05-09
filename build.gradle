@@ -16,9 +16,6 @@ ext.rxJavaVersion        = '2.1.+'
 // Test dependency versions
 ext.hamcrestVersion      = '2.0.+'
 ext.mockitoVersion       = '2.18.+'
-ext.junit4Version        = '4.12'
-ext.junitVintageVersion  = '5.2.+'
-ext.junitPlatformVersion = '1.2.+'
 ext.junitJupiterVersion  = '5.2.+'
 
 repositories {
@@ -45,15 +42,6 @@ dependencies {
     // Junit 5
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
-
-    // For legacy Junit tests. Delete when all tests have been converted to Junit 5.
-    testImplementation("junit:junit:${junit4Version}")
-    testImplementation("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}") {
-        because 'allows JUnit 3 and JUnit 4 tests to run'
-    }
-    testImplementation("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}") {
-        because 'allows tests to run from IDEs that bundle older version of launcher'
-    }
 }
 
 test {

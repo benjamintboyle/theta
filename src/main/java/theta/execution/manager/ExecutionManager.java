@@ -58,7 +58,7 @@ public class ExecutionManager implements Executor {
         emitter.onError(new IllegalArgumentException("Invalid order built for " + stock));
       }
 
-    }).flatMapCompletable(order -> executeOrder(order));
+    }).flatMapCompletable(this::executeOrder);
   }
 
   // TODO: Should probably try to remove this method; don't think it is necessary, but possibly not
@@ -202,25 +202,27 @@ public class ExecutionManager implements Executor {
     // No active order
     if (activeOrderStatus != null) {
 
-      if (activeOrderStatus.getOrder().getBrokerId().isPresent()) {
+      Optional<Integer> optionalBrokerId = activeOrderStatus.getOrder().getBrokerId();
+
+      if (optionalBrokerId.isPresent()) {
 
         if (activeOrderStatus.getState() != OrderState.FILLED) {
           ExecutableOrder activeOrder = activeOrderStatus.getOrder();
 
           // Active order with different quantities, will be modified
           if (activeOrder.getQuantity() != order.getQuantity()) {
-            order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
+            order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
           }
           // Active order with different Limit Prices, will be modified
           else if ((activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent())
               && activeOrder.getLimitPrice().get() != order.getLimitPrice().get()) {
-            order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
+            order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
           }
           // Active order with different ExecutionType, will be modified (i.e. LIMIT -> MARKET)
           else if ((activeOrder.getExecutionType() != order.getExecutionType())) {
-            order.setBrokerId(activeOrderStatus.getOrder().getBrokerId().get());
+            order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
           }
           // Active order and new order are the same

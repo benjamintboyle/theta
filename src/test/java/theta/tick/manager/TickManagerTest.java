@@ -1,12 +1,10 @@
 package theta.tick.manager;
 
 import java.lang.invoke.MethodHandles;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.api.TickHandler;
@@ -16,8 +14,8 @@ import theta.domain.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 
-@RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class TickManagerTest {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Mock
@@ -32,7 +30,7 @@ public class TickManagerTest {
   @Mock
   private TickSubscriber tickSubscriber;
 
-  @Ignore
+  @Disabled
   @Test
   public void test_add_and_delete_monitor() {
     final Theta trade = ThetaTradeTest.buildTestThetaTrade();

@@ -66,7 +66,7 @@ public class ThetaEngine implements Runnable {
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect().toCompletable().andThen(portfolioManager.startPositionProcessing()).subscribe(
+    return connectionManager.connect().ignoreElement().andThen(portfolioManager.startPositionProcessing()).subscribe(
 
         () -> logger.info("Portfolio Manager has Shutdown"),
 

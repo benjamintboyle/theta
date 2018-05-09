@@ -65,7 +65,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public Completable getPositionEnd() {
     return subjectPositionEndTime.firstOrError()
-        .toCompletable()
+        .ignoreElement()
         .timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         // Don't let IB threads out of brokers.interactive_brokers package
         .observeOn(ThetaSchedulersFactory.ioThread());
@@ -73,6 +73,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void position(String account, Contract contract, double position, double avgCost) {
+
     logger.debug("Received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
         position, IbStringUtil.toStringContract(contract), account, avgCost);
 
@@ -99,12 +100,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         if (option != null) {
           subjectPositions.onNext(option);
         } else {
+
           logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
               IbStringUtil.toStringContract(contract), position, avgCost);
         }
 
         break;
       default:
+
         logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
         break;
     }
@@ -127,6 +130,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         securityType = SecurityType.PUT;
         break;
       default:
+
         logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
         break;
     }
@@ -151,6 +155,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     if (Math.abs(quantity - wholeQuantity) > Math.ulp(quantity)) {
       wholeQuantity = (long) quantity;
+
       logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity, wholeQuantity,
           IbStringUtil.toStringContract(contract));
     }
