@@ -28,10 +28,10 @@ class DefaultPriceLevelTest {
     PriceLevel defaultPriceLevelNotEqualDirection = DefaultPriceLevel.from(defaultPriceLevel.getTicker(),
         defaultPriceLevel.getPrice(), PriceLevelDirection.FALLS_BELOW);
 
-    assertThat(defaultPriceLevel, not(sameInstance(defaultPriceLevelEqual)));
-    assertThat(defaultPriceLevel, not(sameInstance(defaultPriceLevelNotEqualTicker)));
-    assertThat(defaultPriceLevel, not(sameInstance(defaultPriceLevelNotEqualPrice)));
-    assertThat(defaultPriceLevel, not(sameInstance(defaultPriceLevelNotEqualDirection)));
+    assertThat(defaultPriceLevel, is(not(sameInstance(defaultPriceLevelEqual))));
+    assertThat(defaultPriceLevel, is(not(sameInstance(defaultPriceLevelNotEqualTicker))));
+    assertThat(defaultPriceLevel, is(not(sameInstance(defaultPriceLevelNotEqualPrice))));
+    assertThat(defaultPriceLevel, is(not(sameInstance(defaultPriceLevelNotEqualDirection))));
 
     assertThat(defaultPriceLevel.hashCode(), is(equalTo(defaultPriceLevelEqual.hashCode())));
     assertThat(defaultPriceLevel.hashCode(), is(not(equalTo(defaultPriceLevelNotEqualTicker.hashCode()))));

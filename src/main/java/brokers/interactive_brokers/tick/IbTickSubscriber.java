@@ -18,7 +18,6 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import theta.ThetaSchedulersFactory;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
 import theta.domain.Ticker;
@@ -44,8 +43,10 @@ public class IbTickSubscriber implements TickSubscriber {
 
   @Override
   public Flowable<Tick> getTicksAcrossStrikePrices() {
-    return tickSubject.serialize().toFlowable(BackpressureStrategy.BUFFER).observeOn(
-        ThetaSchedulersFactory.computeThread());
+    return tickSubject.serialize().toFlowable(BackpressureStrategy.BUFFER)
+    // (TEMPORARILY disabled to determine thread performance)
+    // .observeOn(ThetaSchedulersFactory.computeThread())
+    ;
   }
 
   @Override

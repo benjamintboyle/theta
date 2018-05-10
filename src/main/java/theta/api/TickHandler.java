@@ -12,9 +12,9 @@ public interface TickHandler {
 
   public Ticker getTicker();
 
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel);
+  public int addPriceLevelMonitor(PriceLevel priceLevel);
 
-  public Integer removePriceLevelMonitor(PriceLevel priceLevel);
+  public int removePriceLevelMonitor(PriceLevel priceLevel);
 
   public Set<PriceLevel> getPriceLevelsMonitored();
 

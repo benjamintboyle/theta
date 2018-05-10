@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,17 @@ class ThetaTest {
 
   @Test
   void testHashCode() throws Exception {
-    Theta theta = ThetaDomainFactory.buildTestTheta();
 
-    assertThat(theta.hashCode(), is(-518913011));
+    Stock stock = ThetaDomainFactory.buildTestStock();
+    Option call = ThetaDomainFactory.buildCallOption();
+    Option put = ThetaDomainFactory.buildPutOption();
+
+    Theta theta = Theta.of(stock, call, put).get();
+    Theta thetaEqual = Theta.of(stock, call, put).get();
+
+    assertThat(theta, is(not(sameInstance(thetaEqual))));
+
+    assertThat(theta.hashCode(), is(thetaEqual.hashCode()));
   }
 
   @Test

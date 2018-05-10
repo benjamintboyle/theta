@@ -20,7 +20,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import theta.ThetaSchedulersFactory;
 import theta.api.TickHandler;
@@ -36,7 +37,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final Subject<TickType> tickSubject = PublishSubject.create();
+  private final Subject<TickType> tickSubject =
+      ReplaySubject.createWithTimeAndSize(1, TimeUnit.SECONDS, Schedulers.io(), 1);
 
   private final Ticker ticker;
   private final TickProcessor tickProcessor;
@@ -65,8 +67,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public Flowable<Tick> getTicks() {
 
     return tickSubject.toFlowable(BackpressureStrategy.LATEST)
-        // Don't let thread out of IB packages
-        .observeOn(ThetaSchedulersFactory.computeThread())
+        // Don't let thread out of IB packages (TEMPORARILY disabled to determine thread performance)
+        // .observeOn(ThetaSchedulersFactory.computeThread())
         // Determine if tick is applicable for tick processor
         .filter(tickType -> tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType)))
         // Build tick with latest data
@@ -85,16 +87,16 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       case BID:
         bidTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
         bidPrice = price;
-        tickSubject.onNext(tickType);
+        addTickIfApplicable(tickType);
         break;
       case ASK:
         askTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
         askPrice = price;
-        tickSubject.onNext(tickType);
+        addTickIfApplicable(tickType);
         break;
       case LAST:
         lastPrice = price;
-        tickSubject.onNext(tickType);
+        addTickIfApplicable(tickType);
         break;
       case CLOSE:
         break;
@@ -149,29 +151,41 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     logger.debug("Ticker: {}, Tick Snapshot End", getTicker());
   }
 
-  private Tick buildTick(TickType tickType) {
-    return new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLast(), getBid(), getAsk(),
-        getTickTime(tickType));
-  }
-
-  private boolean processTick(Tick tick) {
-    return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.processTick(tick, priceLevel));
-  }
-
   @Override
   public Ticker getTicker() {
     return ticker;
   }
 
-  private double getBid() {
+  private Tick buildTick(TickType tickType) {
+    return new DefaultTick(getTicker(), IbTickUtil.convertToEngineTickType(tickType), getLastPrice(), getBidPrice(),
+        getAskPrice(), getTickTime(tickType));
+  }
+
+  private void addTickIfApplicable(TickType tickType) {
+    if (tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType))) {
+      tickSubject.onNext(tickType);
+    }
+  }
+
+  private boolean processTick(Tick tick) {
+
+    if (priceLevels.isEmpty()) {
+      logger.warn("Attempted to process Tick when Tick Handler has no Price Levels. Tick: {}, TickHandler: {}", tick,
+          this);
+    }
+
+    return priceLevels.stream().anyMatch(priceLevel -> tickProcessor.processTick(tick, priceLevel));
+  }
+
+  private double getBidPrice() {
     return bidPrice;
   }
 
-  private double getAsk() {
+  private double getAskPrice() {
     return askPrice;
   }
 
-  private double getLast() {
+  private double getLastPrice() {
     return lastPrice;
   }
 
@@ -197,7 +211,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   }
 
   @Override
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel) {
+  public int addPriceLevelMonitor(PriceLevel priceLevel) {
 
     if (priceLevel.getTicker().equals(getTicker())) {
       logger.info("Adding Price Level: {} ${} to Tick Handler: {}", priceLevel.tradeIf(), priceLevel.getPrice(), this);
@@ -205,14 +219,15 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       priceLevels.add(priceLevel);
 
     } else {
-      logger.error("Attempted to add PriceLevel for '{}' to '{}' Monitor", priceLevel.getTicker(), getTicker());
+      logger.error("Mismatched Tickers. Attempted to add Price Level: {} to Tick Handler: {} Monitor", priceLevel,
+          this);
     }
 
     return priceLevels.size();
   }
 
   @Override
-  public Integer removePriceLevelMonitor(PriceLevel priceLevel) {
+  public int removePriceLevelMonitor(PriceLevel priceLevel) {
 
     if (priceLevel.getTicker().equals(getTicker())) {
 
@@ -272,6 +287,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
+    builder.append("[");
     builder.append(getTicker());
     builder.append(" ");
 
@@ -300,6 +316,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       builder.append("=");
       builder.append(risesAbove);
     }
+
+    builder.append("]");
 
     return builder.toString();
   }

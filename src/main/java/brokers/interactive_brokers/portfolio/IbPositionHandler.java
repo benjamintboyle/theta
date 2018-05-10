@@ -21,7 +21,6 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
-import theta.ThetaSchedulersFactory;
 import theta.api.PositionHandler;
 import theta.domain.Option;
 import theta.domain.Stock;
@@ -58,17 +57,19 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     controller.getController().reqPositions(this);
 
     return getPositionEnd().andThen(subjectPositions.toFlowable(BackpressureStrategy.BUFFER))
-        // Don't let IB threads out of brokers.interactive_brokers package
-        .observeOn(ThetaSchedulersFactory.computeThread());
+    // Don't let IB threads out of brokers.interactive_brokers package (TEMPORARILY disabled to
+    // determine thread performance)
+    // .observeOn(ThetaSchedulersFactory.computeThread())
+    ;
   }
 
   @Override
   public Completable getPositionEnd() {
-    return subjectPositionEndTime.firstOrError()
-        .ignoreElement()
-        .timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        // Don't let IB threads out of brokers.interactive_brokers package
-        .observeOn(ThetaSchedulersFactory.ioThread());
+    return subjectPositionEndTime.firstOrError().ignoreElement().timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    // Don't let IB threads out of brokers.interactive_brokers package (TEMPORARILY disabled to
+    // determine thread performance)
+    // .observeOn(ThetaSchedulersFactory.ioThread())
+    ;
   }
 
   @Override
