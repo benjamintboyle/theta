@@ -78,9 +78,8 @@ public class Stock implements Security {
     if (obj instanceof Stock) {
       final Stock other = (Stock) obj;
 
-      isEqual = Objects.equals(getId(), other.getId()) && Objects.equals(getTicker(), other.getTicker())
-          && Objects.equals(getQuantity(), other.getQuantity()) && Objects.equals(getPrice(), other.getPrice())
-          && Objects.equals(getSecurityType(), other.getSecurityType());
+      isEqual = Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
+          && Objects.equals(getPrice(), other.getPrice()) && Objects.equals(getSecurityType(), other.getSecurityType());
     }
 
     return isEqual;
@@ -89,7 +88,7 @@ public class Stock implements Security {
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), getTicker(), getQuantity(), getPrice(), getSecurityType());
+    return Objects.hash(getTicker(), getQuantity(), getPrice(), getSecurityType());
   }
 
   @Override

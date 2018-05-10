@@ -145,7 +145,7 @@ public class Theta implements Security {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId(), getStock(), getStraddle());
+    return Objects.hash(getStock(), getStraddle());
   }
 
   @Override
@@ -158,8 +158,7 @@ public class Theta implements Security {
     if (obj instanceof Theta) {
       final Theta other = (Theta) obj;
 
-      return Objects.equals(getId(), other.getId()) && Objects.equals(getStock(), other.getStock())
-          && Objects.equals(getStraddle(), other.getStraddle());
+      return Objects.equals(getStock(), other.getStock()) && Objects.equals(getStraddle(), other.getStraddle());
     }
 
     return false;
@@ -184,4 +183,5 @@ public class Theta implements Security {
 
     return isValid;
   }
+
 }

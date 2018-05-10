@@ -17,6 +17,7 @@ ext.rxJavaVersion        = '2.+'
 ext.hamcrestVersion      = '2.+'
 ext.mockitoVersion       = '2.+'
 ext.junitJupiterVersion  = '5.+'
+ext.junitPlatformVersion  ='1.+'
 
 repositories {
     mavenCentral()
@@ -43,7 +44,7 @@ dependencies {
     // Junit 5
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:+")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
 }
 
 test {

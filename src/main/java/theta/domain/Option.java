@@ -10,15 +10,21 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class Option implements Security {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private UUID id = UUID.randomUUID();
+  private final UUID id;
   private final SecurityType type;
   private final Ticker ticker;
   private final long quantity;
   private final double strikePrice;
   private final LocalDate expiration;
   private final double averageTradePrice;
+
+  public Option(SecurityType type, Ticker ticker, long quantity, double strikePrice, LocalDate expiration,
+      double averageTradePrice) {
+    this(UUID.randomUUID(), type, ticker, quantity, strikePrice, expiration, averageTradePrice);
+  }
 
   public Option(UUID id, SecurityType type, Ticker ticker, long quantity, double strikePrice, LocalDate expiration,
       double averageTradePrice) {

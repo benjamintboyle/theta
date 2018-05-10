@@ -2,7 +2,6 @@ package theta;
 
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import brokers.interactive_brokers.IbHandlerFactory;
@@ -17,15 +16,14 @@ import theta.tick.manager.TickManager;
 import theta.util.ThetaStartupUtil;
 
 public class ThetaManagerFactory {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private ThetaManagerFactory() {}
 
-  public static ConnectionManager buildConnectionManager() throws UnknownHostException {
-    logger.info("Initializing Connection Manager");
+  public static ConnectionManager buildConnectionManager(InetSocketAddress brokerGatewaySocketAddress) {
 
-    // Initialize API controller
-    final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
+    logger.info("Initializing Connection Manager");
 
     final ConnectionHandler brokerConnectionHandler =
         IbHandlerFactory.buildConnectionHandler(brokerGatewaySocketAddress);
@@ -34,6 +32,7 @@ public class ThetaManagerFactory {
   }
 
   public static PortfolioManager buildPortfolioManager() {
+
     logger.info("Initializing Portfolio Manager");
 
     final PositionHandler brokerPositionHandler = IbHandlerFactory.buildPortfolioHandler();
@@ -42,6 +41,7 @@ public class ThetaManagerFactory {
   }
 
   public static TickManager buildTickManager() {
+
     logger.info("Initializing Tick Manager");
 
     final TickSubscriber brokerTickSubscriber = IbHandlerFactory.buildTickSubscriber();
@@ -50,10 +50,12 @@ public class ThetaManagerFactory {
   }
 
   public static ExecutionManager buildExecutionManager() {
+
     logger.info("Initializing Execution Manager");
 
     final ExecutionHandler brokerExecutionHandler = IbHandlerFactory.buildExecutionHandler();
 
     return new ExecutionManager(brokerExecutionHandler);
   }
+
 }
