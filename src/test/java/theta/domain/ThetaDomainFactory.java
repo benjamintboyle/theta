@@ -1,6 +1,8 @@
 package theta.domain;
 
 import java.time.LocalDate;
+import theta.domain.api.PriceLevel;
+import theta.domain.api.PriceLevelDirection;
 import theta.domain.api.SecurityType;
 
 public class ThetaDomainFactory {
@@ -34,6 +36,10 @@ public class ThetaDomainFactory {
     Option put = buildPutOption();
 
     return Theta.of(stock, call, put).orElseThrow(() -> new Exception("Failed to generate Theta"));
+  }
+
+  public static PriceLevel buildDefaultPriceLevel() {
+    return DefaultPriceLevel.from(Ticker.from(SYMBOL), STRIKE_PRICE, PriceLevelDirection.RISES_ABOVE);
   }
 
 }
