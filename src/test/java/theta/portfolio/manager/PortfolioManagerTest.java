@@ -1,105 +1,140 @@
 package theta.portfolio.manager;
 
-import java.lang.invoke.MethodHandles;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.hamcrest.collection.IsIterableContainingInAnyOrder;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockito.junit.jupiter.MockitoExtension;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.observers.TestObserver;
 import theta.api.PositionHandler;
+import theta.domain.DefaultPriceLevel;
+import theta.domain.ManagerState;
+import theta.domain.Stock;
 import theta.domain.Theta;
-import theta.domain.api.Security;
+import theta.domain.ThetaDomainFactory;
 import theta.tick.api.TickMonitor;
 
-public class PortfolioManagerTest {
-
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  @Captor
-  ArgumentCaptor<Theta> thetaListCaptor;
+@ExtendWith(MockitoExtension.class)
+class PortfolioManagerTest {
 
   @Mock
-  private PositionHandler mockPositionHandler;
+  private PositionHandler positionHandler;
 
   @Mock
-  private TickMonitor mockTickManager;
+  private TickMonitor monitor;
 
-  private PortfolioManager sut;
+  private PortfolioManager sut = null;
 
   @BeforeEach
-  public void initializeManager() {
-    sut = new PortfolioManager(mockPositionHandler);
-    sut.registerTickMonitor(mockTickManager);
-
-    sut.startPositionProcessing().subscribe();
+  void setup() {
+    sut = new PortfolioManager(positionHandler);
   }
 
-  @AfterEach
-  public void shutdownManager() {
+  @Test
+  void testStartPositionProcessing() throws Exception {
+
+    Theta theta = ThetaDomainFactory.buildTestTheta();
+    when(positionHandler.requestPositionsFromBrokerage())
+        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
+    sut.registerTickMonitor(monitor);
+
+    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+
+    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
+    assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
+    testObserver.onComplete();
+  }
+
+  @Test
+  void testZeroQuantityPosition() throws Exception {
+
+    Theta theta = ThetaDomainFactory.buildTestTheta();
+    when(positionHandler.requestPositionsFromBrokerage())
+        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut(),
+            Stock.of(theta.getStock().getId(), theta.getStock().getTicker(), 0L, theta.getStock().getPrice())));
+    sut.registerTickMonitor(monitor);
+
+    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+
+    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
+    assertThat(sut.providePositions(theta.getTicker()), is(emptyCollectionOf(Theta.class)));
+    testObserver.onComplete();
+  }
+
+  @Test
+  void testGetPositionEnd() {
+
+    when(positionHandler.getPositionEnd()).thenReturn(Completable.complete());
+
+    assertThat(sut.getPositionEnd(), is(Completable.complete()));
+  }
+
+  @Test
+  void testProvidePositions() throws Exception {
+
+    Theta theta = ThetaDomainFactory.buildTestTheta();
+    when(positionHandler.requestPositionsFromBrokerage())
+        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
+    sut.registerTickMonitor(monitor);
+
+    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+
+    assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
+    testObserver.onComplete();
+  }
+
+  @Test
+  void testGetStatus() {
+
+    sut.getStatus().changeState(ManagerState.RUNNING);
+    assertThat(sut.getStatus(), is(notNullValue()));
+    assertThat(sut.getStatus().getState(), is(equalTo(ManagerState.RUNNING)));
+    assertThat(sut.getStatus().getTime(), is(greaterThan(ZonedDateTime.now().minusSeconds(1))));
+    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(ZonedDateTime.now())));
+
+    sut.getStatus().changeState(ManagerState.SHUTDOWN);
+    assertThat(sut.getStatus(), is(notNullValue()));
+    assertThat(sut.getStatus().getState(), is(equalTo(ManagerState.SHUTDOWN)));
+    assertThat(sut.getStatus().getTime(), is(greaterThan(ZonedDateTime.now().minusSeconds(1))));
+    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(ZonedDateTime.now())));
+  }
+
+  @Test
+  void testRegisterTickMonitor() throws Exception {
+
+    Theta theta = ThetaDomainFactory.buildTestTheta();
+    when(positionHandler.requestPositionsFromBrokerage())
+        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
+    sut.registerTickMonitor(monitor);
+
+    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+
+    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
+    testObserver.onComplete();
+  }
+
+  @Test
+  void testShutdown() {
+
+    assertThat(sut.getStatus().getState(), is(not(ManagerState.STOPPING)));
+
     sut.shutdown();
+
+    assertThat(sut.getStatus().getState(), is(ManagerState.STOPPING));
   }
 
-  @Disabled
-  @Test
-  public void ingest_trades_in_order() {
-    final int expectedThetas = 6;
-    final List<Theta> thetas = fileIngestHelper("load_trades_in_order.csv", expectedThetas);
-
-    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
-
-    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
-    MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-1L, -2L, 1L, 5L, 7L, 10L).toArray()));
-  }
-
-  @Disabled
-  @Test
-  public void ingest_trades_out_of_order() {
-    final int expectedThetas = 6;
-    final List<Theta> thetas = fileIngestHelper("load_trades_out_of_order.csv", expectedThetas);
-
-    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
-
-    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
-    MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(-7L, -1L, 1L, 2L, 5L, 10L).toArray()));
-  }
-
-  @Disabled
-  @Test
-  public void ingest_trades_with_multiple_strike_prices() {
-    final int expectedThetas = 4;
-    final List<Theta> thetas = fileIngestHelper("single_ticker_multiple_strike_prices.csv", expectedThetas);
-
-    final List<Long> quantities = thetas.stream().map(Theta::getQuantity).collect(Collectors.toList());
-
-    MatcherAssert.assertThat(thetas, Matchers.hasSize(expectedThetas));
-    MatcherAssert.assertThat(quantities,
-        IsIterableContainingInAnyOrder.containsInAnyOrder(List.of(1L, 2L, 2L, 5L).toArray()));
-  }
-
-  private List<Theta> fileIngestHelper(final String filename, int expected) {
-    final List<Security> securitiesList = PortfolioTestUtil.readInputFile(filename);
-
-    for (final Security security : securitiesList) {
-      PortfolioManagerTest.logger.debug("Trade: {}", security);
-
-      // TODO: NEEDS FIXING as acceptPosition() no longer exists
-      // sut.acceptPosition(security);
-    }
-
-    // Mockito.verify(mockTickManager,
-    // Mockito.timeout(5000).times(expected)).addMonitor(thetaListCaptor.capture());
-
-    return thetaListCaptor.getAllValues();
-  }
 }

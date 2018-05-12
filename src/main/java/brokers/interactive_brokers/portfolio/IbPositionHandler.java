@@ -29,6 +29,7 @@ import theta.domain.api.Security;
 import theta.domain.api.SecurityType;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Map IB Id to Internal Id
@@ -85,6 +86,22 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   public void positionEnd() {
     logger.info("Received Position End notification");
     subjectPositionEndTime.onNext(ZonedDateTime.now());
+  }
+
+  @Override
+  public void shutdown() {
+
+    if (!subjectPositions.hasComplete()) {
+      subjectPositions.onComplete();
+    } else {
+      logger.warn("Tried to complete Subject Positions when it is already completed.");
+    }
+
+    if (positionHandlerDisposables.isDisposed()) {
+      positionHandlerDisposables.dispose();
+    } else {
+      logger.warn("Tried to dispose of already disposed Position Handler Disposables");
+    }
   }
 
   private void processIbPosition(Contract contract, double position, double avgCost) {
@@ -174,14 +191,6 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     }
 
     return uuid;
-  }
-
-  public void shutdown() {
-    if (positionHandlerDisposables.isDisposed()) {
-      positionHandlerDisposables.dispose();
-    } else {
-      logger.warn("Tried to dispose of already disposed Position Handler Disposables");
-    }
   }
 
 }

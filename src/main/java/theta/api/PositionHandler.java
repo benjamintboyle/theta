@@ -9,4 +9,6 @@ public interface PositionHandler {
   public Flowable<Security> requestPositionsFromBrokerage();
 
   public Completable getPositionEnd();
+
+  public void shutdown();
 }

@@ -34,6 +34,7 @@ import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
 public class PortfolioManager implements PositionProvider {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
@@ -99,7 +100,7 @@ public class PortfolioManager implements PositionProvider {
   public List<Theta> providePositions(Ticker ticker) {
 
     List<Theta> positionsToProvide =
-        thetaIdMap.values().stream().filter(position -> position.getTicker().equals(ticker)).collect(
+        getThetaIdMap().values().stream().filter(position -> position.getTicker().equals(ticker)).collect(
             Collectors.toList());
 
     logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
@@ -113,10 +114,10 @@ public class PortfolioManager implements PositionProvider {
     removePositionIfExists(security);
 
     if (security.getQuantity() != 0) {
-      securityIdMap.put(security.getId(), security);
+      getSecurityIdMap().put(security.getId(), security);
       processPosition(security.getTicker());
     } else {
-      securityIdMap.remove(security.getId());
+      getSecurityIdMap().remove(security.getId());
       logger.info("Security not processed due to 0 quantity: {}", security);
     }
 
@@ -128,10 +129,10 @@ public class PortfolioManager implements PositionProvider {
 
     final List<PriceLevel> removedPriceLevels = new ArrayList<>();
 
-    final Set<UUID> thetaIds = Optional.ofNullable(securityThetaLink.remove(security.getId())).orElse(Set.of());
+    final Set<UUID> thetaIds = Optional.ofNullable(getSecurityThetaLink().remove(security.getId())).orElse(Set.of());
 
     for (final UUID thetaId : thetaIds) {
-      final Optional<Theta> optionalTheta = Optional.ofNullable(thetaIdMap.remove(thetaId));
+      final Optional<Theta> optionalTheta = Optional.ofNullable(getThetaIdMap().remove(thetaId));
 
       optionalTheta.map(DefaultPriceLevel::of).ifPresent(priceLevel -> {
 
@@ -178,14 +179,14 @@ public class PortfolioManager implements PositionProvider {
 
     final List<Security> unallocatedSecurities = new ArrayList<>();
 
-    final Set<Security> allIdsOfTickerAndSecurityType = securityIdMap.values()
+    final Set<Security> allIdsOfTickerAndSecurityType = getSecurityIdMap().values()
         .stream()
         .filter(otherSecurity -> otherSecurity.getTicker().equals(ticker))
         .filter(otherSecurity -> otherSecurity.getSecurityType().equals(securityType))
         .filter(otherSecurity -> otherSecurity.getQuantity() != 0)
         .collect(Collectors.toSet());
 
-    final Map<UUID, Long> allocatedCountMap = thetaIdMap.values()
+    final Map<UUID, Long> allocatedCountMap = getThetaIdMap().values()
         .stream()
         .filter(theta -> theta.getTicker().equals(ticker))
         .map(theta -> theta.getSecurityOfType(securityType))
@@ -211,19 +212,19 @@ public class PortfolioManager implements PositionProvider {
 
   private PriceLevel updateSecurityMaps(Theta theta) {
 
-    thetaIdMap.put(theta.getId(), theta);
+    getThetaIdMap().put(theta.getId(), theta);
 
-    final Set<UUID> stockThetaIds = securityThetaLink.getOrDefault(theta.getStock().getId(), new HashSet<>());
+    final Set<UUID> stockThetaIds = getSecurityThetaLink().getOrDefault(theta.getStock().getId(), new HashSet<>());
     stockThetaIds.add(theta.getId());
-    securityThetaLink.put(theta.getStock().getId(), stockThetaIds);
+    getSecurityThetaLink().put(theta.getStock().getId(), stockThetaIds);
 
-    final Set<UUID> callThetaIds = securityThetaLink.getOrDefault(theta.getCall().getId(), new HashSet<>());
+    final Set<UUID> callThetaIds = getSecurityThetaLink().getOrDefault(theta.getCall().getId(), new HashSet<>());
     callThetaIds.add(theta.getId());
-    securityThetaLink.put(theta.getCall().getId(), callThetaIds);
+    getSecurityThetaLink().put(theta.getCall().getId(), callThetaIds);
 
-    final Set<UUID> putThetaIds = securityThetaLink.getOrDefault(theta.getPut().getId(), new HashSet<>());
+    final Set<UUID> putThetaIds = getSecurityThetaLink().getOrDefault(theta.getPut().getId(), new HashSet<>());
     putThetaIds.add(theta.getId());
-    securityThetaLink.put(theta.getPut().getId(), putThetaIds);
+    getSecurityThetaLink().put(theta.getPut().getId(), putThetaIds);
 
     return DefaultPriceLevel.of(theta);
   }
@@ -239,6 +240,7 @@ public class PortfolioManager implements PositionProvider {
 
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
+    positionHandler.shutdown();
     portfolioDisposables.dispose();
   }
 
@@ -253,4 +255,5 @@ public class PortfolioManager implements PositionProvider {
   private Map<UUID, Security> getSecurityIdMap() {
     return securityIdMap;
   }
+
 }
