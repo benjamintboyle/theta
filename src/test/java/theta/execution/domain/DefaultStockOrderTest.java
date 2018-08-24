@@ -18,9 +18,8 @@ public class DefaultStockOrderTest {
 
     ExecutableOrder expectedOrder = ExecutionDomainFactory.buildTestExecutableOrderNewBuyLimit();
 
-    DefaultStockOrder order =
-        new DefaultStockOrder(ThetaDomainFactory.buildTestStock(), expectedOrder.getQuantity(),
-            expectedOrder.getExecutionAction(), expectedOrder.getExecutionType(), expectedOrder.getLimitPrice().get());
+    DefaultStockOrder order = new DefaultStockOrder(ThetaDomainFactory.buildTestStock(), expectedOrder.getQuantity(),
+        expectedOrder.getExecutionAction(), expectedOrder.getExecutionType(), expectedOrder.getLimitPrice().get());
 
     assertThat("Security Type does not match", order.getSecurityType(), is(expectedOrder.getSecurityType()));
     assertThat("Quantity does not match", order.getQuantity(), is(expectedOrder.getQuantity()));

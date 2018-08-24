@@ -17,6 +17,7 @@ import theta.connection.domain.BrokerageAccount;
 import theta.connection.domain.ConnectionState;
 
 public class IbConnectionHandler implements IbController, ConnectionHandler {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int CLIENT_ID = 0;

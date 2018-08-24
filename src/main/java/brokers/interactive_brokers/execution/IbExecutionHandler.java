@@ -13,13 +13,13 @@ import com.ib.contracts.StkContract;
 import brokers.interactive_brokers.IbController;
 import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
 
 public class IbExecutionHandler implements ExecutionHandler {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
@@ -32,34 +32,47 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order) {
-    return Flowable.<OrderStatus>create(emitter -> {
+  public Flowable<OrderStatus> executeOrder(ExecutableOrder order) {
 
-      IbOrderHandler orderHandler = DefaultIbOrderHandler.of(order, emitter);
+    Flowable<OrderStatus> orderStatus = Flowable.empty();
 
-      executeStockOrder(orderHandler);
+    switch (order.getSecurityType()) {
+      case STOCK:
+        final DefaultIbOrderHandler orderHandler = DefaultIbOrderHandler.of(order);
+        executeStockOrder(orderHandler);
+        orderStatus = orderHandler.getOrderStatus();
+        break;
+      case CALL:
+      case PUT:
+      case SHORT_STRADDLE:
+      case THETA:
+        logger.warn("ExecuteOrder not implemented for Security Type: {}. Order will not be executed for order: {}",
+            order.getSecurityType(), order);
+        break;
+      default:
+        logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}", order.getSecurityType(),
+            order);
+    }
 
-    }, BackpressureStrategy.LATEST)
+    return orderStatus.doOnComplete(
 
-        .doOnComplete(
-
-            () -> {
-              IbOrderHandler orderHandler = orderHandlerMapper.remove(order.getBrokerId().get());
-              logger.debug("Removed Order Handler: {}", orderHandler);
-            });
+        () -> {
+          final IbOrderHandler removedOrderHandler = orderHandlerMapper.remove(order.getBrokerId().get());
+          logger.debug("Removed Order Handler: {}", removedOrderHandler);
+        });
   }
 
   @Override
-  public boolean modifyStockOrder(ExecutableOrder order) {
+  public boolean modifyOrder(ExecutableOrder order) {
 
     logger.debug("Modifying order: {}", order);
 
     boolean isOrderExecuted = false;
 
-    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    final Optional<Integer> optionalBrokerId = order.getBrokerId();
     if (optionalBrokerId.isPresent()) {
 
-      IbOrderHandler ibOrderHandler = orderHandlerMapper.get(optionalBrokerId.get());
+      final IbOrderHandler ibOrderHandler = orderHandlerMapper.get(optionalBrokerId.get());
 
       if (ibOrderHandler != null) {
 
@@ -79,9 +92,9 @@ public class IbExecutionHandler implements ExecutionHandler {
   }
 
   @Override
-  public Flowable<OrderStatus> cancelStockOrder(ExecutableOrder order) {
+  public Flowable<OrderStatus> cancelOrder(ExecutableOrder order) {
 
-    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    final Optional<Integer> optionalBrokerId = order.getBrokerId();
     if (optionalBrokerId.isPresent()) {
       ibController.getController().cancelOrder(optionalBrokerId.get());
     } else {
@@ -108,7 +121,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     } else {
 
-      IllegalStateException noOrderIdException =
+      final IllegalStateException noOrderIdException =
           new IllegalStateException("Order Id not set for Order. May indicate an internal error. ExecutableOrder: "
               + ibOrderHandler.getExecutableOrder() + ", IB Contract: " + IbStringUtil.toStringContract(ibContract)
               + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder));

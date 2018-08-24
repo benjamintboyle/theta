@@ -242,8 +242,8 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       // is 0.
       if (priceLevels.isEmpty()) {
 
-        Disposable cancelDisposable =
-            Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread()).subscribe(
+        Disposable cancelDisposable = Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread())
+            .subscribe(
 
                 () -> {
                   if (priceLevels.isEmpty()) {

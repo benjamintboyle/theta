@@ -2,13 +2,15 @@ package brokers.interactive_brokers.execution;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
 import brokers.interactive_brokers.util.IbStringUtil;
-import io.reactivex.FlowableEmitter;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.Subject;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.domain.DefaultOrderStatus;
 
@@ -16,9 +18,9 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final FlowableEmitter<theta.execution.api.OrderStatus> emitter;
-
   private final ExecutableOrder order;
+
+  private final Subject<theta.execution.api.OrderStatus> orderStatusSubject = ReplaySubject.create();
 
   private OrderStatus ibOrderStatus = OrderStatus.ApiPending;
   private double commission = 0.0;
@@ -26,19 +28,21 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   private double remaining = 0.0;
   private double avgFillPrice = 0.0;
 
-  private DefaultIbOrderHandler(ExecutableOrder order, FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
+  private DefaultIbOrderHandler(ExecutableOrder order) {
     this.order = Objects.requireNonNull(order, "Order cannot be null");
-    this.emitter = Objects.requireNonNull(emitter, "Emitter for Order Handler must not be null");
   }
 
-  public static DefaultIbOrderHandler of(ExecutableOrder order,
-      FlowableEmitter<theta.execution.api.OrderStatus> emitter) {
+  public static DefaultIbOrderHandler of(ExecutableOrder order) {
 
-    DefaultIbOrderHandler handler = new DefaultIbOrderHandler(order, emitter);
+    final DefaultIbOrderHandler defaultOrderHandler = new DefaultIbOrderHandler(order);
 
-    handler.sendInitialOrderStatus();
+    defaultOrderHandler.sendInitialOrderStatus();
 
-    return handler;
+    return defaultOrderHandler;
+  }
+
+  public Flowable<theta.execution.api.OrderStatus> getOrderStatus() {
+    return orderStatusSubject.toFlowable(BackpressureStrategy.LATEST);
   }
 
   @Override
@@ -80,60 +84,48 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   private void processOrderStatus() {
 
-    Optional<theta.execution.api.OrderStatus> optionalOrderStatus = buildOrderStatus();
+    final theta.execution.api.OrderStatus orderStatus = buildOrderStatus();
 
-    if (optionalOrderStatus.isPresent()) {
+    orderStatusSubject.onNext(orderStatus);
 
-      theta.execution.api.OrderStatus orderStatus = optionalOrderStatus.get();
-
-      emitter.onNext(orderStatus);
-
-      if (orderStatus.getState() == theta.execution.api.OrderState.FILLED
-          || orderStatus.getState() == theta.execution.api.OrderState.CANCELLED) {
-        logger.debug("Sending complete for order: {}", orderStatus);
-        emitter.onComplete();
-      }
-    } else {
-      emitter.onError(new IllegalArgumentException("Unknown order status: " + this));
+    if (orderStatus.getState() == theta.execution.api.OrderState.FILLED
+        || orderStatus.getState() == theta.execution.api.OrderState.CANCELLED) {
+      logger.debug("Sending complete for order: {}", orderStatus);
+      orderStatusSubject.onComplete();
     }
   }
 
-  private Optional<theta.execution.api.OrderStatus> buildOrderStatus() {
+  private theta.execution.api.OrderStatus buildOrderStatus() {
 
-    Optional<theta.execution.api.OrderStatus> optionalOrderStatus = Optional.empty();
-    Optional<theta.execution.api.OrderState> optionalOrderState = Optional.empty();
+    theta.execution.api.OrderState orderState;
 
     switch (ibOrderStatus) {
       case ApiPending:
       case PreSubmitted:
       case PendingSubmit:
       case PendingCancel:
-        optionalOrderState = Optional.of(theta.execution.api.OrderState.PENDING);
+        orderState = theta.execution.api.OrderState.PENDING;
         break;
       case ApiCancelled:
       case Cancelled:
-        optionalOrderState = Optional.of(theta.execution.api.OrderState.CANCELLED);
+        orderState = theta.execution.api.OrderState.CANCELLED;
         break;
       case Submitted:
-        optionalOrderState = Optional.of(theta.execution.api.OrderState.SUBMITTED);
+        orderState = theta.execution.api.OrderState.SUBMITTED;
         break;
       case Filled:
-        optionalOrderState = Optional.of(theta.execution.api.OrderState.FILLED);
+        orderState = theta.execution.api.OrderState.FILLED;
         break;
       default:
-        logger.warn("Unknown order status from brokerage: {}", ibOrderStatus);
+        logger.warn("Unknown order status from brokerage: {}. Setting Order State to PENDING.", ibOrderStatus);
+        orderState = theta.execution.api.OrderState.PENDING;
     }
 
-    if (optionalOrderState.isPresent()) {
-
-      optionalOrderStatus = Optional.of(new DefaultOrderStatus(getExecutableOrder(), optionalOrderState.get(),
-          commission, Math.round(filled), Math.round(remaining), avgFillPrice));
-    }
-
-    return optionalOrderStatus;
+    return new DefaultOrderStatus(getExecutableOrder(), orderState, commission, Math.round(filled),
+        Math.round(remaining), avgFillPrice);
   }
 
-  public void sendInitialOrderStatus() {
+  private void sendInitialOrderStatus() {
 
     logger.debug("Sending initial Order Status");
 
@@ -147,7 +139,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   @Override
   public String toString() {
 
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append("Order: ");
     builder.append(getExecutableOrder());

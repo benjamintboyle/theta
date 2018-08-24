@@ -68,9 +68,10 @@ class DefaultPriceLevelTest {
     PriceLevel priceLevelThird = DefaultPriceLevel.from(Ticker.from("XYZ"), 0.5, PriceLevelDirection.FALLS_BELOW);
     PriceLevel priceLevelFourth = DefaultPriceLevel.from(Ticker.from("AAA"), 1.0, PriceLevelDirection.FALLS_BELOW);
 
-    List<PriceLevel> sortedList =
-        Arrays.asList(priceLevelFirst, priceLevelSecond, priceLevelThird, priceLevelFourth).stream().sorted().collect(
-            Collectors.toList());
+    List<PriceLevel> sortedList = Arrays.asList(priceLevelFirst, priceLevelSecond, priceLevelThird, priceLevelFourth)
+        .stream()
+        .sorted()
+        .collect(Collectors.toList());
 
     List<PriceLevel> expectedList = Arrays.asList(priceLevelFourth, priceLevelThird, priceLevelFirst, priceLevelSecond);
     List<PriceLevel> wrongOrderedList =

@@ -63,6 +63,7 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
     connectionStatus.onNext(ConnectionStatus.of(ConnectionState.DISCONNECTED));
   }
 
+  // Parameter should not be ArrayList, but this is part of the API from Interactive Brokers
   @Override
   public void accountList(ArrayList<String> list) {
     logger.info("Received account list: {}", list);
@@ -80,7 +81,7 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
   @Override
   public void message(int id, int messageCode, String message) {
 
-    String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
+    final String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
 
     if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
       logger.info(messageTemplate, id, messageCode, message);

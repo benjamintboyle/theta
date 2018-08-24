@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import theta.ThetaSchedulersFactory;
@@ -59,6 +60,16 @@ public class PortfolioManager implements PositionProvider {
     this.positionHandler = positionHandler;
   }
 
+  public Maybe<Security> processPosition() {
+
+    logger.debug("Processing Position {}");
+
+    return Maybe.create(emitter -> {
+
+
+    });
+  }
+
   public Completable startPositionProcessing() {
 
     logger.debug("Starting Position Processing");
@@ -99,9 +110,10 @@ public class PortfolioManager implements PositionProvider {
   @Override
   public List<Theta> providePositions(Ticker ticker) {
 
-    List<Theta> positionsToProvide =
-        getThetaIdMap().values().stream().filter(position -> position.getTicker().equals(ticker)).collect(
-            Collectors.toList());
+    List<Theta> positionsToProvide = getThetaIdMap().values()
+        .stream()
+        .filter(position -> position.getTicker().equals(ticker))
+        .collect(Collectors.toList());
 
     logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
     return positionsToProvide;
@@ -155,15 +167,15 @@ public class PortfolioManager implements PositionProvider {
   private void processPosition(Ticker ticker) {
 
     // Calculate unallocated call, put, stock
-    final List<Stock> unallocatedStocks =
-        getUnallocatedSecuritiesOf(ticker, SecurityType.STOCK).stream().map(stock -> (Stock) stock).collect(
-            Collectors.toList());
-    final List<Option> unallocatedCalls =
-        getUnallocatedSecuritiesOf(ticker, SecurityType.CALL).stream().map(call -> (Option) call).collect(
-            Collectors.toList());
-    final List<Option> unallocatedPuts =
-        getUnallocatedSecuritiesOf(ticker, SecurityType.PUT).stream().map(put -> (Option) put).collect(
-            Collectors.toList());
+    final List<Stock> unallocatedStocks = getUnallocatedSecuritiesOf(ticker, SecurityType.STOCK).stream()
+        .map(stock -> (Stock) stock)
+        .collect(Collectors.toList());
+    final List<Option> unallocatedCalls = getUnallocatedSecuritiesOf(ticker, SecurityType.CALL).stream()
+        .map(call -> (Option) call)
+        .collect(Collectors.toList());
+    final List<Option> unallocatedPuts = getUnallocatedSecuritiesOf(ticker, SecurityType.PUT).stream()
+        .map(put -> (Option) put)
+        .collect(Collectors.toList());
 
     if (!unallocatedStocks.isEmpty() && !unallocatedCalls.isEmpty() && !unallocatedPuts.isEmpty()) {
       ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts)

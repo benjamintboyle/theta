@@ -1,6 +1,19 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+    }
+}
+
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'findbugs'
+apply plugin: 'checkstyle'
 
 mainClassName = "theta.ThetaEngine"
 
@@ -12,6 +25,7 @@ group = 'theta'
 ext.slf4jVersion         = '1.+'
 ext.log4jVersion         = '2.+'
 ext.rxJavaVersion        = '2.+'
+ext.springBootVersion    = '2.0.4.RELEASE';
 
 // Test dependency versions
 ext.hamcrestVersion      = '2.+'
@@ -23,8 +37,8 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 9
-targetCompatibility = 9
+sourceCompatibility = 10
+targetCompatibility = 10
 
 dependencies {
     // Production code dependencies
@@ -33,6 +47,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:${log4jVersion}")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}")
     implementation("io.reactivex.rxjava2:rxjava:${rxJavaVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}");
 
     implementation files('libs/interactive-brokers-api-9.72.18.jar')
 
@@ -49,6 +64,8 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+	
+	maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 
 	testLogging {
 		events "passed", "skipped", "failed"
@@ -63,6 +80,6 @@ distZip {
     enabled = false
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.8'
+wrapper {
+    gradleVersion = '4.9'
 }

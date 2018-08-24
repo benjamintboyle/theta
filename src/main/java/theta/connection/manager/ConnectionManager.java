@@ -13,7 +13,9 @@ import theta.domain.ManagerState;
 import theta.domain.ManagerStatus;
 
 public class ConnectionManager implements Callable<ManagerStatus> {
+
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private final ConnectionHandler connectionHandler;
 
   private final ManagerStatus managerStatus =

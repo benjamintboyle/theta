@@ -5,9 +5,9 @@ import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
 
 public interface ExecutionHandler {
-  public Flowable<OrderStatus> executeStockOrder(ExecutableOrder order);
+  public Flowable<OrderStatus> executeOrder(ExecutableOrder order);
 
-  public boolean modifyStockOrder(ExecutableOrder order);
+  public boolean modifyOrder(ExecutableOrder order);
 
-  public Flowable<OrderStatus> cancelStockOrder(ExecutableOrder order);
+  public Flowable<OrderStatus> cancelOrder(ExecutableOrder order);
 }

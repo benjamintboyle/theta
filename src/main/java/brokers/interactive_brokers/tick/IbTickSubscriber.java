@@ -65,16 +65,17 @@ public class IbTickSubscriber implements TickSubscriber {
 
       TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
 
-      Disposable handlerDisposable = handler.getTicks().subscribe(
+      Disposable handlerDisposable = handler.getTicks()
+          .subscribe(
 
-          tickSubject::onNext,
+              tickSubject::onNext,
 
-          exception -> logger.error("Error with Tick Handler {}", handler, exception),
+              exception -> logger.error("Error with Tick Handler {}", handler, exception),
 
-          () -> {
-            logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
-            unsubscribeTick(priceLevel.getTicker());
-          });
+              () -> {
+                logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
+                unsubscribeTick(priceLevel.getTicker());
+              });
 
       tickSubscriberDisposables.add(handlerDisposable);
 
@@ -154,8 +155,10 @@ public class IbTickSubscriber implements TickSubscriber {
   private void logHandlers() {
 
     logger.info("Current Handlers: {}",
-        ibTickHandlers.values().stream().sorted(Comparator.comparing(TickHandler::getTicker)).collect(
-            Collectors.toList()));
+        ibTickHandlers.values()
+            .stream()
+            .sorted(Comparator.comparing(TickHandler::getTicker))
+            .collect(Collectors.toList()));
   }
 
   @Override

@@ -1,6 +1,7 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,15 +73,15 @@ public class ExecutionManager implements Executor {
         .forEach(
 
             orderStatus -> {
-              ExecutableOrder existingOrder = orderStatus.getOrder();
+              final ExecutableOrder existingOrder = orderStatus.getOrder();
 
               if (existingOrder.getExecutionType() != ExecutionType.MARKET) {
 
-                ExecutableOrder modifiedToMarketOrder =
+                final ExecutableOrder modifiedToMarketOrder =
                     new DefaultStockOrder(existingOrder.getTicker(), existingOrder.getId(), existingOrder.getQuantity(),
                         existingOrder.getExecutionAction(), ExecutionType.MARKET);
 
-                Disposable convertToMarketDisposable = executeOrder(modifiedToMarketOrder).subscribe(
+                final Disposable convertToMarketDisposable = executeOrder(modifiedToMarketOrder).subscribe(
 
                     () -> logger.info("Successfully modified to Market Order: {}", modifiedToMarketOrder),
 
@@ -96,9 +97,9 @@ public class ExecutionManager implements Executor {
 
     return Completable.create(emitter -> {
 
-      if (ThetaMarketUtil.isDuringMarketHours()) {
+      if (ThetaMarketUtil.isDuringNewYorkMarketHours(ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE))) {
 
-        boolean isModifiedOrder = isModifiedOrder(order);
+        final boolean isModifiedOrder = isModifiedOrder(order);
 
         // New order
         if (!isModifiedOrder && !order.getBrokerId().isPresent()) {
@@ -131,44 +132,46 @@ public class ExecutionManager implements Executor {
   }
 
   private Disposable subscribeExecuteStockOrder(ExecutableOrder order, CompletableEmitter emitter) {
-    return executionHandler.executeStockOrder(order).subscribe(
+    return executionHandler.executeOrder(order)
+        .subscribe(
 
-        orderStatus -> {
-          logger.info("Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
-              orderStatus.getOrder().getBrokerId().orElse(null), orderStatus.getState(), orderStatus.getCommission(),
-              orderStatus.getFilled(), orderStatus.getRemaining(), orderStatus.getOrder());
-          updateActiveOrderStatus(orderStatus);
-        },
+            orderStatus -> {
+              logger.info("Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
+                  orderStatus.getOrder().getBrokerId().orElse(null), orderStatus.getState(),
+                  orderStatus.getCommission(), orderStatus.getFilled(), orderStatus.getRemaining(),
+                  orderStatus.getOrder());
+              updateActiveOrderStatus(orderStatus);
+            },
 
-        // TODO: Should probably correct cancel request
-        error -> {
-          logger.error("Order Handler encountered an error", error);
-          Disposable disposableCancelOrder = executionHandler.cancelStockOrder(order).subscribe();
-          executionManagerDisposables.add(disposableCancelOrder);
+            // TODO: Should probably correct cancel request
+            error -> {
+              logger.error("Order Handler encountered an error", error);
+              final Disposable disposableCancelOrder = executionHandler.cancelOrder(order).subscribe();
+              executionManagerDisposables.add(disposableCancelOrder);
 
-          logger.warn("Removing order from active orders: {}", order);
-          activeOrderStatuses.remove(order.getId());
+              logger.warn("Removing order from active orders: {}", order);
+              activeOrderStatuses.remove(order.getId());
 
-          emitter.onError(error);
-        },
+              emitter.onError(error);
+            },
 
-        () -> {
+            () -> {
 
-          logger.info("Order successfully filled: {}", order);
+              logger.info("Order successfully filled: {}", order);
 
-          if (activeOrderStatuses.remove(order.getId()) != null) {
-            logger.debug("Order removed from active orders list: {}", order);
-          } else {
-            logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
-          }
+              if (activeOrderStatuses.remove(order.getId()) != null) {
+                logger.debug("Order removed from active orders list: {}", order);
+              } else {
+                logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
+              }
 
-          emitter.onComplete();
-        });
+              emitter.onComplete();
+            });
   }
 
   private void modifyStockOrder(ExecutableOrder order) {
 
-    OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
+    final OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
 
     if (activeOrderStatus != null && activeOrderStatus.getOrder().getBrokerId().isPresent()) {
 
@@ -177,7 +180,7 @@ public class ExecutionManager implements Executor {
         if (!order.equals(activeOrderStatus.getOrder())) {
 
           logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order, activeOrderStatus);
-          executionHandler.modifyStockOrder(order);
+          executionHandler.modifyOrder(order);
         } else {
           logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
               activeOrderStatus);
@@ -197,17 +200,17 @@ public class ExecutionManager implements Executor {
 
     boolean isModifiedOrder = false;
 
-    OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
+    final OrderStatus activeOrderStatus = activeOrderStatuses.get(order.getId());
 
     // No active order
     if (activeOrderStatus != null) {
 
-      Optional<Integer> optionalBrokerId = activeOrderStatus.getOrder().getBrokerId();
+      final Optional<Integer> optionalBrokerId = activeOrderStatus.getOrder().getBrokerId();
 
       if (optionalBrokerId.isPresent()) {
 
         if (activeOrderStatus.getState() != OrderState.FILLED) {
-          ExecutableOrder activeOrder = activeOrderStatus.getOrder();
+          final ExecutableOrder activeOrder = activeOrderStatus.getOrder();
 
           // Active order with different quantities, will be modified
           if (activeOrder.getQuantity() != order.getQuantity()) {

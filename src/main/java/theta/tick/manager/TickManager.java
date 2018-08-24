@@ -52,9 +52,10 @@ public class TickManager implements TickMonitor {
 
     return Completable.create(emitter -> {
 
-      Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
+      final Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
           // Determine if time now is during market hours
-          .filter(tickFilter -> ThetaMarketUtil.isDuringMarketHours())
+          .filter(tickFilter -> ThetaMarketUtil
+              .isDuringNewYorkMarketHours(ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE)))
           .subscribe(
 
               this::processTick,
@@ -98,14 +99,14 @@ public class TickManager implements TickMonitor {
 
       logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
 
-      final List<Theta> thetasToReverse =
-          tradesToCheck.stream().filter(theta -> tickProcessor.processTick(tick, DefaultPriceLevel.of(theta))).collect(
-              Collectors.toList());
+      final List<Theta> thetasToReverse = tradesToCheck.stream()
+          .filter(theta -> tickProcessor.processTick(tick, DefaultPriceLevel.of(theta)))
+          .collect(Collectors.toList());
 
       // FIXME: This doesn't correctly calculate limit price
       for (final Stock stock : StockUtil.consolidateStock(thetasToReverse)) {
 
-        Disposable disposableTrade = executor
+        final Disposable disposableTrade = executor
             .reverseTrade(stock, tickProcessor.getExecutionType(), tickProcessor.getLimitPrice(stock.getTicker()))
             .subscribe(
 
@@ -123,7 +124,7 @@ public class TickManager implements TickMonitor {
 
                 exception -> logger.error("Error with Trade of {}", stock)
 
-        );
+            );
 
         tickManagerDisposables.add(disposableTrade);
       }

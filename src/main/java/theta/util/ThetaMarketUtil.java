@@ -14,8 +14,9 @@ public class ThetaMarketUtil {
 
   private ThetaMarketUtil() {}
 
-  public static boolean isDuringMarketHours() {
-    ZonedDateTime marketTimeNow = ZonedDateTime.now(MARKET_TIMEZONE);
+  public static boolean isDuringNewYorkMarketHours(ZonedDateTime timeToCheck) {
+
+    final ZonedDateTime marketTimeNow = timeToCheck.withZoneSameInstant(MARKET_TIMEZONE);
 
     return DayOfWeek.from(marketTimeNow) != DayOfWeek.SATURDAY && DayOfWeek.from(marketTimeNow) != DayOfWeek.SUNDAY
         && marketTimeNow.toLocalTime().isAfter(MARKET_OPEN_TIME)

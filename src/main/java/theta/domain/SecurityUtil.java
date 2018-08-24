@@ -17,7 +17,8 @@ public class SecurityUtil {
     Optional<Security> securityWithQuantity = Optional.empty();
 
     if (adjustment < 0) {
-      logger.warn("Adjustment was negative ({}).  Always assumed to be positive.  Adjusting: ", adjustment, security);
+      logger.warn("Adjustment was negative: {}. Always assumed to be positive. Setting to: {} for Security: {}",
+          adjustment, Math.abs(adjustment), security);
       adjustment = Math.abs(adjustment);
     }
 

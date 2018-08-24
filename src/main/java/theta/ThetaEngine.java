@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -14,6 +15,7 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 import theta.util.ThetaStartupUtil;
 
+@SpringBootApplication
 public class ThetaEngine implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -70,6 +72,8 @@ public class ThetaEngine implements Runnable {
   @Override
   public void run() {
 
+    // connect -> position process -> tick -> execution -> position
+
     final Disposable portfolioManagerDisposable = startPortfolioManager();
     managerDisposables.add(portfolioManagerDisposable);
 
@@ -79,26 +83,31 @@ public class ThetaEngine implements Runnable {
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect().ignoreElement().andThen(portfolioManager.startPositionProcessing()).subscribe(
+    return connectionManager.connect()
+        .ignoreElement()
+        .andThen(portfolioManager.startPositionProcessing())
+        .subscribe(
 
-        () -> logger.info("Portfolio Manager has Shutdown"),
+            () -> logger.info("Portfolio Manager has Shutdown"),
 
-        error -> {
-          logger.error("Portfolio Manager Error", error);
-          shutdown();
-        });
+            error -> {
+              logger.error("Portfolio Manager Error", error);
+              shutdown();
+            });
   }
 
   private Disposable startTickManager() {
 
-    return portfolioManager.getPositionEnd().andThen(tickManager.startTickProcessing()).subscribe(
+    return portfolioManager.getPositionEnd()
+        .andThen(tickManager.startTickProcessing())
+        .subscribe(
 
-        () -> logger.info("Tick Manager has Shutdown"),
+            () -> logger.info("Tick Manager has Shutdown"),
 
-        error -> {
-          logger.error("Tick Manager Error", error);
-          shutdown();
-        });
+            error -> {
+              logger.error("Tick Manager Error", error);
+              shutdown();
+            });
   }
 
   public void shutdown() {
