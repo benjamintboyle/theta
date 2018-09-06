@@ -21,11 +21,11 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.observers.TestObserver;
 import theta.api.PositionHandler;
-import theta.domain.DefaultPriceLevel;
-import theta.domain.ManagerState;
-import theta.domain.Stock;
-import theta.domain.Theta;
-import theta.domain.ThetaDomainFactory;
+import theta.domain.composed.Theta;
+import theta.domain.manager.ManagerState;
+import theta.domain.pricelevel.DefaultPriceLevel;
+import theta.domain.stock.Stock;
+import theta.domain.testutil.ThetaDomainFactory;
 import theta.tick.api.TickMonitor;
 
 @ExtendWith(MockitoExtension.class)

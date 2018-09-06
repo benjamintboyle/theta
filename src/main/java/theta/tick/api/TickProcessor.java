@@ -1,8 +1,8 @@
 package theta.tick.api;
 
 import java.util.Optional;
+import theta.domain.PriceLevel;
 import theta.domain.Ticker;
-import theta.domain.api.PriceLevel;
 import theta.execution.api.ExecutionType;
 import theta.tick.domain.TickType;
 

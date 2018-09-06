@@ -1,4 +1,4 @@
-package theta.domain;
+package theta.domain.composed;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
@@ -6,8 +6,10 @@ import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.Security;
+import theta.domain.SecurityType;
+import theta.domain.Ticker;
+import theta.domain.option.Option;
 
 public class ShortStraddle implements Security {
 
@@ -25,7 +27,7 @@ public class ShortStraddle implements Security {
 
   public static ShortStraddle of(Option call, Option put) {
 
-    ShortStraddle straddle = new ShortStraddle(call, put);
+    final ShortStraddle straddle = new ShortStraddle(call, put);
 
     if (!straddle.isValid()) {
       logger.error("Short Straddle invalid: {}", straddle);
@@ -171,7 +173,7 @@ public class ShortStraddle implements Security {
 
     if (obj instanceof ShortStraddle) {
 
-      ShortStraddle other = (ShortStraddle) obj;
+      final ShortStraddle other = (ShortStraddle) obj;
 
       return Objects.equals(getCall(), other.getCall()) && Objects.equals(getPut(), other.getPut());
     }

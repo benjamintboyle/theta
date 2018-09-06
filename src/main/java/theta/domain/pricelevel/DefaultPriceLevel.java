@@ -1,8 +1,10 @@
-package theta.domain;
+package theta.domain.pricelevel;
 
 import java.util.Objects;
-import theta.domain.api.PriceLevel;
-import theta.domain.api.PriceLevelDirection;
+import theta.domain.PriceLevel;
+import theta.domain.PriceLevelDirection;
+import theta.domain.composed.Theta;
+import theta.domain.Ticker;
 
 public class DefaultPriceLevel implements PriceLevel {
 

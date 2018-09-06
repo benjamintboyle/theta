@@ -1,4 +1,4 @@
-package theta.domain;
+package theta.domain.pricelevel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -11,21 +11,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
-import theta.domain.api.PriceLevel;
-import theta.domain.api.PriceLevelDirection;
+import theta.domain.PriceLevel;
+import theta.domain.PriceLevelDirection;
+import theta.domain.composed.Theta;
+import theta.domain.testutil.ThetaDomainFactory;
+import theta.domain.ticker.DefaultTicker;
 
 class DefaultPriceLevelTest {
 
   @Test
   void testHashCode() {
 
-    PriceLevel defaultPriceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
-    PriceLevel defaultPriceLevelEqual = ThetaDomainFactory.buildDefaultPriceLevel();
-    PriceLevel defaultPriceLevelNotEqualTicker =
-        DefaultPriceLevel.from(Ticker.from("XYZ"), defaultPriceLevel.getPrice(), defaultPriceLevel.tradeIf());
-    PriceLevel defaultPriceLevelNotEqualPrice =
+    final PriceLevel defaultPriceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel defaultPriceLevelEqual = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel defaultPriceLevelNotEqualTicker =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), defaultPriceLevel.getPrice(), defaultPriceLevel.tradeIf());
+    final PriceLevel defaultPriceLevelNotEqualPrice =
         DefaultPriceLevel.from(defaultPriceLevel.getTicker(), 1.0, defaultPriceLevel.tradeIf());
-    PriceLevel defaultPriceLevelNotEqualDirection = DefaultPriceLevel.from(defaultPriceLevel.getTicker(),
+    final PriceLevel defaultPriceLevelNotEqualDirection = DefaultPriceLevel.from(defaultPriceLevel.getTicker(),
         defaultPriceLevel.getPrice(), PriceLevelDirection.FALLS_BELOW);
 
     assertThat(defaultPriceLevel, is(not(sameInstance(defaultPriceLevelEqual))));
@@ -42,9 +45,9 @@ class DefaultPriceLevelTest {
   @Test
   void testOf() throws Exception {
 
-    Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainFactory.buildTestTheta();
 
-    PriceLevel defaultPriceLevel = DefaultPriceLevel.of(theta);
+    final PriceLevel defaultPriceLevel = DefaultPriceLevel.of(theta);
 
     assertThat(defaultPriceLevel.getTicker().getSymbol(), is(equalTo("ABC")));
     assertThat(defaultPriceLevel.getPrice(), is(equalTo(123.5)));
@@ -53,7 +56,8 @@ class DefaultPriceLevelTest {
 
   @Test
   void testFrom() {
-    PriceLevel defaultPriceLevel = DefaultPriceLevel.from(Ticker.from("XYZ"), 1.0, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel defaultPriceLevel =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), 1.0, PriceLevelDirection.FALLS_BELOW);
 
     assertThat(defaultPriceLevel.getTicker().getSymbol(), is(equalTo("XYZ")));
     assertThat(defaultPriceLevel.getPrice(), is(equalTo(1.0)));
@@ -63,18 +67,24 @@ class DefaultPriceLevelTest {
   @Test
   void testCompareTo() {
 
-    PriceLevel priceLevelFirst = DefaultPriceLevel.from(Ticker.from("XYZ"), 1.0, PriceLevelDirection.FALLS_BELOW);
-    PriceLevel priceLevelSecond = DefaultPriceLevel.from(Ticker.from("XYZ"), 1.0, PriceLevelDirection.RISES_ABOVE);
-    PriceLevel priceLevelThird = DefaultPriceLevel.from(Ticker.from("XYZ"), 0.5, PriceLevelDirection.FALLS_BELOW);
-    PriceLevel priceLevelFourth = DefaultPriceLevel.from(Ticker.from("AAA"), 1.0, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel priceLevelFirst =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), 1.0, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel priceLevelSecond =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), 1.0, PriceLevelDirection.RISES_ABOVE);
+    final PriceLevel priceLevelThird =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), 0.5, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel priceLevelFourth =
+        DefaultPriceLevel.from(DefaultTicker.from("AAA"), 1.0, PriceLevelDirection.FALLS_BELOW);
 
-    List<PriceLevel> sortedList = Arrays.asList(priceLevelFirst, priceLevelSecond, priceLevelThird, priceLevelFourth)
-        .stream()
-        .sorted()
-        .collect(Collectors.toList());
+    final List<PriceLevel> sortedList =
+        Arrays.asList(priceLevelFirst, priceLevelSecond, priceLevelThird, priceLevelFourth)
+            .stream()
+            .sorted()
+            .collect(Collectors.toList());
 
-    List<PriceLevel> expectedList = Arrays.asList(priceLevelFourth, priceLevelThird, priceLevelFirst, priceLevelSecond);
-    List<PriceLevel> wrongOrderedList =
+    final List<PriceLevel> expectedList =
+        Arrays.asList(priceLevelFourth, priceLevelThird, priceLevelFirst, priceLevelSecond);
+    final List<PriceLevel> wrongOrderedList =
         Arrays.asList(priceLevelFirst, priceLevelSecond, priceLevelThird, priceLevelFourth);
 
     assertThat(sortedList, is(equalTo(expectedList)));
@@ -84,13 +94,13 @@ class DefaultPriceLevelTest {
   @Test
   void testEquals() {
 
-    PriceLevel defaultPriceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
-    PriceLevel defaultPriceLevelEqual = ThetaDomainFactory.buildDefaultPriceLevel();
-    PriceLevel defaultPriceLevelNotEqualTicker =
-        DefaultPriceLevel.from(Ticker.from("XYZ"), defaultPriceLevel.getPrice(), defaultPriceLevel.tradeIf());
-    PriceLevel defaultPriceLevelNotEqualPrice =
+    final PriceLevel defaultPriceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel defaultPriceLevelEqual = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel defaultPriceLevelNotEqualTicker =
+        DefaultPriceLevel.from(DefaultTicker.from("XYZ"), defaultPriceLevel.getPrice(), defaultPriceLevel.tradeIf());
+    final PriceLevel defaultPriceLevelNotEqualPrice =
         DefaultPriceLevel.from(defaultPriceLevel.getTicker(), 1.0, defaultPriceLevel.tradeIf());
-    PriceLevel defaultPriceLevelNotEqualDirection = DefaultPriceLevel.from(defaultPriceLevel.getTicker(),
+    final PriceLevel defaultPriceLevelNotEqualDirection = DefaultPriceLevel.from(defaultPriceLevel.getTicker(),
         defaultPriceLevel.getPrice(), PriceLevelDirection.FALLS_BELOW);
 
     assertThat(defaultPriceLevel, not(sameInstance(defaultPriceLevelEqual)));
@@ -107,9 +117,9 @@ class DefaultPriceLevelTest {
   @Test
   void testToString() {
 
-    PriceLevel priceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel priceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
 
-    String toStringPriceLevel = priceLevel.toString();
+    final String toStringPriceLevel = priceLevel.toString();
 
     assertThat("toString() should not be empty.", toStringPriceLevel, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringPriceLevel,

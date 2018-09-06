@@ -15,17 +15,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.Option;
-import theta.domain.Stock;
+import theta.domain.Security;
+import theta.domain.SecurityType;
 import theta.domain.Ticker;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
+import theta.domain.ticker.DefaultTicker;
 
 public class PortfolioTestUtil {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static List<Security> readInputFile(final String fileName) {
-    List<String> inputList = new ArrayList<String>();
+    List<String> inputList = new ArrayList<>();
 
     try {
       final Path inputFile = Paths.get(PortfolioManagerTest.class.getClassLoader().getResource(fileName).toURI());
@@ -41,7 +42,7 @@ public class PortfolioTestUtil {
   }
 
   private static List<Security> parseStringToSecurity(final List<String> stringListOfSecurities) {
-    final List<Security> securityList = new ArrayList<Security>();
+    final List<Security> securityList = new ArrayList<>();
 
     final Pattern splitPattern = Pattern.compile("\\s*,\\s*");
 
@@ -50,7 +51,7 @@ public class PortfolioTestUtil {
 
       final String[] security = splitPattern.split(trade);
       final String securityType = security[0];
-      final Ticker ticker = Ticker.from(security[1]);
+      final Ticker ticker = DefaultTicker.from(security[1]);
       final long quantity = Long.parseLong(security[2]);
       final Double price = Double.valueOf(security[3]);
       logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity, price);

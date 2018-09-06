@@ -22,11 +22,11 @@ import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import theta.api.PositionHandler;
-import theta.domain.Option;
-import theta.domain.Stock;
-import theta.domain.Ticker;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.Security;
+import theta.domain.SecurityType;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
+import theta.domain.ticker.DefaultTicker;
 
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
@@ -135,7 +135,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
-    return Stock.of(generateId(contract.conid()), Ticker.from(contract.symbol()), quantity, avgCost);
+    return Stock.of(generateId(contract.conid()), DefaultTicker.from(contract.symbol()), quantity, avgCost);
   }
 
   private Option generateOption(Contract contract, double position, Double avgCost) {
@@ -160,7 +160,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     Option option = null;
 
     if (securityType != null) {
-      option = new Option(generateId(contract.conid()), securityType, Ticker.from(contract.symbol()), quantity,
+      option = new Option(generateId(contract.conid()), securityType, DefaultTicker.from(contract.symbol()), quantity,
           contract.strike(), expirationDate, avgCost);
     }
 

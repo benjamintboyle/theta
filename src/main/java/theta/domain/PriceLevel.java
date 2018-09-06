@@ -1,4 +1,4 @@
-package theta.domain.api;
+package theta.domain;
 
 import theta.domain.Ticker;
 

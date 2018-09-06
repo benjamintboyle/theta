@@ -14,12 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import io.reactivex.observers.TestObserver;
 import theta.api.TickSubscriber;
-import theta.domain.DefaultPriceLevel;
-import theta.domain.ManagerState;
-import theta.domain.ManagerStatus;
-import theta.domain.Ticker;
-import theta.domain.api.PriceLevel;
-import theta.domain.api.PriceLevelDirection;
+import theta.domain.PriceLevel;
+import theta.domain.PriceLevelDirection;
+import theta.domain.manager.ManagerState;
+import theta.domain.manager.ManagerStatus;
+import theta.domain.pricelevel.DefaultPriceLevel;
+import theta.domain.ticker.DefaultTicker;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 import theta.tick.api.TickProcessor;
@@ -58,7 +58,7 @@ public class TickManagerTest2 {
   @Test
   public void testTickManagerStateRunning() {
 
-    TestObserver<Void> testCompletableObserver = sut.startTickProcessing().test();
+    final TestObserver<Void> testCompletableObserver = sut.startTickProcessing().test();
 
     testCompletableObserver.assertNotComplete();
     assertThat("After started, Tick Manager should be in RUNNING state.", sut.getStatus().getState(),
@@ -75,7 +75,8 @@ public class TickManagerTest2 {
   @Disabled
   @Test
   public void testAddMonitor() {
-    PriceLevel priceLevel = DefaultPriceLevel.from(Ticker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel priceLevel =
+        DefaultPriceLevel.from(DefaultTicker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
 
     sut.addMonitor(priceLevel);
 
@@ -85,7 +86,8 @@ public class TickManagerTest2 {
   @Disabled
   @Test
   public void testDeleteMonitor() {
-    PriceLevel priceLevel = DefaultPriceLevel.from(Ticker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
+    final PriceLevel priceLevel =
+        DefaultPriceLevel.from(DefaultTicker.from("ABC"), 100.0, PriceLevelDirection.FALLS_BELOW);
 
     sut.deleteMonitor(priceLevel);
 
@@ -95,7 +97,7 @@ public class TickManagerTest2 {
   @Disabled
   @Test
   public void testGetStatus() {
-    ManagerStatus tickManagerStatus = sut.getStatus();
+    final ManagerStatus tickManagerStatus = sut.getStatus();
 
     assertThat("Call to initialized Tick Manager getStatus should result in STARTING state.",
         tickManagerStatus.getState(), is(equalTo(ManagerState.STARTING)));

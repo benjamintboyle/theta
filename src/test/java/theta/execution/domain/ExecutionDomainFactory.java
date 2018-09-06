@@ -1,7 +1,7 @@
 package theta.execution.domain;
 
-import theta.domain.Stock;
-import theta.domain.ThetaDomainFactory;
+import theta.domain.stock.Stock;
+import theta.domain.testutil.ThetaDomainFactory;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;

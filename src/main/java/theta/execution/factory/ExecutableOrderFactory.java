@@ -4,8 +4,8 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.Stock;
-import theta.domain.Theta;
+import theta.domain.composed.Theta;
+import theta.domain.stock.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 

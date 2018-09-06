@@ -1,4 +1,4 @@
-package theta.domain;
+package theta.domain.composed;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -10,8 +10,13 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.Security;
+import theta.domain.SecurityType;
+import theta.domain.composed.ShortStraddle;
+import theta.domain.composed.Theta;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
+import theta.domain.testutil.ThetaDomainFactory;
 
 class ThetaTest {
 

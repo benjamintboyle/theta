@@ -9,8 +9,8 @@ import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.ConnectionState;
-import theta.domain.ManagerState;
-import theta.domain.ManagerStatus;
+import theta.domain.manager.ManagerState;
+import theta.domain.manager.ManagerStatus;
 
 public class ConnectionManager implements Callable<ManagerStatus> {
 

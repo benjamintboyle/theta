@@ -1,9 +1,14 @@
-package theta.domain;
+package theta.domain.testutil;
 
 import java.time.LocalDate;
-import theta.domain.api.PriceLevel;
-import theta.domain.api.PriceLevelDirection;
-import theta.domain.api.SecurityType;
+import theta.domain.PriceLevel;
+import theta.domain.PriceLevelDirection;
+import theta.domain.SecurityType;
+import theta.domain.composed.Theta;
+import theta.domain.option.Option;
+import theta.domain.pricelevel.DefaultPriceLevel;
+import theta.domain.stock.Stock;
+import theta.domain.ticker.DefaultTicker;
 
 public class ThetaDomainFactory {
 
@@ -14,7 +19,7 @@ public class ThetaDomainFactory {
   private static final long OPTION_QUANTITY = 1;
 
   public static Stock buildTestStock() {
-    return Stock.of(Ticker.from(SYMBOL), STOCK_QUANTITY, AVERAGE_PRICE);
+    return Stock.of(DefaultTicker.from(SYMBOL), STOCK_QUANTITY, AVERAGE_PRICE);
   }
 
   public static Option buildCallOption() {
@@ -26,20 +31,20 @@ public class ThetaDomainFactory {
   }
 
   public static Option buildOption(SecurityType securityType) {
-    return new Option(securityType, Ticker.from(SYMBOL), OPTION_QUANTITY, STRIKE_PRICE, LocalDate.now(), 1.0);
+    return new Option(securityType, DefaultTicker.from(SYMBOL), OPTION_QUANTITY, STRIKE_PRICE, LocalDate.now(), 1.0);
   }
 
   public static Theta buildTestTheta() throws Exception {
 
-    Stock stock = buildTestStock();
-    Option call = buildCallOption();
-    Option put = buildPutOption();
+    final Stock stock = buildTestStock();
+    final Option call = buildCallOption();
+    final Option put = buildPutOption();
 
     return Theta.of(stock, call, put).orElseThrow(() -> new Exception("Failed to generate Theta"));
   }
 
   public static PriceLevel buildDefaultPriceLevel() {
-    return DefaultPriceLevel.from(Ticker.from(SYMBOL), STRIKE_PRICE, PriceLevelDirection.RISES_ABOVE);
+    return DefaultPriceLevel.from(DefaultTicker.from(SYMBOL), STRIKE_PRICE, PriceLevelDirection.RISES_ABOVE);
   }
 
 }

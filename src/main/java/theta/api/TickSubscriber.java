@@ -2,8 +2,8 @@ package theta.api;
 
 import java.util.Set;
 import io.reactivex.Flowable;
+import theta.domain.PriceLevel;
 import theta.domain.Ticker;
-import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 

@@ -1,4 +1,4 @@
-package theta.domain;
+package theta.domain.util;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -9,7 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.api.Security;
+import theta.domain.Security;
+import theta.domain.composed.Theta;
+import theta.domain.stock.Stock;
 
 public class StockUtil {
 
@@ -62,7 +64,7 @@ public class StockUtil {
   }
 
   public static Optional<Stock> adjustStockQuantity(Stock stock, long adjustment) {
-    Optional<Security> stockAsSecurity = SecurityUtil.getSecurityWithQuantity(stock, adjustment);
+    final Optional<Security> stockAsSecurity = SecurityUtil.getSecurityWithQuantity(stock, adjustment);
 
     Optional<Stock> adjustedStock = Optional.empty();
 

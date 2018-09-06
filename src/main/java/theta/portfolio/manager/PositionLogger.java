@@ -10,10 +10,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.Option;
-import theta.domain.Theta;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.Security;
+import theta.domain.SecurityType;
+import theta.domain.composed.Theta;
+import theta.domain.option.Option;
 
 public class PositionLogger {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

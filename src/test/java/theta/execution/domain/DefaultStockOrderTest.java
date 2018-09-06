@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
-import theta.domain.Stock;
-import theta.domain.ThetaDomainFactory;
+import theta.domain.stock.Stock;
+import theta.domain.testutil.ThetaDomainFactory;
 import theta.execution.api.ExecutableOrder;
 
 public class DefaultStockOrderTest {

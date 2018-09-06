@@ -1,7 +1,6 @@
-package theta.domain.api;
+package theta.domain;
 
 import java.util.UUID;
-import theta.domain.Ticker;
 
 public interface Security {
 

@@ -2,8 +2,8 @@ package theta.execution.api;
 
 import java.util.Optional;
 import java.util.UUID;
+import theta.domain.SecurityType;
 import theta.domain.Ticker;
-import theta.domain.api.SecurityType;
 
 public interface ExecutableOrder {
 

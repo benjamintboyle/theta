@@ -1,4 +1,4 @@
-package theta.domain;
+package theta.domain.composed;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
@@ -6,8 +6,11 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.api.Security;
-import theta.domain.api.SecurityType;
+import theta.domain.Security;
+import theta.domain.SecurityType;
+import theta.domain.Ticker;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
 
 public class Theta implements Security {
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -112,7 +115,7 @@ public class Theta implements Security {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append(getSecurityType());
     builder.append(" [");

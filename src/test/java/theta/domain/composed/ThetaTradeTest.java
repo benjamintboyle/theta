@@ -1,9 +1,14 @@
-package theta.domain;
+package theta.domain.composed;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import theta.domain.composed.Theta;
+import theta.domain.option.Option;
+import theta.domain.option.OptionTest;
+import theta.domain.stock.Stock;
+import theta.domain.stock.StockTest;
 
 public class ThetaTradeTest {
   public static Theta buildTestThetaTrade() {

@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -15,7 +14,7 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 import theta.util.ThetaStartupUtil;
 
-@SpringBootApplication
+// @SpringBootApplication
 public class ThetaEngine implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

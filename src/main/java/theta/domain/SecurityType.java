@@ -1,4 +1,4 @@
-package theta.domain.api;
+package theta.domain;
 
 public enum SecurityType {
   // Note, STOCK, CALL, PUT indicate naked stock/option positions

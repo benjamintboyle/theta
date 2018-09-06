@@ -1,6 +1,6 @@
 package theta.tick.api;
 
-import theta.domain.api.PriceLevel;
+import theta.domain.PriceLevel;
 
 public interface TickMonitor {
 

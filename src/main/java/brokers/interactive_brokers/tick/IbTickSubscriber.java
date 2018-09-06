@@ -20,8 +20,8 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
+import theta.domain.PriceLevel;
 import theta.domain.Ticker;
-import theta.domain.api.PriceLevel;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 
@@ -53,7 +53,7 @@ public class IbTickSubscriber implements TickSubscriber {
   public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor) {
     Integer remainingPriceLevels = 0;
 
-    Optional<TickHandler> ibTickHandler = getHandler(priceLevel.getTicker());
+    final Optional<TickHandler> ibTickHandler = getHandler(priceLevel.getTicker());
 
     if (ibTickHandler.isPresent()) {
 
@@ -63,9 +63,9 @@ public class IbTickSubscriber implements TickSubscriber {
 
     } else {
 
-      TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
+      final TickHandler handler = subscribeTick(priceLevel.getTicker(), tickProcessor);
 
-      Disposable handlerDisposable = handler.getTicks()
+      final Disposable handlerDisposable = handler.getTicks()
           .subscribe(
 
               tickSubject::onNext,
@@ -90,7 +90,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
     Integer remainingPriceLevels = 0;
 
-    Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
+    final Optional<TickHandler> ibLastTickHandler = getHandler(priceLevel.getTicker());
 
     if (ibLastTickHandler.isPresent()) {
 
@@ -108,7 +108,7 @@ public class IbTickSubscriber implements TickSubscriber {
   @Override
   public Set<PriceLevel> getPriceLevelsMonitored(Ticker ticker) {
 
-    Set<PriceLevel> priceLevels = getHandler(ticker).map(TickHandler::getPriceLevelsMonitored).orElse(Set.of());
+    final Set<PriceLevel> priceLevels = getHandler(ticker).map(TickHandler::getPriceLevelsMonitored).orElse(Set.of());
 
     if (priceLevels.isEmpty()) {
       logger.warn("No Tick Handler or Price Levels for {}", ticker);
@@ -134,7 +134,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private void unsubscribeTick(Ticker ticker) {
 
-    IbTickHandler ibTickHandler = ibTickHandlers.remove(ticker);
+    final IbTickHandler ibTickHandler = ibTickHandlers.remove(ticker);
 
     if (ibTickHandler != null) {
 
@@ -164,7 +164,7 @@ public class IbTickSubscriber implements TickSubscriber {
   @Override
   public void unsubscribeAll() {
 
-    for (Ticker ticker : ibTickHandlers.keySet()) {
+    for (final Ticker ticker : ibTickHandlers.keySet()) {
       unsubscribeTick(ticker);
     }
 

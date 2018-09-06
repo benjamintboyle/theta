@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.api.TickHandler;
 import theta.api.TickSubscriber;
-import theta.domain.Theta;
-import theta.domain.ThetaTradeTest;
+import theta.domain.composed.Theta;
+import theta.domain.composed.ThetaTradeTest;
 import theta.execution.api.Executor;
 import theta.portfolio.api.PositionProvider;
 

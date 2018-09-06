@@ -7,9 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import theta.domain.PriceLevel;
+import theta.domain.PriceLevelDirection;
 import theta.domain.Ticker;
-import theta.domain.api.PriceLevel;
-import theta.domain.api.PriceLevelDirection;
 import theta.execution.api.ExecutionType;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
@@ -19,7 +19,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private Map<Ticker, Double> limitPriceByTicker = new HashMap<>();
+  private final Map<Ticker, Double> limitPriceByTicker = new HashMap<>();
 
   private final Set<TickType> applicableTickTypes = Set.of(TickType.ASK, TickType.BID);
 
@@ -40,7 +40,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
     if (isApplicable(tick.getTickType()) && tick.getAskPrice() > 0 && tick.getBidPrice() > 0) {
 
-      double bidAskSpread = tick.getAskPrice() - tick.getBidPrice();
+      final double bidAskSpread = tick.getAskPrice() - tick.getBidPrice();
 
       double limitPrice = priceLevel.getPrice();
 
@@ -70,7 +70,8 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
       }
 
       // FIXME: This is a really terrible implementation.
-      Double previousLimit = limitPriceByTicker.put(priceLevel.getTicker(), Math.round(limitPrice * 100.0) / 100.0);
+      final Double previousLimit =
+          limitPriceByTicker.put(priceLevel.getTicker(), Math.round(limitPrice * 100.0) / 100.0);
 
       if (previousLimit != null && Double.compare(previousLimit, limitPriceByTicker.get(priceLevel.getTicker())) != 0) {
         logger.warn("Processing ticks found different Price Levels: {} and {} for Price Level: {}",

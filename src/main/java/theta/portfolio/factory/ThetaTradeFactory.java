@@ -7,11 +7,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.Option;
-import theta.domain.ShortStraddle;
-import theta.domain.Stock;
-import theta.domain.StockUtil;
-import theta.domain.Theta;
+import theta.domain.composed.ShortStraddle;
+import theta.domain.composed.Theta;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
+import theta.domain.util.StockUtil;
 
 public class ThetaTradeFactory {
 

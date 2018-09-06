@@ -1,17 +1,18 @@
-package theta.domain;
+package theta.domain.stock;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import theta.domain.ticker.DefaultTicker;
 
 public class StockTest {
   public static Stock buildTestStock() {
-    return Stock.of(Ticker.from("CHK"), 100L, 15.0);
+    return Stock.of(DefaultTicker.from("CHK"), 100L, 15.0);
   }
 
   public static Stock buildTestStockShort() {
-    return Stock.of(Ticker.from("CHK"), -100L, 15.0);
+    return Stock.of(DefaultTicker.from("CHK"), -100L, 15.0);
   }
 
   @Disabled

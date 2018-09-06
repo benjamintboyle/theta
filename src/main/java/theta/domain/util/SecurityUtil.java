@@ -1,10 +1,12 @@
-package theta.domain;
+package theta.domain.util;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.api.Security;
+import theta.domain.Security;
+import theta.domain.option.Option;
+import theta.domain.stock.Stock;
 
 public class SecurityUtil {
 
