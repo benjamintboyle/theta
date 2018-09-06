@@ -17,16 +17,16 @@ public class ExecutableOrderFactory {
 
   public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock, ExecutionType executionType,
       Optional<Double> limitPrice) {
-    logger.debug("Reversing Position: {}", stock);
+    logger.debug("Reversing Position: {}", stock); //$NON-NLS-1$
 
-    ExecutableOrder order = ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
+    final ExecutableOrder order = ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
 
     return Optional.ofNullable(order);
   }
 
   public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Theta trade,
       ExecutionType executionType) {
-    logger.info("Reversing Theta Trade: {}", trade);
+    logger.info("Reversing Theta Trade: {}", trade); //$NON-NLS-1$
 
     return ExecutableOrderFactory.reverseAndValidateStockPositionOrder(trade.getStock(), executionType,
         Optional.of(trade.getCall().getStrikePrice()));

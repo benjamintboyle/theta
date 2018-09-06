@@ -181,8 +181,8 @@ public class Theta implements Security {
       if (Math.abs(stock.getQuantity()) == Math.abs(straddle.getQuantity() * 100)) {
         isValid = true;
       } else {
-        logger.error("Stock is not 100 times quantity of option quantity: {}, {}", stock.getQuantity(),
-            straddle.getQuantity());
+        logger.error("Stock is not 100 times quantity of option quantity: {}, {}", Long.valueOf(stock.getQuantity()),
+            Long.valueOf(straddle.getQuantity()));
       }
     } else {
       logger.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);

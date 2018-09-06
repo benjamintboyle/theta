@@ -119,7 +119,7 @@ public class ThetaEngine implements Runnable {
       portfolioManager.shutdown();
       connectionManager.shutdown();
 
-      logger.info("Disposing of {} Managers", managerDisposables.size());
+      logger.info("Disposing of {} Managers", Integer.valueOf(managerDisposables.size()));
       managerDisposables.dispose();
 
       logger.info("Shutting down Schedulers.");

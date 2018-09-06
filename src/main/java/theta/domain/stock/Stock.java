@@ -63,7 +63,7 @@ public class Stock implements Security {
   }
 
   public Stock reversePosition() {
-    logger.info("Building Reverse of Stock: {}", this);
+    logger.info("Building Reverse of Stock: {}", this); //$NON-NLS-1$
     return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
   }
 
@@ -92,9 +92,10 @@ public class Stock implements Security {
     return Objects.hash(getTicker(), getQuantity(), getPrice(), getSecurityType());
   }
 
+  @SuppressWarnings("nls")
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append(getSecurityType());
     builder.append(" [");
