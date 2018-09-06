@@ -1,11 +1,13 @@
 package brokers.interactive_brokers.execution;
 
+import static theta.util.LazyEvaluation.lazy;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.client.OrderState;
 import com.ib.client.OrderStatus;
+import brokers.interactive_brokers.domain.IbOrderStatus;
 import brokers.interactive_brokers.util.IbStringUtil;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -29,7 +31,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   private double avgFillPrice = 0.0;
 
   private DefaultIbOrderHandler(ExecutableOrder order) {
-    this.order = Objects.requireNonNull(order, "Order cannot be null");
+    this.order = Objects.requireNonNull(order, "Order cannot be null"); //$NON-NLS-1$
   }
 
   public static DefaultIbOrderHandler of(ExecutableOrder order) {
@@ -53,8 +55,8 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   @Override
   public void orderState(OrderState orderState) {
 
-    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", getExecutableOrder().getBrokerId().orElse(null),
-        getExecutableOrder().getTicker(), IbStringUtil.toStringOrderState(orderState));
+    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}", getExecutableOrder().getBrokerId().orElse(null), //$NON-NLS-1$
+        getExecutableOrder().getTicker(), lazy(() -> IbStringUtil.toStringOrderState(orderState)));
 
     ibOrderStatus = orderState.status();
     commission = orderState.commission();
@@ -64,9 +66,18 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId,
       int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
-    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", getExecutableOrder().getBrokerId().orElse(null),
-        getExecutableOrder().getTicker(), IbStringUtil.toStringOrderStatus(status, filled, remaining, avgFillPrice,
-            permId, parentId, lastFillPrice, clientId, whyHeld));
+    final IbOrderStatus ibOrderStatusBuilder = new IbOrderStatus.IbOrderStatusBuilder(status).numberFilled(filled)
+        .numberRemaining(remaining)
+        .withAverageFillPrice(avgFillPrice)
+        .withPermId(permId)
+        .withParentId(parentId)
+        .withLastFillPrice(lastFillPrice)
+        .withClientId(clientId)
+        .withHeldReason(whyHeld)
+        .build();
+
+    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}", getExecutableOrder().getBrokerId().orElse(null), //$NON-NLS-1$
+        getExecutableOrder().getTicker(), ibOrderStatusBuilder);
 
     ibOrderStatus = status;
     this.filled = filled;
@@ -78,7 +89,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   @Override
   public void handle(int errorCode, final String errorMsg) {
-    logger.error("Order Handler Error, Error Code: {}, Message: {} for Order: {}", errorCode, errorMsg,
+    logger.error("Order Handler Error, Error Code: {}, Message: {} for Order: {}", Integer.valueOf(errorCode), errorMsg, //$NON-NLS-1$
         getExecutableOrder());
   }
 
@@ -90,7 +101,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
     if (orderStatus.getState() == theta.execution.api.OrderState.FILLED
         || orderStatus.getState() == theta.execution.api.OrderState.CANCELLED) {
-      logger.debug("Sending complete for order: {}", orderStatus);
+      logger.debug("Sending complete for order: {}", orderStatus); //$NON-NLS-1$
       orderStatusSubject.onComplete();
     }
   }
@@ -116,8 +127,10 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
       case Filled:
         orderState = theta.execution.api.OrderState.FILLED;
         break;
+      case Inactive:
+      case Unknown:
       default:
-        logger.warn("Unknown order status from brokerage: {}. Setting Order State to PENDING.", ibOrderStatus);
+        logger.warn("Unknown order status from brokerage: {}. Setting Order State to PENDING.", ibOrderStatus); //$NON-NLS-1$
         orderState = theta.execution.api.OrderState.PENDING;
     }
 
@@ -127,15 +140,16 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   private void sendInitialOrderStatus() {
 
-    logger.debug("Sending initial Order Status");
+    logger.debug("Sending initial Order Status"); //$NON-NLS-1$
 
     if (ibOrderStatus != OrderStatus.Filled) {
       orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
     } else {
-      logger.warn("Not sending Initial OrderStatus as state already indicates Filled");
+      logger.warn("Not sending Initial OrderStatus as state already indicates Filled"); //$NON-NLS-1$
     }
   }
 
+  @SuppressWarnings("nls")
   @Override
   public String toString() {
 

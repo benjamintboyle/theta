@@ -10,14 +10,13 @@ import com.ib.client.Contract;
 import com.ib.client.DeltaNeutralContract;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
-import com.ib.client.OrderStatus;
 import com.ib.client.Types.SecType;
 
 public class IbStringUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String DELIMITTER = ", ";
+  public static final String DELIMITTER = ", ";
   private static final String CONTRACT_LABEL = "Contract Id: ";
 
   private IbStringUtil() {}
@@ -68,53 +67,6 @@ public class IbStringUtil {
       stringBuilder.append("Warning Text: ");
       stringBuilder.append(orderState.warningText());
     }
-
-    stringBuilder.append("]");
-
-    return stringBuilder.toString();
-  }
-
-  public static String toStringOrderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice,
-      long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-
-    final StringBuilder stringBuilder = new StringBuilder();
-
-    stringBuilder.append("Order Status: [");
-
-    stringBuilder.append("Status: ");
-    stringBuilder.append(Objects.toString(status));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Filled: ");
-    stringBuilder.append(Objects.toString(filled));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Remaining: ");
-    stringBuilder.append(Objects.toString(remaining));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Avg Price: ");
-    stringBuilder.append(Objects.toString(avgFillPrice));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Perm Id: ");
-    stringBuilder.append(Objects.toString(permId));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Parent Id: ");
-    stringBuilder.append(Objects.toString(parentId));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Last Fill Price: ");
-    stringBuilder.append(Objects.toString(lastFillPrice));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Client Id: ");
-    stringBuilder.append(Objects.toString(clientId));
-
-    stringBuilder.append(DELIMITTER);
-    stringBuilder.append("Why Held: ");
-    stringBuilder.append(Objects.toString(whyHeld));
 
     stringBuilder.append("]");
 

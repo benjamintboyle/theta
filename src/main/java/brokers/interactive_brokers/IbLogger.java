@@ -16,6 +16,6 @@ public class IbLogger implements ILogger {
 
   @Override
   public void log(String valueOf) {
-    logger.info("{}: {}", loggerName, valueOf);
+    logger.info("{}: {}", loggerName, valueOf); //$NON-NLS-1$
   }
 }

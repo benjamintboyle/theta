@@ -64,7 +64,7 @@ public class ShortStraddle implements Security {
     return getStrikePrice();
   }
 
-  public Double getStrikePrice() {
+  public double getStrikePrice() {
     return call.getStrikePrice();
   }
 

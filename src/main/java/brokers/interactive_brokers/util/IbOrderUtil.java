@@ -1,5 +1,6 @@
 package brokers.interactive_brokers.util;
 
+import static theta.util.LazyEvaluation.lazy;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ public class IbOrderUtil {
   public static Order buildIbOrder(ExecutableOrder order) {
     final Order ibOrder = new Order();
 
-    Optional<Integer> optionalBrokerId = order.getBrokerId();
+    final Optional<Integer> optionalBrokerId = order.getBrokerId();
 
     if (optionalBrokerId.isPresent()) {
       ibOrder.orderId(optionalBrokerId.get());
@@ -47,7 +48,7 @@ public class IbOrderUtil {
       case LIMIT:
         ibOrder.orderType(OrderType.LMT);
 
-        Optional<Double> optionalLimitPrice = order.getLimitPrice();
+        final Optional<Double> optionalLimitPrice = order.getLimitPrice();
         if (optionalLimitPrice.isPresent()) {
           ibOrder.lmtPrice(optionalLimitPrice.get());
         } else {
@@ -68,7 +69,7 @@ public class IbOrderUtil {
         logger.error("Expected MARKET, LIMIT, STOP, STOP_LIMIT, or TRAILING_STOP for ExecutionType: {}", order);
     }
 
-    logger.debug("Built Interactive Brokers Order: {}", IbStringUtil.toStringOrder(ibOrder));
+    logger.debug("Built Interactive Brokers Order: {}", lazy(() -> IbStringUtil.toStringOrder(ibOrder)));
 
     return ibOrder;
   }

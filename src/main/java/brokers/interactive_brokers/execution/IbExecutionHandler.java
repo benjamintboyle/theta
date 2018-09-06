@@ -27,8 +27,8 @@ public class IbExecutionHandler implements ExecutionHandler {
   private final ConcurrentMap<Integer, IbOrderHandler> orderHandlerMapper = new ConcurrentHashMap<>();
 
   public IbExecutionHandler(IbController ibController) {
-    logger.info("Starting Interactive Brokers Execution Handler");
-    this.ibController = Objects.requireNonNull(ibController, "Controller cannot be null");
+    logger.info("Starting Interactive Brokers Execution Handler"); //$NON-NLS-1$
+    this.ibController = Objects.requireNonNull(ibController, "Controller cannot be null"); //$NON-NLS-1$
   }
 
   @Override
@@ -46,11 +46,11 @@ public class IbExecutionHandler implements ExecutionHandler {
       case PUT:
       case SHORT_STRADDLE:
       case THETA:
-        logger.warn("ExecuteOrder not implemented for Security Type: {}. Order will not be executed for order: {}",
+        logger.warn("ExecuteOrder not implemented for Security Type: {}. Order will not be executed for order: {}", //$NON-NLS-1$
             order.getSecurityType(), order);
         break;
       default:
-        logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}", order.getSecurityType(),
+        logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}", order.getSecurityType(), //$NON-NLS-1$
             order);
     }
 
@@ -58,14 +58,14 @@ public class IbExecutionHandler implements ExecutionHandler {
 
         () -> {
           final IbOrderHandler removedOrderHandler = orderHandlerMapper.remove(order.getBrokerId().get());
-          logger.debug("Removed Order Handler: {}", removedOrderHandler);
+          logger.debug("Removed Order Handler: {}", removedOrderHandler); //$NON-NLS-1$
         });
   }
 
   @Override
   public boolean modifyOrder(ExecutableOrder order) {
 
-    logger.debug("Modifying order: {}", order);
+    logger.debug("Modifying order: {}", order); //$NON-NLS-1$
 
     boolean isOrderExecuted = false;
 
@@ -81,11 +81,11 @@ public class IbExecutionHandler implements ExecutionHandler {
         isOrderExecuted = true;
 
       } else {
-        logger.error("Order will not be executed. No Order Handler available for order: {}", order);
+        logger.error("Order will not be executed. No Order Handler available for order: {}", order); //$NON-NLS-1$
       }
 
     } else {
-      logger.error("Order will not be executed. Attempting to modify an order without a brokerage Id: {}", order);
+      logger.error("Order will not be executed. Attempting to modify an order without a brokerage Id: {}", order); //$NON-NLS-1$
     }
 
     return isOrderExecuted;
@@ -96,9 +96,9 @@ public class IbExecutionHandler implements ExecutionHandler {
 
     final Optional<Integer> optionalBrokerId = order.getBrokerId();
     if (optionalBrokerId.isPresent()) {
-      ibController.getController().cancelOrder(optionalBrokerId.get());
+      ibController.getController().cancelOrder(optionalBrokerId.get().intValue());
     } else {
-      logger.warn("Can not cancel stock order with empty broker id for: {}", order);
+      logger.warn("Can not cancel stock order with empty broker id for: {}", order); //$NON-NLS-1$
     }
 
     return Flowable.empty();
@@ -113,20 +113,21 @@ public class IbExecutionHandler implements ExecutionHandler {
     ibController.getController().placeOrModifyOrder(ibContract, ibOrder, ibOrderHandler);
 
     if (ibOrder.orderId() > 0) {
-      ibOrderHandler.getExecutableOrder().setBrokerId(ibOrder.orderId());
+      ibOrderHandler.getExecutableOrder().setBrokerId(Integer.valueOf(ibOrder.orderId()));
 
-      logger.debug("Order #{} sent to Broker Servers for: {}", ibOrder.orderId(), ibOrderHandler.getExecutableOrder());
+      logger.debug("Order #{} sent to Broker Servers for: {}", Integer.valueOf(ibOrder.orderId()), //$NON-NLS-1$
+          ibOrderHandler.getExecutableOrder());
 
-      orderHandlerMapper.put(ibOrder.orderId(), ibOrderHandler);
+      orderHandlerMapper.put(Integer.valueOf(ibOrder.orderId()), ibOrderHandler);
 
     } else {
 
       final IllegalStateException noOrderIdException =
-          new IllegalStateException("Order Id not set for Order. May indicate an internal error. ExecutableOrder: "
-              + ibOrderHandler.getExecutableOrder() + ", IB Contract: " + IbStringUtil.toStringContract(ibContract)
-              + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder));
+          new IllegalStateException("Order Id not set for Order. May indicate an internal error. ExecutableOrder: " //$NON-NLS-1$
+              + ibOrderHandler.getExecutableOrder() + ", IB Contract: " + IbStringUtil.toStringContract(ibContract) //$NON-NLS-1$
+              + ", IB Order: " + IbStringUtil.toStringOrder(ibOrder)); //$NON-NLS-1$
 
-      logger.warn("Id not set for Order", noOrderIdException);
+      logger.warn("Id not set for Order", noOrderIdException); //$NON-NLS-1$
 
       throw noOrderIdException;
     }

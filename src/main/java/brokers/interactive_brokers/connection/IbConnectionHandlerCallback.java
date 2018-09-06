@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ib.controller.ApiController.IConnectionHandler;
@@ -53,48 +52,51 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   @Override
   public void connected() {
-    logger.info("Connection established...");
+    logger.info("Connection established..."); //$NON-NLS-1$
     connectionStatus.onNext(ConnectionStatus.of(ConnectionState.CONNECTED));
   }
 
   @Override
   public void disconnected() {
-    logger.info("Connection disconnected...");
+    logger.info("Connection disconnected..."); //$NON-NLS-1$
     connectionStatus.onNext(ConnectionStatus.of(ConnectionState.DISCONNECTED));
   }
 
   // Parameter should not be ArrayList, but this is part of the API from Interactive Brokers
   @Override
-  public void accountList(ArrayList<String> list) {
-    logger.info("Received account list: {}", list);
+  public void accountList(ArrayList<String> accountList) {
+    logger.info("Received account list: {}", accountList); //$NON-NLS-1$
 
-    accountList.clear();
-    accountList.addAll(list.stream().map(DefaultBrokerageAccount::new).collect(Collectors.toList()));
+    this.accountList.clear();
+
+    for (final String account : accountList) {
+      this.accountList.add(new DefaultBrokerageAccount(account));
+    }
   }
 
   @Override
   public void error(Exception exception) {
-    logger.error("Interactive Brokers Error - ", exception);
+    logger.error("Interactive Brokers Error - ", exception); //$NON-NLS-1$
     connectionStatus.onError(exception);
   }
 
   @Override
   public void message(int id, int messageCode, String message) {
 
-    final String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
+    final String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'"; //$NON-NLS-1$
 
     if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
-      logger.info(messageTemplate, id, messageCode, message);
+      logger.info(messageTemplate, Integer.valueOf(id), Integer.valueOf(messageCode), message);
     } else if (messageCode >= 2100 && messageCode <= 2110) {
-      logger.warn(messageTemplate, id, messageCode, message);
+      logger.warn(messageTemplate, Integer.valueOf(id), Integer.valueOf(messageCode), message);
     } else {
-      logger.error(messageTemplate, id, messageCode, message);
+      logger.error(messageTemplate, Integer.valueOf(id), Integer.valueOf(messageCode), message);
     }
   }
 
   @Override
   public void show(String string) {
-    logger.warn("Interactive Brokers Show - {}", string);
+    logger.warn("Interactive Brokers Show - {}", string); //$NON-NLS-1$
   }
 
 }

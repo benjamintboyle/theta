@@ -98,6 +98,10 @@ public class Theta implements Security {
       case PUT:
         securityOfType = getPut();
         break;
+      case SHORT_STRADDLE:
+        break;
+      case THETA:
+        break;
       default:
         final IllegalArgumentException illegalArgumentException =
             new IllegalArgumentException(securityType + " is an invalid security type for this object.");

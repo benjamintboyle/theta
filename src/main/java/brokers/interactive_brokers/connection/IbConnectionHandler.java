@@ -20,20 +20,22 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final String INPUT_LOG_NAME = "Input";
+  private static final String OUTPUT_LOG_NAME = "Output";
   private static final int CLIENT_ID = 0;
-
   private static final long CONNECTION_TIMEOUT_SECONDS = 3;
 
   private static final IbConnectionHandlerCallback CALLBACK =
       new IbConnectionHandlerCallback(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS));
-  private final ApiController ibController = new ApiController(CALLBACK, new IbLogger("Input"), new IbLogger("Output"));
+  private final ApiController ibController =
+      new ApiController(CALLBACK, new IbLogger(INPUT_LOG_NAME), new IbLogger(OUTPUT_LOG_NAME));
 
   private final CompositeDisposable handlerDisposables = new CompositeDisposable();
 
   private final InetSocketAddress brokerGatewayAddress;
 
   public IbConnectionHandler(InetSocketAddress brokerGatewayAddress) {
-    logger.info("Starting Interactive Brokers Connection Handler");
+    logger.info("Starting Interactive Brokers Connection Handler"); //$NON-NLS-1$
 
     this.brokerGatewayAddress = brokerGatewayAddress;
   }
@@ -46,8 +48,9 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Override
   public Single<ZonedDateTime> connect() {
 
-    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
-        brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(), CLIENT_ID);
+    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}", //$NON-NLS-1$
+        brokerGatewayAddress.getAddress().getHostAddress(), Integer.valueOf(brokerGatewayAddress.getPort()),
+        Integer.valueOf(CLIENT_ID));
 
     getController().connect(brokerGatewayAddress.getAddress().getHostAddress(), brokerGatewayAddress.getPort(),
         CLIENT_ID, null);
@@ -58,7 +61,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Override
   public Single<ZonedDateTime> disconnect() {
 
-    logger.info("Disconnecting...");
+    logger.info("Disconnecting..."); //$NON-NLS-1$
 
     getController().disconnect();
 
@@ -72,7 +75,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
     return CALLBACK.waitUntil(waitUntilState);
   }
 
-  public Single<List<BrokerageAccount>> getAccountList() {
+  public static Single<List<BrokerageAccount>> getAccountList() {
     return CALLBACK.getAccountList();
   }
 

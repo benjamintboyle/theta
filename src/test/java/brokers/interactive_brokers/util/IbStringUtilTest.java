@@ -31,10 +31,10 @@ class IbStringUtilTest {
         OrderState.class.getConstructors().length, is(0));
 
     // Reflection needed as all OrderState constructors have default access modifier
-    Constructor<OrderState> constructor = OrderState.class.getDeclaredConstructor();
+    final Constructor<OrderState> constructor = OrderState.class.getDeclaredConstructor();
     constructor.setAccessible(true);
 
-    OrderState orderState = constructor.newInstance();
+    final OrderState orderState = constructor.newInstance();
 
     orderState.commission(1.0);
     orderState.commissionCurrency("Dollars");
@@ -46,7 +46,7 @@ class IbStringUtilTest {
     orderState.status(OrderStatus.Filled);
     orderState.warningText("warningText");
 
-    String toStringOrderState = IbStringUtil.toStringOrderState(orderState);
+    final String toStringOrderState = IbStringUtil.toStringOrderState(orderState);
 
     assertThat("toString() should not be empty.", toStringOrderState, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringOrderState,
@@ -54,23 +54,12 @@ class IbStringUtilTest {
   }
 
   @Test
-  void testToStringOrderStatus() {
-
-    String toStringOrderStatus =
-        IbStringUtil.toStringOrderStatus(OrderStatus.Submitted, 100.1, 32.1, 123.2, 9L, 23, 32.9, 0, "Reason Held");
-
-    assertThat("toString() should not be empty.", toStringOrderStatus, is(not(emptyString())));
-    assertThat("Found '@' which likely indicates an unexpanded reference.", toStringOrderStatus,
-        not(containsString("@")));
-  }
-
-  @Test
   void testToStringOrder() {
 
-    ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestDefaultStockOrderNewBuyLimit();
-    Order order = IbOrderUtil.buildIbOrder(executableOrder);
+    final ExecutableOrder executableOrder = ExecutionDomainFactory.buildTestDefaultStockOrderNewBuyLimit();
+    final Order order = IbOrderUtil.buildIbOrder(executableOrder);
 
-    String toStringOrder = IbStringUtil.toStringOrder(order);
+    final String toStringOrder = IbStringUtil.toStringOrder(order);
 
     assertThat("toString() should not be empty.", toStringOrder, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringOrder, not(containsString("@")));
@@ -78,9 +67,9 @@ class IbStringUtilTest {
 
   @Test
   void testToStringContract() {
-    Contract contract = new StkContract("ABC");
+    final Contract contract = new StkContract("ABC");
 
-    String toStringContract = IbStringUtil.toStringContract(contract);
+    final String toStringContract = IbStringUtil.toStringContract(contract);
 
     assertThat("toString() should not be empty.", toStringContract, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringContract, not(containsString("@")));
@@ -89,14 +78,15 @@ class IbStringUtilTest {
   @Test
   void testToStringContractNull() {
 
-    String toStringContractNull = IbStringUtil.toStringContract(null);
+    final String toStringContractNull = IbStringUtil.toStringContract(null);
 
     assertThat(toStringContractNull, is("null"));
   }
 
   @Test
   void testToStringDeltaNeutralContractEmpty() {
-    String toStringDeltaNeutralContractEmpty = IbStringUtil.toStringDeltaNeutralContract(new DeltaNeutralContract());
+    final String toStringDeltaNeutralContractEmpty =
+        IbStringUtil.toStringDeltaNeutralContract(new DeltaNeutralContract());
 
     assertThat("toString() should not be empty.", toStringDeltaNeutralContractEmpty, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringDeltaNeutralContractEmpty,
@@ -105,14 +95,14 @@ class IbStringUtilTest {
 
   @Test
   void testToStringDeltaNeutralContractNull() {
-    String toStringDeltaNeutralNull = IbStringUtil.toStringDeltaNeutralContract(null);
+    final String toStringDeltaNeutralNull = IbStringUtil.toStringDeltaNeutralContract(null);
 
     assertThat(toStringDeltaNeutralNull, is("null"));
   }
 
   @Test
   void testToStringComboLegEmpty() {
-    String toStringComboLegEmpty = IbStringUtil.toStringComboLeg(new ComboLeg());
+    final String toStringComboLegEmpty = IbStringUtil.toStringComboLeg(new ComboLeg());
 
     assertThat("toString() should not be empty.", toStringComboLegEmpty, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringComboLegEmpty,
@@ -121,7 +111,7 @@ class IbStringUtilTest {
 
   @Test
   void testToStringComboLegNull() {
-    String toStringComboLegNull = IbStringUtil.toStringComboLeg(null);
+    final String toStringComboLegNull = IbStringUtil.toStringComboLeg(null);
 
     assertThat(toStringComboLegNull, is("null"));
   }

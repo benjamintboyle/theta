@@ -1,5 +1,6 @@
 package brokers.interactive_brokers.portfolio;
 
+import static theta.util.LazyEvaluation.lazy;
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -46,14 +47,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private static final long TIMEOUT_SECONDS = 3;
 
   public IbPositionHandler(IbController controller) {
-    logger.info("Starting Interactive Brokers Position Handler");
+    logger.info("Starting Interactive Brokers Position Handler"); //$NON-NLS-1$
     this.controller = controller;
   }
 
   @Override
   public Flowable<Security> requestPositionsFromBrokerage() {
 
-    logger.info("Requesting Positions from Interactive Brokers");
+    logger.info("Requesting Positions from Interactive Brokers"); //$NON-NLS-1$
 
     controller.getController().reqPositions(this);
 
@@ -76,15 +77,16 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void position(String account, Contract contract, double position, double avgCost) {
 
-    logger.debug("Received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
-        position, IbStringUtil.toStringContract(contract), account, avgCost);
+    logger.debug("Received position from Brokers servers: Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}", //$NON-NLS-1$
+        Double.valueOf(position), lazy(() -> IbStringUtil.toStringContract(contract)), account,
+        Double.valueOf(avgCost));
 
     processIbPosition(contract, position, avgCost);
   }
 
   @Override
   public void positionEnd() {
-    logger.info("Received Position End notification");
+    logger.info("Received Position End notification"); //$NON-NLS-1$
     subjectPositionEndTime.onNext(ZonedDateTime.now());
   }
 
@@ -94,13 +96,13 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     if (!subjectPositions.hasComplete()) {
       subjectPositions.onComplete();
     } else {
-      logger.warn("Tried to complete Subject Positions when it is already completed.");
+      logger.warn("Tried to complete Subject Positions when it is already completed."); //$NON-NLS-1$
     }
 
     if (positionHandlerDisposables.isDisposed()) {
       positionHandlerDisposables.dispose();
     } else {
-      logger.warn("Tried to dispose of already disposed Position Handler Disposables");
+      logger.warn("Tried to dispose of already disposed Position Handler Disposables"); //$NON-NLS-1$
     }
   }
 
@@ -119,26 +121,46 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
           subjectPositions.onNext(option);
         } else {
 
-          logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
-              IbStringUtil.toStringContract(contract), position, avgCost);
+          logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}", //$NON-NLS-1$
+              lazy(() -> IbStringUtil.toStringContract(contract)), Double.valueOf(position), Double.valueOf(avgCost));
         }
 
         break;
+      case BAG:
+      case BILL:
+      case BOND:
+      case BSK:
+      case CASH:
+      case CFD:
+      case CMDTY:
+      case FIXED:
+      case FOP:
+      case FUND:
+      case FUT:
+      case FWD:
+      case ICS:
+      case ICU:
+      case IND:
+      case IOPT:
+      case NEWS:
+      case None:
+      case SLB:
+      case WAR:
       default:
 
-        logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
+        logger.error("Can not determine Position Type: {}", lazy(() -> IbStringUtil.toStringContract(contract))); //$NON-NLS-1$
         break;
     }
   }
 
-  private Stock generateStock(Contract contract, double position, Double avgCost) {
+  private Stock generateStock(Contract contract, double position, double avgCost) {
 
     final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
     return Stock.of(generateId(contract.conid()), DefaultTicker.from(contract.symbol()), quantity, avgCost);
   }
 
-  private Option generateOption(Contract contract, double position, Double avgCost) {
+  private Option generateOption(Contract contract, double position, double avgCost) {
     SecurityType securityType = null;
     switch (contract.right()) {
       case Call:
@@ -147,9 +169,10 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
       case Put:
         securityType = SecurityType.PUT;
         break;
+      case None:
       default:
 
-        logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
+        logger.error("Could not identify Contract Right: {}", lazy(() -> IbStringUtil.toStringContract(contract))); //$NON-NLS-1$
         break;
     }
 
@@ -174,20 +197,21 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     if (Math.abs(quantity - wholeQuantity) > Math.ulp(quantity)) {
       wholeQuantity = (long) quantity;
 
-      logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity, wholeQuantity,
-          IbStringUtil.toStringContract(contract));
+      logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity, wholeQuantity, //$NON-NLS-1$
+          lazy(() -> IbStringUtil.toStringContract(contract)));
     }
 
     return wholeQuantity;
   }
 
-  private UUID generateId(Integer contractId) {
+  private UUID generateId(int contractId) {
     UUID uuid = UUID.randomUUID();
+    final Integer boxedContractId = Integer.valueOf(contractId);
 
-    if (contractIdMap.containsKey(contractId)) {
-      uuid = contractIdMap.get(contractId);
+    if (contractIdMap.containsKey(boxedContractId)) {
+      uuid = contractIdMap.get(boxedContractId);
     } else {
-      contractIdMap.put(contractId, uuid);
+      contractIdMap.put(boxedContractId, uuid);
     }
 
     return uuid;

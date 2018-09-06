@@ -3,8 +3,8 @@ package theta.domain.pricelevel;
 import java.util.Objects;
 import theta.domain.PriceLevel;
 import theta.domain.PriceLevelDirection;
-import theta.domain.composed.Theta;
 import theta.domain.Ticker;
+import theta.domain.composed.Theta;
 
 public class DefaultPriceLevel implements PriceLevel {
 
@@ -20,7 +20,7 @@ public class DefaultPriceLevel implements PriceLevel {
   }
 
   public static PriceLevel of(Theta theta) {
-    return new DefaultPriceLevel(theta.getTicker(), theta.getPrice(), calculateTradeIf(theta));
+    return new DefaultPriceLevel(theta.getTicker(), Double.valueOf(theta.getPrice()), calculateTradeIf(theta));
   }
 
   public static PriceLevel from(Ticker ticker, Double price, PriceLevelDirection tradeIf) {
@@ -66,11 +66,13 @@ public class DefaultPriceLevel implements PriceLevel {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
-    if (obj == null)
+    if (obj == null) {
       return false;
+    }
 
     if (obj instanceof PriceLevel) {
 
@@ -86,7 +88,7 @@ public class DefaultPriceLevel implements PriceLevel {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append("[Ticker: ");
     builder.append(getTicker());

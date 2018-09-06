@@ -1,5 +1,6 @@
 package brokers.interactive_brokers.tick;
 
+import static theta.util.LazyEvaluation.lazy;
 import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
 import java.util.Optional;
@@ -126,7 +127,7 @@ public class IbTickSubscriber implements TickSubscriber {
     ibTickHandlers.put(ticker, ibTickHandler);
 
     logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
-        IbStringUtil.toStringContract(contract));
+        lazy(() -> IbStringUtil.toStringContract(contract)));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
     return ibTickHandler;

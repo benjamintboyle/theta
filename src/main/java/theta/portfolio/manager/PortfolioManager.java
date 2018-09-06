@@ -60,9 +60,9 @@ public class PortfolioManager implements PositionProvider {
     this.positionHandler = positionHandler;
   }
 
-  public Maybe<Security> processPosition() {
+  public Maybe<Security> processPosition(Security security) {
 
-    logger.debug("Processing Position {}");
+    logger.debug("Processing Position {}", security);
 
     return Maybe.create(emitter -> {
 
@@ -110,7 +110,7 @@ public class PortfolioManager implements PositionProvider {
   @Override
   public List<Theta> providePositions(Ticker ticker) {
 
-    List<Theta> positionsToProvide = getThetaIdMap().values()
+    final List<Theta> positionsToProvide = getThetaIdMap().values()
         .stream()
         .filter(position -> position.getTicker().equals(ticker))
         .collect(Collectors.toList());
@@ -150,7 +150,7 @@ public class PortfolioManager implements PositionProvider {
 
         removedPriceLevels.add(priceLevel);
 
-        Theta theta = optionalTheta.get();
+        final Theta theta = optionalTheta.get();
 
         // Remove link/map for call and put and stock associated with ThetaTrade
         removedPriceLevels.addAll(removePositionIfExists(theta.getStock()));

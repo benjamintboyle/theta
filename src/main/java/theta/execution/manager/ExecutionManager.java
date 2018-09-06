@@ -48,7 +48,7 @@ public class ExecutionManager implements Executor {
   public Completable reverseTrade(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
 
     return Single.<ExecutableOrder>create(emitter -> {
-      logger.info("Reversing Trade: {}", stock.toString());
+      logger.info("Reversing Trade: {}", stock);
 
       final Optional<ExecutableOrder> validatedOrder =
           ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
@@ -218,7 +218,7 @@ public class ExecutionManager implements Executor {
             isModifiedOrder = true;
           }
           // Active order with different Limit Prices, will be modified
-          else if ((activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent())
+          else if (activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent()
               && activeOrder.getLimitPrice().get() != order.getLimitPrice().get()) {
             order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
