@@ -1,7 +1,7 @@
 package theta.execution.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,7 +97,7 @@ public class ExecutionManager implements Executor {
 
     return Completable.create(emitter -> {
 
-      if (ThetaMarketUtil.isDuringNewYorkMarketHours(ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE))) {
+      if (ThetaMarketUtil.isDuringNewYorkMarketHours(Instant.now())) {
 
         final boolean isModifiedOrder = isModifiedOrder(order);
 

@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -102,9 +102,9 @@ public class TickManagerTest2 {
     assertThat("Call to initialized Tick Manager getStatus should result in STARTING state.",
         tickManagerStatus.getState(), is(equalTo(ManagerState.STARTING)));
     assertThat("Call to initialized Tick Manager getStatus should result in timestamp within last second.",
-        tickManagerStatus.getTime(), is(greaterThan(ZonedDateTime.now().minusSeconds(1))));
+        tickManagerStatus.getTime(), is(greaterThan(Instant.now().minusSeconds(1))));
     assertThat("Call to initialized Tick Manager getStatus should be before time now.", tickManagerStatus.getTime(),
-        is(lessThan(ZonedDateTime.now())));
+        is(lessThan(Instant.now())));
   }
 
   @Disabled

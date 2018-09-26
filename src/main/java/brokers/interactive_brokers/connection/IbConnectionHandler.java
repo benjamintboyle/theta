@@ -3,7 +3,7 @@ package brokers.interactive_brokers.connection;
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   }
 
   @Override
-  public Single<ZonedDateTime> connect() {
+  public Single<Instant> connect() {
 
     logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}", //$NON-NLS-1$
         brokerGatewayAddress.getAddress().getHostAddress(), Integer.valueOf(brokerGatewayAddress.getPort()),
@@ -59,7 +59,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   }
 
   @Override
-  public Single<ZonedDateTime> disconnect() {
+  public Single<Instant> disconnect() {
 
     logger.info("Disconnecting..."); //$NON-NLS-1$
 
@@ -71,7 +71,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   }
 
   @Override
-  public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
+  public Single<Instant> waitUntil(ConnectionState waitUntilState) {
     return CALLBACK.waitUntil(waitUntilState);
   }
 

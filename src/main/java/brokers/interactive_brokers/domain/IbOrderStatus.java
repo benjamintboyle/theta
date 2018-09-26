@@ -92,43 +92,43 @@ public class IbOrderStatus {
       this.status = status;
     }
 
-    public IbOrderStatusBuilder numberFilled(double filled) {
-      this.filled = filled;
+    public IbOrderStatusBuilder numberFilled(double filledBuilder) {
+      filled = filledBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder numberRemaining(double remaining) {
-      this.remaining = remaining;
+    public IbOrderStatusBuilder numberRemaining(double remainingBuilder) {
+      remaining = remainingBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withAverageFillPrice(double avgFillPrice) {
-      this.avgFillPrice = avgFillPrice;
+    public IbOrderStatusBuilder withAverageFillPrice(double avgFillPriceBuilder) {
+      avgFillPrice = avgFillPriceBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withPermId(long permId) {
-      this.permId = permId;
+    public IbOrderStatusBuilder withPermId(long permIdBuilder) {
+      permId = permIdBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withParentId(int parentId) {
-      this.parentId = parentId;
+    public IbOrderStatusBuilder withParentId(int parentIdBuilder) {
+      parentId = parentIdBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withLastFillPrice(double lastFillPrice) {
-      this.lastFillPrice = lastFillPrice;
+    public IbOrderStatusBuilder withLastFillPrice(double lastFillPriceBuilder) {
+      lastFillPrice = lastFillPriceBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withClientId(int clientId) {
-      this.clientId = clientId;
+    public IbOrderStatusBuilder withClientId(int clientIdBuilder) {
+      clientId = clientIdBuilder;
       return this;
     }
 
-    public IbOrderStatusBuilder withHeldReason(String whyHeld) {
-      this.whyHeld = whyHeld;
+    public IbOrderStatusBuilder withHeldReason(String whyHeldBuilder) {
+      whyHeld = whyHeldBuilder;
       return this;
     }
 

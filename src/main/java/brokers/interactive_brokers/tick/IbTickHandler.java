@@ -2,7 +2,6 @@ package brokers.interactive_brokers.tick;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +30,6 @@ import theta.domain.Ticker;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
-import theta.util.ThetaMarketUtil;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
@@ -47,9 +45,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   private double askPrice = -1.0;
   private double lastPrice = -1.0;
 
-  private ZonedDateTime bidTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
-  private ZonedDateTime askTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
-  private ZonedDateTime lastTime = ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE);
+  private Instant bidTime = Instant.EPOCH;
+  private Instant askTime = Instant.EPOCH;
+  private Instant lastTime = Instant.EPOCH;
 
   private final Set<PriceLevel> priceLevels = new HashSet<>();
 
@@ -85,12 +83,12 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     switch (tickType) {
       case BID:
-        bidTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
+        bidTime = Instant.now();
         bidPrice = price;
         addTickIfApplicable(tickType);
         break;
       case ASK:
-        askTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
+        askTime = Instant.now();
         askPrice = price;
         addTickIfApplicable(tickType);
         break;
@@ -128,7 +126,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     switch (tickType) {
       case LAST_TIMESTAMP:
-        lastTime = Instant.ofEpochSecond(Long.parseLong(value)).atZone(ThetaMarketUtil.MARKET_TIMEZONE);
+        lastTime = Instant.ofEpochSecond(Long.parseLong(value));
         break;
       case BID_EXCH:
         break;
@@ -189,9 +187,9 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     return lastPrice;
   }
 
-  private ZonedDateTime getTickTime(TickType tickType) {
+  private Instant getTickTime(TickType tickType) {
 
-    ZonedDateTime tickTime = ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE);
+    Instant tickTime = Instant.now();
 
     switch (tickType) {
       case LAST:
@@ -242,7 +240,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
       // is 0.
       if (priceLevels.isEmpty()) {
 
-        Disposable cancelDisposable = Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread())
+        final Disposable cancelDisposable = Completable.timer(1L, TimeUnit.SECONDS, ThetaSchedulersFactory.ioThread())
             .subscribe(
 
                 () -> {
@@ -285,18 +283,18 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append("[");
     builder.append(getTicker());
     builder.append(" ");
 
-    List<Double> fallsBelow = priceLevels.stream()
+    final List<Double> fallsBelow = priceLevels.stream()
         .filter(priceLevel -> priceLevel.tradeIf() == PriceLevelDirection.FALLS_BELOW)
         .map(PriceLevel::getPrice)
         .collect(Collectors.toList());
 
-    List<Double> risesAbove = priceLevels.stream()
+    final List<Double> risesAbove = priceLevels.stream()
         .filter(priceLevel -> priceLevel.tradeIf() == PriceLevelDirection.RISES_ABOVE)
         .map(PriceLevel::getPrice)
         .collect(Collectors.toList());

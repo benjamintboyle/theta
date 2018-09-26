@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,6 @@ import theta.domain.pricelevel.DefaultPriceLevel;
 import theta.domain.testutil.ThetaDomainFactory;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
-import theta.util.ThetaMarketUtil;
 
 @ExtendWith(MockitoExtension.class)
 class IbTickHandlerTest {
@@ -40,7 +38,7 @@ class IbTickHandlerTest {
 
   @BeforeEach
   void setup() {
-    PriceLevel priceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
+    final PriceLevel priceLevel = ThetaDomainFactory.buildDefaultPriceLevel();
     sut = new IbTickHandler(priceLevel.getTicker(), mockTickProcessor);
     sut.addPriceLevelMonitor(priceLevel);
   }
@@ -62,8 +60,7 @@ class IbTickHandlerTest {
     assertThat(tick.getBidPrice(), is(equalTo(BID_PRICE)));
     assertThat(tick.getTicker(), is(equalTo(sut.getTicker())));
     assertThat(tick.getTickType(), is(equalTo(theta.tick.domain.TickType.BID)));
-    assertThat(tick.getTimestamp(),
-        is(not(equalTo(ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE)))));
+    assertThat(tick.getTimestamp(), is(not(equalTo(Instant.EPOCH))));
   }
 
   @Test
@@ -86,8 +83,7 @@ class IbTickHandlerTest {
     assertThat(askTick.getAskPrice(), is(equalTo(ASK_PRICE)));
     assertThat(askTick.getTicker(), is(equalTo(sut.getTicker())));
     assertThat(askTick.getTickType(), is(equalTo(theta.tick.domain.TickType.ASK)));
-    assertThat(askTick.getTimestamp(),
-        is(not(equalTo(ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE)))));
+    assertThat(askTick.getTimestamp(), is(not(equalTo(Instant.EPOCH))));
 
 
     // Checking LAST ticks
@@ -98,8 +94,7 @@ class IbTickHandlerTest {
     assertThat(lastTick.getLastPrice(), is(equalTo(LAST_PRICE)));
     assertThat(lastTick.getTicker(), is(equalTo(sut.getTicker())));
     assertThat(lastTick.getTickType(), is(equalTo(theta.tick.domain.TickType.LAST)));
-    assertThat(lastTick.getTimestamp(),
-        is(equalTo(ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE))));
+    assertThat(lastTick.getTimestamp(), is(equalTo(Instant.EPOCH)));
 
 
     // Checking BID ticks
@@ -110,8 +105,7 @@ class IbTickHandlerTest {
     assertThat(bidTick.getBidPrice(), is(equalTo(BID_PRICE)));
     assertThat(bidTick.getTicker(), is(equalTo(sut.getTicker())));
     assertThat(bidTick.getTickType(), is(equalTo(theta.tick.domain.TickType.BID)));
-    assertThat(bidTick.getTimestamp(),
-        is(not(equalTo(ZonedDateTime.ofInstant(Instant.EPOCH, ThetaMarketUtil.MARKET_TIMEZONE)))));
+    assertThat(bidTick.getTimestamp(), is(not(equalTo(Instant.EPOCH))));
   }
 
   @Test
@@ -122,15 +116,15 @@ class IbTickHandlerTest {
     when(mockTickProcessor.processTick(any(Tick.class), any(PriceLevel.class))).thenReturn(true);
 
     // Inject ticks
-    long epochSecondsNow = Instant.now().getEpochSecond();
+    final long epochSecondsNow = Instant.now().getEpochSecond();
     sut.tickString(TickType.LAST_TIMESTAMP, String.valueOf(epochSecondsNow));
     sut.tickPrice(TickType.LAST, 2.0, 0);
 
-    Tick tick = sut.getTicks().blockingFirst();
+    final Tick tick = sut.getTicks().blockingFirst();
 
-    Instant expectedInstant = Instant.ofEpochSecond(epochSecondsNow);
+    final Instant expectedInstant = Instant.ofEpochSecond(epochSecondsNow);
 
-    assertThat(tick.getTimestamp().toInstant(), is(equalTo(expectedInstant)));
+    assertThat(tick.getTimestamp(), is(equalTo(expectedInstant)));
   }
 
   @Test
@@ -147,7 +141,7 @@ class IbTickHandlerTest {
 
     assertThat(numberOfPriceLevelsAfterDuplicateAdd, is(equalTo(1)));
 
-    PriceLevel additionalPriceLevel = DefaultPriceLevel.from(originalPriceLevel.getTicker(),
+    final PriceLevel additionalPriceLevel = DefaultPriceLevel.from(originalPriceLevel.getTicker(),
         originalPriceLevel.getPrice() + 1, PriceLevelDirection.FALLS_BELOW);
 
     final int numberOfPriceLevelsAfterNewAdd = sut.addPriceLevelMonitor(additionalPriceLevel);
@@ -158,17 +152,17 @@ class IbTickHandlerTest {
   @Test
   void testRemovePriceLevelMonitor() {
 
-    Set<PriceLevel> priceLevelSet = sut.getPriceLevelsMonitored();
+    final Set<PriceLevel> priceLevelSet = sut.getPriceLevelsMonitored();
 
     assertThat(priceLevelSet.size(), is(equalTo(1)));
 
-    PriceLevel priceLevel = priceLevelSet.stream().findFirst().get();
+    final PriceLevel priceLevel = priceLevelSet.stream().findFirst().get();
 
-    int numberOfPriceLevels = sut.removePriceLevelMonitor(priceLevel);
+    final int numberOfPriceLevels = sut.removePriceLevelMonitor(priceLevel);
 
     assertThat(numberOfPriceLevels, is(equalTo(0)));
 
-    Set<PriceLevel> priceLevelSetAfterRemoval = sut.getPriceLevelsMonitored();
+    final Set<PriceLevel> priceLevelSetAfterRemoval = sut.getPriceLevelsMonitored();
 
     assertThat(priceLevelSetAfterRemoval.size(), is(equalTo(0)));
   }
@@ -176,7 +170,7 @@ class IbTickHandlerTest {
   @Test
   void testGetPriceLevelsMonitored() {
 
-    Set<PriceLevel> priceLevelSet = sut.getPriceLevelsMonitored();
+    final Set<PriceLevel> priceLevelSet = sut.getPriceLevelsMonitored();
 
     assertThat(priceLevelSet.size(), is(equalTo(1)));
   }
@@ -196,7 +190,7 @@ class IbTickHandlerTest {
   @Test
   void testToString() {
 
-    String toStringTickHandler = sut.toString();
+    final String toStringTickHandler = sut.toString();
 
     assertThat("toString() should not be empty.", toStringTickHandler, is(not(emptyString())));
     assertThat("Found '@' which likely indicates an unexpanded reference.", toStringTickHandler,

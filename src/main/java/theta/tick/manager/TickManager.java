@@ -1,7 +1,7 @@
 package theta.tick.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -54,8 +54,7 @@ public class TickManager implements TickMonitor {
 
       final Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
           // Determine if time now is during market hours
-          .filter(tickFilter -> ThetaMarketUtil
-              .isDuringNewYorkMarketHours(ZonedDateTime.now(ThetaMarketUtil.MARKET_TIMEZONE)))
+          .filter(tickFilter -> ThetaMarketUtil.isDuringNewYorkMarketHours(Instant.now()))
           .subscribe(
 
               this::processTick,
@@ -89,7 +88,7 @@ public class TickManager implements TickMonitor {
 
     logger.debug("Processing: {}", tick);
 
-    if (tick.getTimestamp().isBefore(ZonedDateTime.now().minusSeconds(2))) {
+    if (tick.getTimestamp().isBefore(Instant.now().minusSeconds(2))) {
       logger.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);
     }
 

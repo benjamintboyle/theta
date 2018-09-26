@@ -1,6 +1,6 @@
 package theta.tick.domain;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import theta.domain.Ticker;
 import theta.tick.api.Tick;
 
@@ -11,10 +11,10 @@ public class DefaultTick implements Tick {
   private final Double lastPrice;
   private final Double bidPrice;
   private final Double askPrice;
-  private final ZonedDateTime timestamp;
+  private final Instant timestamp;
 
   public DefaultTick(final Ticker ticker, final TickType type, final Double lastPrice, final Double bidPrice,
-      final Double askPrice, final ZonedDateTime timestamp) {
+      final Double askPrice, final Instant timestamp) {
     this.ticker = ticker;
     this.type = type;
     this.lastPrice = lastPrice;
@@ -49,13 +49,13 @@ public class DefaultTick implements Tick {
   }
 
   @Override
-  public ZonedDateTime getTimestamp() {
+  public Instant getTimestamp() {
     return timestamp;
   }
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append("[ Ticker: ");
     builder.append(getTicker());

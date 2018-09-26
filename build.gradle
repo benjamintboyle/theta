@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")
     }
 }
 
@@ -25,7 +25,7 @@ group = 'theta'
 ext.slf4jVersion         = '1.+'
 ext.log4jVersion         = '2.+'
 ext.rxJavaVersion        = '2.+'
-ext.springBootVersion    = '2.0.4.RELEASE';
+ext.springBootVersion    = '2.0.5.RELEASE';
 
 // Test dependency versions
 ext.hamcrestVersion      = '2.+'
@@ -39,6 +39,11 @@ repositories {
 
 sourceCompatibility = 10
 targetCompatibility = 10
+
+bootJar {
+    baseName = 'theta'
+    version =  '0.1'
+}
 
 dependencies {
     // Production code dependencies
@@ -81,5 +86,5 @@ distZip {
 }
 
 wrapper {
-    gradleVersion = '4.10'
+    gradleVersion = '4.10.2'
 }

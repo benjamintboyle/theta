@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,12 +47,12 @@ class PortfolioManagerTest {
   @Test
   void testStartPositionProcessing() throws Exception {
 
-    Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainFactory.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
     sut.registerTickMonitor(monitor);
 
-    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+    final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
     verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
     assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
@@ -62,13 +62,13 @@ class PortfolioManagerTest {
   @Test
   void testZeroQuantityPosition() throws Exception {
 
-    Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainFactory.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut(),
             Stock.of(theta.getStock().getId(), theta.getStock().getTicker(), 0L, theta.getStock().getPrice())));
     sut.registerTickMonitor(monitor);
 
-    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+    final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
     verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
     assertThat(sut.providePositions(theta.getTicker()), is(emptyCollectionOf(Theta.class)));
@@ -86,12 +86,12 @@ class PortfolioManagerTest {
   @Test
   void testProvidePositions() throws Exception {
 
-    Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainFactory.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
     sut.registerTickMonitor(monitor);
 
-    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+    final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
     assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
     testObserver.onComplete();
@@ -103,25 +103,25 @@ class PortfolioManagerTest {
     sut.getStatus().changeState(ManagerState.RUNNING);
     assertThat(sut.getStatus(), is(notNullValue()));
     assertThat(sut.getStatus().getState(), is(equalTo(ManagerState.RUNNING)));
-    assertThat(sut.getStatus().getTime(), is(greaterThan(ZonedDateTime.now().minusSeconds(1))));
-    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(ZonedDateTime.now())));
+    assertThat(sut.getStatus().getTime(), is(greaterThan(Instant.now().minusSeconds(1))));
+    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(Instant.now())));
 
     sut.getStatus().changeState(ManagerState.SHUTDOWN);
     assertThat(sut.getStatus(), is(notNullValue()));
     assertThat(sut.getStatus().getState(), is(equalTo(ManagerState.SHUTDOWN)));
-    assertThat(sut.getStatus().getTime(), is(greaterThan(ZonedDateTime.now().minusSeconds(1))));
-    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(ZonedDateTime.now())));
+    assertThat(sut.getStatus().getTime(), is(greaterThan(Instant.now().minusSeconds(1))));
+    assertThat(sut.getStatus().getTime(), is(lessThanOrEqualTo(Instant.now())));
   }
 
   @Test
   void testRegisterTickMonitor() throws Exception {
 
-    Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainFactory.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
     sut.registerTickMonitor(monitor);
 
-    TestObserver<Void> testObserver = sut.startPositionProcessing().test();
+    final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
     verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
     testObserver.onComplete();

@@ -5,32 +5,35 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import theta.connection.manager.ConnectionManager;
+import theta.connection.manager.DefaultConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 import theta.util.ThetaStartupUtil;
 
-// @SpringBootApplication
+@SpringBootApplication
 public class ThetaEngine implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String APP_NAME = MethodHandles.lookup().lookupClass().getSimpleName();
 
+  private static final CompositeDisposable THETA_DISPOSABLES = new CompositeDisposable();
+
   // Managers
-  private final ConnectionManager connectionManager;
+  private final DefaultConnectionManager connectionManager;
   private final PortfolioManager portfolioManager;
   private final TickManager tickManager;
   private final ExecutionManager executionManager;
 
-  private final CompositeDisposable managerDisposables = new CompositeDisposable();
+  public static void main(String[] args) throws UnknownHostException {
 
-  // Entry point for application
-  public static void main(final String[] args) throws UnknownHostException {
+    SpringApplication.run(ThetaEngine.class, args);
 
     logger.info("Starting {}...", APP_NAME);
 
@@ -38,7 +41,7 @@ public class ThetaEngine implements Runnable {
     final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
 
     // Create and initialized managers
-    final ConnectionManager initializedConnectionManager =
+    final DefaultConnectionManager initializedConnectionManager =
         ThetaManagerFactory.buildConnectionManager(brokerGatewaySocketAddress);
     final PortfolioManager initializedPortfolioManager = ThetaManagerFactory.buildPortfolioManager();
     final TickManager initializedTickManager = ThetaManagerFactory.buildTickManager();
@@ -53,7 +56,7 @@ public class ThetaEngine implements Runnable {
     logger.info("{} startup complete.", APP_NAME);
   }
 
-  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
+  public ThetaEngine(DefaultConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
       ExecutionManager executionManager) {
 
     this.connectionManager = connectionManager;
@@ -74,10 +77,10 @@ public class ThetaEngine implements Runnable {
     // connect -> position process -> tick -> execution -> position
 
     final Disposable portfolioManagerDisposable = startPortfolioManager();
-    managerDisposables.add(portfolioManagerDisposable);
+    THETA_DISPOSABLES.add(portfolioManagerDisposable);
 
     final Disposable tickManagerDisposable = startTickManager();
-    managerDisposables.add(tickManagerDisposable);
+    THETA_DISPOSABLES.add(tickManagerDisposable);
   }
 
   private Disposable startPortfolioManager() {
@@ -111,7 +114,7 @@ public class ThetaEngine implements Runnable {
 
   public void shutdown() {
 
-    if (!managerDisposables.isDisposed()) {
+    if (!THETA_DISPOSABLES.isDisposed()) {
 
       logger.info("Calling shutdown for all managers.");
       executionManager.shutdown();
@@ -119,8 +122,8 @@ public class ThetaEngine implements Runnable {
       portfolioManager.shutdown();
       connectionManager.shutdown();
 
-      logger.info("Disposing of {} Managers", Integer.valueOf(managerDisposables.size()));
-      managerDisposables.dispose();
+      logger.info("Disposing of {} Managers", Integer.valueOf(THETA_DISPOSABLES.size()));
+      THETA_DISPOSABLES.dispose();
 
       logger.info("Shutting down Schedulers.");
       Schedulers.shutdown();

@@ -9,7 +9,7 @@ import theta.api.ConnectionHandler;
 import theta.api.ExecutionHandler;
 import theta.api.PositionHandler;
 import theta.api.TickSubscriber;
-import theta.connection.manager.ConnectionManager;
+import theta.connection.manager.DefaultConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
@@ -21,14 +21,14 @@ public class ThetaManagerFactory {
 
   private ThetaManagerFactory() {}
 
-  public static ConnectionManager buildConnectionManager(InetSocketAddress brokerGatewaySocketAddress) {
+  public static DefaultConnectionManager buildConnectionManager(InetSocketAddress brokerGatewaySocketAddress) {
 
     logger.info("Initializing Connection Manager");
 
     final ConnectionHandler brokerConnectionHandler =
         IbHandlerFactory.buildConnectionHandler(brokerGatewaySocketAddress);
 
-    return new ConnectionManager(brokerConnectionHandler);
+    return new DefaultConnectionManager(brokerConnectionHandler);
   }
 
   public static PortfolioManager buildPortfolioManager() {

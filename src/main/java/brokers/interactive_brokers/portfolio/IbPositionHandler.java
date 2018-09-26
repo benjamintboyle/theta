@@ -2,8 +2,8 @@ package brokers.interactive_brokers.portfolio;
 
 import static theta.util.LazyEvaluation.lazy;
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   private final IbController controller;
 
   private final Subject<Security> subjectPositions = ReplaySubject.create();
-  private final Subject<ZonedDateTime> subjectPositionEndTime = BehaviorSubject.create();
+  private final Subject<Instant> subjectPositionEndTime = BehaviorSubject.create();
 
   private final CompositeDisposable positionHandlerDisposables = new CompositeDisposable();
 
@@ -87,7 +87,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void positionEnd() {
     logger.info("Received Position End notification"); //$NON-NLS-1$
-    subjectPositionEndTime.onNext(ZonedDateTime.now());
+    subjectPositionEndTime.onNext(Instant.now());
   }
 
   @Override

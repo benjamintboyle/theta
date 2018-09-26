@@ -2,7 +2,7 @@ package brokers.interactive_brokers.connection;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +38,7 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
     return waitUntil(ConnectionState.CONNECTED).map(time -> accountList);
   }
 
-  public Single<ZonedDateTime> waitUntil(ConnectionState waitUntilState) {
+  public Single<Instant> waitUntil(ConnectionState waitUntilState) {
 
     return connectionStatus.filter(status -> status.getState().equals(waitUntilState))
         .map(ConnectionStatus::getTime)
@@ -52,20 +52,20 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   @Override
   public void connected() {
-    logger.info("Connection established..."); //$NON-NLS-1$
+    logger.info("Connection established...");
     connectionStatus.onNext(ConnectionStatus.of(ConnectionState.CONNECTED));
   }
 
   @Override
   public void disconnected() {
-    logger.info("Connection disconnected..."); //$NON-NLS-1$
+    logger.info("Connection disconnected...");
     connectionStatus.onNext(ConnectionStatus.of(ConnectionState.DISCONNECTED));
   }
 
   // Parameter should not be ArrayList, but this is part of the API from Interactive Brokers
   @Override
   public void accountList(ArrayList<String> accountList) {
-    logger.info("Received account list: {}", accountList); //$NON-NLS-1$
+    logger.info("Received account list: {}", accountList);
 
     this.accountList.clear();
 
@@ -76,14 +76,14 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   @Override
   public void error(Exception exception) {
-    logger.error("Interactive Brokers Error - ", exception); //$NON-NLS-1$
+    logger.error("Interactive Brokers Error - ", exception);
     connectionStatus.onError(exception);
   }
 
   @Override
   public void message(int id, int messageCode, String message) {
 
-    final String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'"; //$NON-NLS-1$
+    final String messageTemplate = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
 
     if ((messageCode == 1102) || (messageCode == 2104) || (messageCode == 2106)) {
       logger.info(messageTemplate, Integer.valueOf(id), Integer.valueOf(messageCode), message);
@@ -96,7 +96,7 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   @Override
   public void show(String string) {
-    logger.warn("Interactive Brokers Show - {}", string); //$NON-NLS-1$
+    logger.warn("Interactive Brokers Show - {}", string);
   }
 
 }

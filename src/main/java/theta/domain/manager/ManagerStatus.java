@@ -1,7 +1,7 @@
 package theta.domain.manager;
 
 import java.lang.invoke.MethodHandles;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,30 +10,30 @@ public class ManagerStatus {
 
   private final String className;
   private ManagerState state;
-  private ZonedDateTime time;
+  private Instant time;
 
-  private ManagerStatus(Class<?> clazz, ManagerState state, ZonedDateTime time) {
+  private ManagerStatus(Class<?> clazz, ManagerState state, Instant time) {
     className = clazz.getSimpleName();
     this.state = state;
     this.time = time;
   }
 
   public static ManagerStatus of(Class<?> clazz, ManagerState state) {
-    return new ManagerStatus(clazz, state, ZonedDateTime.now());
+    return new ManagerStatus(clazz, state, Instant.now());
   }
 
   public ManagerState getState() {
     return state;
   }
 
-  public ZonedDateTime getTime() {
+  public Instant getTime() {
     return time;
   }
 
   public void changeState(ManagerState newState) {
     logger.info("{} is transitioning from {} to {}", getClassName(), getState(), newState);
     state = newState;
-    time = ZonedDateTime.now();
+    time = Instant.now();
   }
 
   private String getClassName() {

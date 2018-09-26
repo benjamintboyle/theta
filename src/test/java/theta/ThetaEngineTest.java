@@ -2,7 +2,7 @@ package theta;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import theta.connection.manager.ConnectionManager;
+import theta.connection.manager.DefaultConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
@@ -20,7 +20,7 @@ import theta.tick.manager.TickManager;
 public class ThetaEngineTest {
 
   @Mock
-  private ConnectionManager mockConnectionManager;
+  private DefaultConnectionManager mockConnectionManager;
   @Mock
   private PortfolioManager mockPortfolioManager;
   @Mock
@@ -32,7 +32,7 @@ public class ThetaEngineTest {
 
   @BeforeEach
   public void setup() {
-    when(mockConnectionManager.connect()).thenReturn(Single.just(ZonedDateTime.now()));
+    when(mockConnectionManager.connect()).thenReturn(Single.just(Instant.now()));
     when(mockPortfolioManager.startPositionProcessing()).thenReturn(Completable.complete());
     when(mockPortfolioManager.getPositionEnd()).thenReturn(Completable.complete());
     when(mockTickManager.startTickProcessing()).thenReturn(Completable.complete());
