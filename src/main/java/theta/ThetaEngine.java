@@ -1,94 +1,77 @@
 package theta;
 
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import theta.connection.manager.DefaultConnectionManager;
+import org.springframework.context.annotation.ComponentScan;
+import theta.api.ManagerShutdown;
+import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
 import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
-import theta.util.ThetaStartupUtil;
 
+// curl -i -X POST http://localhost:8080/actuator/shutdown
+@ComponentScan({"theta", "brokers.interactivebrokers"})
 @SpringBootApplication
-public class ThetaEngine implements Runnable {
+public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Class<?> CURRENT_CLASS = MethodHandles.lookup().lookupClass();
+  private static final Logger logger = LoggerFactory.getLogger(CURRENT_CLASS);
 
-  private static final String APP_NAME = MethodHandles.lookup().lookupClass().getSimpleName();
+  @Value("${application.name}")
+  private String appName;
 
   private static final CompositeDisposable THETA_DISPOSABLES = new CompositeDisposable();
 
   // Managers
-  private final DefaultConnectionManager connectionManager;
+  private final ConnectionManager connectionManager;
   private final PortfolioManager portfolioManager;
   private final TickManager tickManager;
   private final ExecutionManager executionManager;
 
-  public static void main(String[] args) throws UnknownHostException {
-
-    SpringApplication.run(ThetaEngine.class, args);
-
-    logger.info("Starting {}...", APP_NAME);
-
-    // Determine IP address and port of gateway
-    final InetSocketAddress brokerGatewaySocketAddress = ThetaStartupUtil.getGatewayAddress();
-
-    // Create and initialized managers
-    final DefaultConnectionManager initializedConnectionManager =
-        ThetaManagerFactory.buildConnectionManager(brokerGatewaySocketAddress);
-    final PortfolioManager initializedPortfolioManager = ThetaManagerFactory.buildPortfolioManager();
-    final TickManager initializedTickManager = ThetaManagerFactory.buildTickManager();
-    final ExecutionManager initializedExecutionManager = ThetaManagerFactory.buildExecutionManager();
-
-    // Create Theta Engine
-    final ThetaEngine thetaEngine = new ThetaEngine(initializedConnectionManager, initializedPortfolioManager,
-        initializedTickManager, initializedExecutionManager);
-
-    thetaEngine.run();
-
-    logger.info("{} startup complete.", APP_NAME);
+  public static void main(String[] args) {
+    SpringApplication.run(CURRENT_CLASS, args);
   }
 
-  public ThetaEngine(DefaultConnectionManager connectionManager, PortfolioManager portfolioManager, TickManager tickManager,
-      ExecutionManager executionManager) {
+  /**
+   * Main class for project. Manages other managers. All managers must be passed in.
+   *
+   * @param connectionManager A broker connection manager.
+   * @param portfolioManager A broker portfolio manager.
+   * @param tickManager A broker tick manager.
+   * @param executionManager A broker execution manager.
+   */
+  public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager,
+      TickManager tickManager, ExecutionManager executionManager) {
 
     this.connectionManager = connectionManager;
     this.portfolioManager = portfolioManager;
     this.tickManager = tickManager;
     this.executionManager = executionManager;
-
-    // Register shutdown hook
-    attachShutdownHook();
-
-    // Register managers with one another as needed
-    registerManagerInterfaces();
   }
 
   @Override
-  public void run() {
-
-    // connect -> position process -> tick -> execution -> position
+  public void run(String... args) {
 
     final Disposable portfolioManagerDisposable = startPortfolioManager();
     THETA_DISPOSABLES.add(portfolioManagerDisposable);
 
     final Disposable tickManagerDisposable = startTickManager();
     THETA_DISPOSABLES.add(tickManagerDisposable);
+
   }
 
   private Disposable startPortfolioManager() {
 
-    return connectionManager.connect()
-        .ignoreElement()
-        .andThen(portfolioManager.startPositionProcessing())
-        .subscribe(
+    return connectionManager.connect().ignoreElement()
+        .andThen(portfolioManager.startPositionProcessing()).subscribe(
 
             () -> logger.info("Portfolio Manager has Shutdown"),
 
@@ -100,23 +83,23 @@ public class ThetaEngine implements Runnable {
 
   private Disposable startTickManager() {
 
-    return portfolioManager.getPositionEnd()
-        .andThen(tickManager.startTickProcessing())
-        .subscribe(
+    return portfolioManager.getPositionEnd().andThen(tickManager.startTickProcessing()).subscribe(
 
-            () -> logger.info("Tick Manager has Shutdown"),
+        () -> logger.info("Tick Manager has Shutdown"),
 
-            error -> {
-              logger.error("Tick Manager Error", error);
-              shutdown();
-            });
+        error -> {
+          logger.error("Tick Manager Error", error);
+          shutdown();
+        });
   }
 
+  @Override
   public void shutdown() {
+
+    logger.info("Calling shutdown for all managers.");
 
     if (!THETA_DISPOSABLES.isDisposed()) {
 
-      logger.info("Calling shutdown for all managers.");
       executionManager.shutdown();
       tickManager.shutdown();
       portfolioManager.shutdown();
@@ -129,33 +112,9 @@ public class ThetaEngine implements Runnable {
       Schedulers.shutdown();
 
     } else {
-      logger.warn("Tried to dispose of already disposed of {} Composite Manager Disposable", APP_NAME);
+      logger.warn("Tried to dispose of already disposed of {} Composite Manager Disposable",
+          appName);
     }
-
-  }
-
-  private void attachShutdownHook() {
-
-    logger.info("Registering Shutdown Hook");
-
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      logger.info("Executing Shutdown Hook");
-      shutdown();
-    }));
-
-    logger.info("Shutdown Hook Registered");
-  }
-
-  private void registerManagerInterfaces() {
-
-    logger.info("Starting Manager Cross-Registration");
-
-    portfolioManager.registerTickMonitor(tickManager);
-
-    tickManager.registerPositionProvider(portfolioManager);
-    tickManager.registerExecutor(executionManager);
-
-    logger.info("Manager Cross-Registration Complete");
   }
 
 }

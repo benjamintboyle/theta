@@ -16,7 +16,8 @@ import theta.domain.composed.Theta;
 import theta.domain.option.Option;
 
 public class PositionLogger {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static Comparator<Security> byTicker = Comparator.comparing(Security::getTicker);
 
@@ -32,8 +33,8 @@ public class PositionLogger {
 
   private static Comparator<Security> byOptionExpiration = (s1, s2) -> {
     if (s1 instanceof Option && s2 instanceof Option) {
-      Option o1 = (Option) s1;
-      Option o2 = (Option) s2;
+      final Option o1 = (Option) s1;
+      final Option o2 = (Option) s2;
 
       if (o1.getExpiration().isAfter(o2.getExpiration())) {
         return 1;
@@ -52,17 +53,27 @@ public class PositionLogger {
   private static Comparator<Security> byCallIsGreaterThanPut = (s1, s2) -> {
     if (s1.getSecurityType() == SecurityType.CALL && s2.getSecurityType() == SecurityType.PUT) {
       return -1;
-    } else if (s1.getSecurityType() == SecurityType.PUT && s2.getSecurityType() == SecurityType.CALL) {
+    } else if (s1.getSecurityType() == SecurityType.PUT
+        && s2.getSecurityType() == SecurityType.CALL) {
       return 1;
     } else {
       return 0;
     }
   };
 
-  private PositionLogger() {}
+  private PositionLogger() {
 
-  public static void logPositions(Map<UUID, Theta> thetaIdMap, Map<UUID, Set<UUID>> securityThetaLink,
-      Map<UUID, Security> securityIdMap) {
+  }
+
+  /**
+   * Helper to log all positions and status.
+   *
+   * @param thetaIdMap All ThetaTrades mapped to their Id.
+   * @param securityThetaLink All Securities in ThetaTrades mapped to their Id.
+   * @param securityIdMap All Securities (including unmapped) mapped to their id.
+   */
+  public static void logPositions(Map<UUID, Theta> thetaIdMap,
+      Map<UUID, Set<UUID>> securityThetaLink, Map<UUID, Security> securityIdMap) {
 
     logger.info("Position Logging Start");
 
@@ -75,9 +86,9 @@ public class PositionLogger {
     logger.info("Position Logging Complete");
   }
 
-  public static void logThetaPositions(Collection<Theta> thetas) {
+  private static void logThetaPositions(Collection<Theta> thetas) {
 
-    List<Theta> thetasSorted =
+    final List<Theta> thetasSorted =
         thetas.stream().sorted(Comparator.comparing(Theta::getTicker)).collect(Collectors.toList());
 
     for (final Theta position : thetasSorted) {
@@ -89,15 +100,15 @@ public class PositionLogger {
     }
   }
 
-  public static void logUnmatchedPositions(Collection<UUID> matchedPositionIds, Collection<Security> allSecurities) {
+  private static void logUnmatchedPositions(Collection<UUID> matchedPositionIds,
+      Collection<Security> allSecurities) {
 
-    List<Security> unmatched = allSecurities.stream()
-        .filter(security -> !matchedPositionIds.contains(security.getId()))
-        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
-            .thenComparing(byOptionExpiration)
-            .thenComparing(byPrice)
-            .thenComparing(byCallIsGreaterThanPut))
-        .collect(Collectors.toList());
+    final List<Security> unmatched =
+        allSecurities.stream().filter(security -> !matchedPositionIds.contains(security.getId()))
+            .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
+                .thenComparing(byOptionExpiration).thenComparing(byPrice)
+                .thenComparing(byCallIsGreaterThanPut))
+            .collect(Collectors.toList());
 
     for (final Security security : unmatched) {
       logger.warn("Unmatched security: {}", security);
@@ -110,10 +121,9 @@ public class PositionLogger {
 
   private static void logAllSecurities(Collection<Security> allSecurities) {
     for (final Security security : allSecurities.stream()
-        .sorted(byTicker.thenComparing(byStockIsGreaterThanOptions)
-            .thenComparing(byOptionExpiration)
-            .thenComparing(byPrice)
-            .thenComparing(byCallIsGreaterThanPut))
+        .sorted(
+            byTicker.thenComparing(byStockIsGreaterThanOptions).thenComparing(byOptionExpiration)
+                .thenComparing(byPrice).thenComparing(byCallIsGreaterThanPut))
         .collect(Collectors.toList())) {
       logger.debug("List of all securities: {}", security);
     }

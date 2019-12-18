@@ -1,7 +1,7 @@
 package theta.connection.manager;
 
+import io.reactivex.rxjava3.core.Single;
 import java.time.Instant;
-import io.reactivex.Single;
 import theta.api.ManagerShutdown;
 
 public interface ConnectionManager extends ManagerShutdown {

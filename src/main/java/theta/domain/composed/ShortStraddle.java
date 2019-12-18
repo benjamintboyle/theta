@@ -13,7 +13,8 @@ import theta.domain.option.Option;
 
 public class ShortStraddle implements Security {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Option call;
   private final Option put;
@@ -25,6 +26,13 @@ public class ShortStraddle implements Security {
     this.put = put;
   }
 
+  /**
+   * Builds a Short Straddle object from a Call and Put Option.
+   *
+   * @param call The Call option to use for building Straddle.
+   * @param put The Put option to use for building Straddle.
+   * @return The ShortStraddle based on Call and Put passed in.
+   */
   public static ShortStraddle of(Option call, Option put) {
 
     final ShortStraddle straddle = new ShortStraddle(call, put);
@@ -85,9 +93,7 @@ public class ShortStraddle implements Security {
    * Validate that Short Straddle inputs are two short options, one call, one put, with equal strike
    * price and expiration date.
    *
-   * @param call
-   * @param put
-   * @return
+   * @return Is a valid Short Straddle.
    */
   private boolean isValid() {
 
@@ -96,7 +102,8 @@ public class ShortStraddle implements Security {
 
     // Are equal tickers
     if (!getCall().getTicker().equals(put.getTicker())) {
-      logger.error("{}Tickers are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
+      logger.error("{}Tickers are not equal - Call: {}, Put: {}", prefixMessage, getCall(),
+          getPut());
       isValidShortStraddle = false;
     }
 
@@ -114,25 +121,29 @@ public class ShortStraddle implements Security {
 
     // Are equal quantities
     if (getCall().getQuantity() != (getPut().getQuantity())) {
-      logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
+      logger.error("{}Quantities are not equal - Call: {}, Put: {}", prefixMessage, getCall(),
+          getPut());
       isValidShortStraddle = false;
     }
 
     // Quantity must be less than 0 (becasue it is a SHORT straddle)
     if (getCall().getQuantity() >= 0 || getPut().getQuantity() >= 0) {
-      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
+      logger.error("{}Quantities are not less than zero - Call: {}, Put: {}", prefixMessage,
+          getCall(), getPut());
       isValidShortStraddle = false;
     }
 
     // Strike prices must be equal
     if (Double.compare(getCall().getStrikePrice(), getPut().getStrikePrice()) != 0) {
-      logger.error("{}Strike Prices are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
+      logger.error("{}Strike Prices are not equal - Call: {}, Put: {}", prefixMessage, getCall(),
+          getPut());
       isValidShortStraddle = false;
     }
 
     // Are equal expiration price
     if (!getCall().getExpiration().equals(getPut().getExpiration())) {
-      logger.error("{}Expirations are not equal - Call: {}, Put: {}", prefixMessage, getCall(), getPut());
+      logger.error("{}Expirations are not equal - Call: {}, Put: {}", prefixMessage, getCall(),
+          getPut());
       isValidShortStraddle = false;
     }
 

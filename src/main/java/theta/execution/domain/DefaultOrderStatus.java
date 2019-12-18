@@ -6,15 +6,25 @@ import theta.execution.api.OrderStatus;
 
 public class DefaultOrderStatus implements OrderStatus {
 
-  private ExecutableOrder executableOrder;
-  private OrderState orderState;
-  private double commission;
-  private long filled;
-  private long remaining;
-  private double averagePrice;
+  private final ExecutableOrder executableOrder;
+  private final OrderState orderState;
+  private final double commission;
+  private final long filled;
+  private final long remaining;
+  private final double averagePrice;
 
-  public DefaultOrderStatus(ExecutableOrder executableOrder, OrderState orderState, double commission, long filled,
-      long remaining, double averagePrice) {
+  /**
+   * Create Default Order Status.
+   *
+   * @param executableOrder Actual order
+   * @param orderState Order State
+   * @param commission Commission amount
+   * @param filled Amount of order filled
+   * @param remaining Amount of order remaining to be filled
+   * @param averagePrice Average fill price
+   */
+  public DefaultOrderStatus(ExecutableOrder executableOrder, OrderState orderState,
+      double commission, long filled, long remaining, double averagePrice) {
 
     this.executableOrder = executableOrder;
     this.orderState = orderState;
@@ -57,7 +67,7 @@ public class DefaultOrderStatus implements OrderStatus {
   @Override
   public String toString() {
 
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
 
     builder.append("Order Status [ ");
 

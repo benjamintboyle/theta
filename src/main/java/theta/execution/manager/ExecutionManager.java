@@ -1,5 +1,10 @@
 package theta.execution.manager;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableEmitter;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.Optional;
@@ -8,11 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.Single;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import theta.api.ExecutionHandler;
 import theta.domain.Ticker;
 import theta.domain.manager.ManagerState;
@@ -27,8 +29,10 @@ import theta.execution.domain.DefaultStockOrder;
 import theta.execution.factory.ExecutableOrderFactory;
 import theta.util.ThetaMarketUtil;
 
+@Component
 public class ExecutionManager implements Executor {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutionHandler executionHandler;
 
@@ -39,19 +43,21 @@ public class ExecutionManager implements Executor {
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
+  @Autowired
   public ExecutionManager(ExecutionHandler executionHandler) {
     logger.info("Starting Execution Manager");
     this.executionHandler = executionHandler;
   }
 
   @Override
-  public Completable reverseTrade(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
+  public Completable reverseTrade(Stock stock, ExecutionType executionType,
+      Optional<Double> limitPrice) {
 
     return Single.<ExecutableOrder>create(emitter -> {
       logger.info("Reversing Trade: {}", stock);
 
-      final Optional<ExecutableOrder> validatedOrder =
-          ExecutableOrderFactory.reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
+      final Optional<ExecutableOrder> validatedOrder = ExecutableOrderFactory
+          .reverseAndValidateStockPositionOrder(stock, executionType, limitPrice);
 
       if (validatedOrder.isPresent()) {
         emitter.onSuccess(validatedOrder.get());
@@ -67,25 +73,26 @@ public class ExecutionManager implements Executor {
   @Override
   public void convertToMarketOrderIfExists(Ticker ticker) {
 
-    activeOrderStatuses.values()
-        .stream()
-        .filter(orderStatus -> orderStatus.getOrder().getTicker().equals(ticker))
-        .forEach(
+    activeOrderStatuses.values().stream()
+        .filter(orderStatus -> orderStatus.getOrder().getTicker().equals(ticker)).forEach(
 
             orderStatus -> {
               final ExecutableOrder existingOrder = orderStatus.getOrder();
 
               if (existingOrder.getExecutionType() != ExecutionType.MARKET) {
 
-                final ExecutableOrder modifiedToMarketOrder =
-                    new DefaultStockOrder(existingOrder.getTicker(), existingOrder.getId(), existingOrder.getQuantity(),
-                        existingOrder.getExecutionAction(), ExecutionType.MARKET);
+                final ExecutableOrder modifiedToMarketOrder = new DefaultStockOrder(
+                    existingOrder.getTicker(), existingOrder.getId(), existingOrder.getQuantity(),
+                    existingOrder.getExecutionAction(), ExecutionType.MARKET);
 
-                final Disposable convertToMarketDisposable = executeOrder(modifiedToMarketOrder).subscribe(
+                final Disposable convertToMarketDisposable =
+                    executeOrder(modifiedToMarketOrder).subscribe(
 
-                    () -> logger.info("Successfully modified to Market Order: {}", modifiedToMarketOrder),
+                        () -> logger.info("Successfully modified to Market Order: {}",
+                            modifiedToMarketOrder),
 
-                    error -> logger.error("Error converting to Market Order: {}", modifiedToMarketOrder, error));
+                        error -> logger.error("Error converting to Market Order: {}",
+                            modifiedToMarketOrder, error));
 
                 executionManagerDisposables.add(convertToMarketDisposable);
               }
@@ -109,21 +116,18 @@ public class ExecutionManager implements Executor {
           final Disposable disposableExecutionHandler = subscribeExecuteStockOrder(order, emitter);
 
           executionManagerDisposables.add(disposableExecutionHandler);
-        }
-        // Modify existing order, if correct attributes are set
-        else if (isModifiedOrder) {
+        } else if (isModifiedOrder) { // Modify existing order, if correct attributes are set
 
           modifyStockOrder(order);
           // TODO: Need to possibly cancel for multiple iterations; possibly convert to Maybe
-        }
-        // Something was wrong with determining if new or modified order or their parameters
-        else {
+        } else {
+          // Something was wrong with determining if new or modified order or their parameters
+
           logger.error("Existing order. Existing Order Status: {}. Order will not be executed: {}",
               activeOrderStatuses.get(order.getId()), order);
         }
-      }
-      // Market not open
-      else {
+      } else { // Market not open
+
         logger.warn("Not during market hours. Order will not be executed: {}", order);
         // TODO: Make sure order is cancelled here
         emitter.onComplete();
@@ -132,41 +136,43 @@ public class ExecutionManager implements Executor {
   }
 
   private Disposable subscribeExecuteStockOrder(ExecutableOrder order, CompletableEmitter emitter) {
-    return executionHandler.executeOrder(order)
-        .subscribe(
+    return executionHandler.executeOrder(order).subscribe(
 
-            orderStatus -> {
-              logger.info("Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
-                  orderStatus.getOrder().getBrokerId().orElse(null), orderStatus.getState(),
-                  orderStatus.getCommission(), orderStatus.getFilled(), orderStatus.getRemaining(),
-                  orderStatus.getOrder());
-              updateActiveOrderStatus(orderStatus);
-            },
+        orderStatus -> {
+          logger.info(
+              "Order Status #{}: [State: {}, Commission: {}, Filled: {}, Remaining: {}, Order: {}]",
+              orderStatus.getOrder().getBrokerId().orElse(null), orderStatus.getState(),
+              orderStatus.getCommission(), orderStatus.getFilled(), orderStatus.getRemaining(),
+              orderStatus.getOrder());
+          updateActiveOrderStatus(orderStatus);
+        },
 
-            // TODO: Should probably correct cancel request
-            error -> {
-              logger.error("Order Handler encountered an error", error);
-              final Disposable disposableCancelOrder = executionHandler.cancelOrder(order).subscribe();
-              executionManagerDisposables.add(disposableCancelOrder);
+        // TODO: Should probably correct cancel request
+        error -> {
+          logger.error("Order Handler encountered an error", error);
+          final Disposable disposableCancelOrder = executionHandler.cancelOrder(order).subscribe();
+          executionManagerDisposables.add(disposableCancelOrder);
 
-              logger.warn("Removing order from active orders: {}", order);
-              activeOrderStatuses.remove(order.getId());
+          logger.warn("Removing order from active orders: {}", order);
+          activeOrderStatuses.remove(order.getId());
 
-              emitter.onError(error);
-            },
+          emitter.onError(error);
+        },
 
-            () -> {
+        () -> {
 
-              logger.info("Order successfully filled: {}", order);
+          logger.info("Order successfully filled: {}", order);
 
-              if (activeOrderStatuses.remove(order.getId()) != null) {
-                logger.debug("Order removed from active orders list: {}", order);
-              } else {
-                logger.warn("Received filled order notification for which there is no Active Order record: {}", order);
-              }
+          if (activeOrderStatuses.remove(order.getId()) != null) {
+            logger.debug("Order removed from active orders list: {}", order);
+          } else {
+            logger.warn(
+                "Received filled order notification for which there is no Active Order record: {}",
+                order);
+          }
 
-              emitter.onComplete();
-            });
+          emitter.onComplete();
+        });
   }
 
   private void modifyStockOrder(ExecutableOrder order) {
@@ -179,19 +185,22 @@ public class ExecutionManager implements Executor {
 
         if (!order.equals(activeOrderStatus.getOrder())) {
 
-          logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order, activeOrderStatus);
+          logger.info("Modifying order. Modified Order: {}, with current Order Status: {}", order,
+              activeOrderStatus);
           executionHandler.modifyOrder(order);
         } else {
-          logger.warn("Modified order same as existing. Modified order: {}, Existing Order Status: {}", order,
-              activeOrderStatus);
+          logger.warn(
+              "Modified order same as existing. Modified order: {}, Existing Order Status: {}",
+              order, activeOrderStatus);
         }
       } else {
-        logger.warn(
-            "Attempted to modify order that is not SUBMITTED or FILLED. Modified order: {}, existing Order Statue: {}",
-            order, activeOrderStatus);
+        logger
+            .warn("Attempted to modify order that is not SUBMITTED or FILLED. Modified order: {}, "
+                + "existing Order Statue: {}", order, activeOrderStatus);
       }
     } else {
-      logger.warn("Attempted to modify order for which an existing order does not exist. Order: {}", order);
+      logger.warn("Attempted to modify order for which an existing order does not exist. Order: {}",
+          order);
     }
 
   }
@@ -216,30 +225,32 @@ public class ExecutionManager implements Executor {
           if (activeOrder.getQuantity() != order.getQuantity()) {
             order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
-          }
-          // Active order with different Limit Prices, will be modified
-          else if (activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent()
+          } else if (activeOrder.getLimitPrice().isPresent() && order.getLimitPrice().isPresent()
               && activeOrder.getLimitPrice().get() != order.getLimitPrice().get()) {
+            // Active order with different Limit Prices, will be modified
+
             order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
-          }
-          // Active order with different ExecutionType, will be modified (i.e. LIMIT -> MARKET)
-          else if ((activeOrder.getExecutionType() != order.getExecutionType())) {
+          } else if ((activeOrder.getExecutionType() != order.getExecutionType())) {
+            // Active order with different ExecutionType, will be modified (i.e. LIMIT -> MARKET)
+
             order.setBrokerId(optionalBrokerId.get());
             isModifiedOrder = true;
-          }
-          // Active order and new order are the same
-          else {
-            logger.warn("Active Order exists for {}, Active Order Status: {}, New Order Request: {}", order.getTicker(),
-                activeOrderStatus, order);
+          } else {
+            // Active order and new order are the same
+
+            logger.warn(
+                "Active Order exists for {}, Active Order Status: {}, New Order Request: {}",
+                order.getTicker(), activeOrderStatus, order);
           }
         } else {
-          logger.warn("Attempted to modify order that has filled Order Status: {}, Order: {}", activeOrderStatus,
-              order);
+          logger.warn("Attempted to modify order that has filled Order Status: {}, Order: {}",
+              activeOrderStatus, order);
           isModifiedOrder = true;
         }
       } else {
-        logger.warn("Modified order does not have Broker ID: {}, Active Order Status: {}", order, activeOrderStatus);
+        logger.warn("Modified order does not have Broker ID: {}, Active Order Status: {}", order,
+            activeOrderStatus);
         isModifiedOrder = true;
       }
     }
@@ -252,6 +263,7 @@ public class ExecutionManager implements Executor {
     activeOrderStatuses.put(orderStatus.getOrder().getId(), orderStatus);
   }
 
+  @Override
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
     executionManagerDisposables.dispose();

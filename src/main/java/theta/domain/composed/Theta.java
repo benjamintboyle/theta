@@ -13,7 +13,8 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 
 public class Theta implements Security {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
   private final Stock stock;
@@ -31,6 +32,13 @@ public class Theta implements Security {
     return Theta.of(stock, ShortStraddle.of(call, put));
   }
 
+  /**
+   * Create Theta from Stock and ShortStraddle, and return Optional.
+   *
+   * @param stock Stock associated with Ticker.
+   * @param straddle Short Straddle associated with Ticker.
+   * @return Optional Theta if able to be created from inputs.
+   */
   public static Optional<Theta> of(Stock stock, ShortStraddle straddle) {
 
     Optional<Theta> theta = Optional.empty();
@@ -48,9 +56,9 @@ public class Theta implements Security {
   }
 
   /**
-   * Gets the number of ThetaTrade "contracts". One ThetaTrade "contract" contains a call, a put, and
-   * 100 stock. This quantity is negative or positive based on if the stock is long or short. Note,
-   * for ThetaTrades the call and put options are both short.
+   * Gets the number of ThetaTrade "contracts". One ThetaTrade "contract" contains a call, a put,
+   * and 100 stock. This quantity is negative or positive based on if the stock is long or short.
+   * Note, for ThetaTrades the call and put options are both short.
    *
    * @return
    */
@@ -85,6 +93,12 @@ public class Theta implements Security {
     return SecurityType.THETA;
   }
 
+  /**
+   * Converts Security Type from Interactive Brokers to native type.
+   *
+   * @param securityType The Interactive Brokers security type.
+   * @return The native Security type.
+   */
   public Security getSecurityOfType(SecurityType securityType) {
     Security securityOfType = null;
 
@@ -101,10 +115,9 @@ public class Theta implements Security {
       case SHORT_STRADDLE:
         break;
       case THETA:
-        break;
       default:
-        final IllegalArgumentException illegalArgumentException =
-            new IllegalArgumentException(securityType + " is an invalid security type for this object.");
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+            securityType + " is an invalid security type for this object.");
         logger.error("Unknown Security Type: {}", securityType, illegalArgumentException);
         throw illegalArgumentException;
     }
@@ -165,7 +178,8 @@ public class Theta implements Security {
     if (obj instanceof Theta) {
       final Theta other = (Theta) obj;
 
-      return Objects.equals(getStock(), other.getStock()) && Objects.equals(getStraddle(), other.getStraddle());
+      return Objects.equals(getStock(), other.getStock())
+          && Objects.equals(getStraddle(), other.getStraddle());
     }
 
     return false;
@@ -181,8 +195,8 @@ public class Theta implements Security {
       if (Math.abs(stock.getQuantity()) == Math.abs(straddle.getQuantity() * 100)) {
         isValid = true;
       } else {
-        logger.error("Stock is not 100 times quantity of option quantity: {}, {}", Long.valueOf(stock.getQuantity()),
-            Long.valueOf(straddle.getQuantity()));
+        logger.error("Stock is not 100 times quantity of option quantity: {}, {}",
+            Long.valueOf(stock.getQuantity()), Long.valueOf(straddle.getQuantity()));
       }
     } else {
       logger.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);

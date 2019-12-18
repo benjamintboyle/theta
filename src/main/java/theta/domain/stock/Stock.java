@@ -10,7 +10,8 @@ import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
 public class Stock implements Security {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
   private final Ticker ticker;
@@ -19,17 +20,20 @@ public class Stock implements Security {
 
   private static final SecurityType type = SecurityType.STOCK;
 
-  private Stock(final UUID id, final Ticker ticker, final long quantity, final Double averageTradePrice) {
+  private Stock(final UUID id, final Ticker ticker, final long quantity,
+      final Double averageTradePrice) {
 
     this.id = Objects.requireNonNull(id, "Stock 'id' must not be null.");
     this.ticker = Objects.requireNonNull(ticker, "Stock 'Ticker' must not be null.");
     this.quantity = Objects.requireNonNull(quantity, "Stock 'Quantity' must not be null.");
-    this.averageTradePrice = Objects.requireNonNull(averageTradePrice, "Stock 'Average Price' must not be null.");
+    this.averageTradePrice =
+        Objects.requireNonNull(averageTradePrice, "Stock 'Average Price' must not be null.");
 
     logger.debug("Built {}", this);
   }
 
-  public static Stock of(final UUID id, final Ticker ticker, final long quantity, final Double averageTradePrice) {
+  public static Stock of(final UUID id, final Ticker ticker, final long quantity,
+      final Double averageTradePrice) {
     return new Stock(id, ticker, quantity, averageTradePrice);
   }
 
@@ -63,7 +67,7 @@ public class Stock implements Security {
   }
 
   public Stock reversePosition() {
-    logger.info("Building Reverse of Stock: {}", this); //$NON-NLS-1$
+    logger.info("Building Reverse of Stock: {}", this);
     return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
   }
 
@@ -79,8 +83,10 @@ public class Stock implements Security {
     if (obj instanceof Stock) {
       final Stock other = (Stock) obj;
 
-      isEqual = Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getQuantity(), other.getQuantity())
-          && Objects.equals(getPrice(), other.getPrice()) && Objects.equals(getSecurityType(), other.getSecurityType());
+      isEqual = Objects.equals(getTicker(), other.getTicker())
+          && Objects.equals(getQuantity(), other.getQuantity())
+          && Objects.equals(getPrice(), other.getPrice())
+          && Objects.equals(getSecurityType(), other.getSecurityType());
     }
 
     return isEqual;
@@ -92,7 +98,6 @@ public class Stock implements Security {
     return Objects.hash(getTicker(), getQuantity(), getPrice(), getSecurityType());
   }
 
-  @SuppressWarnings("nls")
   @Override
   public String toString() {
     final StringBuilder builder = new StringBuilder();

@@ -1,90 +1,66 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")
-    }
+plugins {
+    id 'com.github.spotbugs' version '3.0.0'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'checkstyle'
+    id 'eclipse'
+    id 'java'
 }
-
-apply plugin: 'application'
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-// apply plugin: 'findbugs'
-// apply plugin: 'checkstyle'
-
-mainClassName = "theta.ThetaEngine"
-
-group = 'theta'
-// Removed (possibly temporarily) so distribution isn't always changing filename
-// version = '0.2'
-
-// Dependency versions
-ext.slf4jVersion         = '1.+'
-ext.log4jVersion         = '2.+'
-ext.rxJavaVersion        = '2.+'
-ext.springBootVersion    = '2.0.5.RELEASE';
-
-// Test dependency versions
-ext.hamcrestVersion      = '2.+'
-ext.mockitoVersion       = '2.+'
-ext.junitJupiterVersion  = '5.+'
-ext.junitPlatformVersion  ='1.+'
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 10
-targetCompatibility = 10
+sourceCompatibility = 11
+targetCompatibility = 11
 
 bootJar {
-    baseName = 'theta'
-    version =  '0.1'
+    archiveBaseName = 'theta'
+    archiveVersion =  '0.3'
 }
 
 dependencies {
     // Production code dependencies
-    implementation("org.slf4j:slf4j-api:${slf4jVersion}")
-    implementation("org.apache.logging.log4j:log4j-api:${log4jVersion}")
-    implementation("org.apache.logging.log4j:log4j-core:${log4jVersion}")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}")
-    implementation("io.reactivex.rxjava2:rxjava:${rxJavaVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}");
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation('io.reactivex.rxjava3:rxjava:3.0.0-RC5')
 
     implementation files('libs/interactive-brokers-api-9.72.18.jar')
 
     // Test code dependencies
-    testImplementation("org.hamcrest:java-hamcrest:${hamcrestVersion}")
-    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
-    testImplementation("org.mockito:mockito-junit-jupiter:${mockitoVersion}")
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+      exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 
-    // Junit 5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
+    // Junit 5 IDE Runner
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.5.2')
 }
 
 test {
-	useJUnitPlatform()
-	
-	maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    useJUnitPlatform()
 
-	testLogging {
-		events "passed", "skipped", "failed"
-	}
-
-	reports {
-		html.enabled = true
-	}
-}
-
-distZip {
-    enabled = false
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: Runtime.runtime.availableProcessors()
 }
 
 wrapper {
-    gradleVersion = '4.10.2'
+    gradleVersion = '6.0.1'
+}
+
+checkstyle {
+    toolVersion '8.27'
+    configFile file("config/checkstyle/google_checks.xml")
+    // configFile file("${configDirectory}/google_checks.xml")
+}
+
+spotbugs {
+    // toolVersion = '4.0.0-beta4'
+    ignoreFailures = false
+    effort = 'max'
+    reportLevel = 'low'
+}
+
+// To generate an HTML report instead of XML
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+  reports.xml.enabled = false
+  reports.html.enabled = true
 }

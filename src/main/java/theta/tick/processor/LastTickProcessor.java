@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import theta.domain.PriceLevel;
 import theta.domain.PriceLevelDirection;
 import theta.domain.Ticker;
@@ -14,8 +15,10 @@ import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
+@Component
 public class LastTickProcessor implements TickProcessor {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final Set<TickType> applicableTickTypes = Set.of(TickType.LAST);
   private static final ExecutionType EXECUTION_TYPE = ExecutionType.MARKET;

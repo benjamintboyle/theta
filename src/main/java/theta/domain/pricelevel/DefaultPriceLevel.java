@@ -13,14 +13,17 @@ public class DefaultPriceLevel implements PriceLevel {
   private final PriceLevelDirection tradeIf;
 
   private DefaultPriceLevel(Ticker ticker, Double price, PriceLevelDirection tradeIf) {
-    this.ticker = Objects.requireNonNull(ticker, "DefaultPriceLevel expects non-null ticker: " + ticker);
-    this.price = Objects.requireNonNull(price, "DefaultPriceLevel expects non-null price: " + price);
-    this.tradeIf =
-        Objects.requireNonNull(tradeIf, "DefaultPriceLevel expects non-null price level direction:" + tradeIf);
+    this.ticker =
+        Objects.requireNonNull(ticker, "DefaultPriceLevel expects non-null ticker: " + ticker);
+    this.price =
+        Objects.requireNonNull(price, "DefaultPriceLevel expects non-null price: " + price);
+    this.tradeIf = Objects.requireNonNull(tradeIf,
+        "DefaultPriceLevel expects non-null price level direction:" + tradeIf);
   }
 
   public static PriceLevel of(Theta theta) {
-    return new DefaultPriceLevel(theta.getTicker(), Double.valueOf(theta.getPrice()), calculateTradeIf(theta));
+    return new DefaultPriceLevel(theta.getTicker(), Double.valueOf(theta.getPrice()),
+        calculateTradeIf(theta));
   }
 
   public static PriceLevel from(Ticker ticker, Double price, PriceLevelDirection tradeIf) {
@@ -78,7 +81,8 @@ public class DefaultPriceLevel implements PriceLevel {
 
       final PriceLevel other = (PriceLevel) obj;
 
-      return Objects.equals(getTicker(), other.getTicker()) && Objects.equals(getPrice(), other.getPrice())
+      return Objects.equals(getTicker(), other.getTicker())
+          && Objects.equals(getPrice(), other.getPrice())
           && Objects.equals(tradeIf(), other.tradeIf());
 
     }

@@ -1,5 +1,8 @@
 package theta.tick.manager;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.List;
@@ -7,9 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Completable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
+import org.springframework.stereotype.Component;
 import theta.api.TickSubscriber;
 import theta.domain.PriceLevel;
 import theta.domain.composed.Theta;
@@ -25,27 +26,43 @@ import theta.tick.api.TickMonitor;
 import theta.tick.api.TickProcessor;
 import theta.util.ThetaMarketUtil;
 
+@Component
 public class TickManager implements TickMonitor {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
   private final TickProcessor tickProcessor;
-
-  private PositionProvider positionProvider;
-  private Executor executor;
+  private final PositionProvider positionProvider;
+  private final Executor executor;
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
 
   private final CompositeDisposable tickManagerDisposables = new CompositeDisposable();
 
-  public TickManager(TickSubscriber tickSubscriber, TickProcessor tickProcessor) {
+  /**
+   * Create TickManager using supplied Subscriber and Processor.
+   *
+   * @param tickSubscriber TickSubscriber to use for TickManager
+   * @param tickProcessor TickProcessor to use for TickManager
+   */
+  public TickManager(TickSubscriber tickSubscriber, TickProcessor tickProcessor,
+      PositionProvider positionProvider, Executor executor) {
     getStatus().changeState(ManagerState.STARTING);
     this.tickSubscriber = Objects.requireNonNull(tickSubscriber, "Tick Subscriber cannot be null.");
     this.tickProcessor = Objects.requireNonNull(tickProcessor, "Tick Processor cannot be null.");
+    this.positionProvider =
+        Objects.requireNonNull(positionProvider, "Position Provider cannot be null.");
+    this.executor = Objects.requireNonNull(executor, "Executor cannot be null.");
   }
 
+  /**
+   * Starts processing Ticks.
+   *
+   * @return Completable for functionally processing Ticks
+   */
   public Completable startTickProcessing() {
 
     logger.debug("Starting Tick Processing");
@@ -55,18 +72,16 @@ public class TickManager implements TickMonitor {
       final Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
           // Determine if time now is during market hours
           .filter(tickFilter -> ThetaMarketUtil.isDuringNewYorkMarketHours(Instant.now()))
-          .subscribe(
+          .doOnSubscribe(subscription -> {
+            getStatus().changeState(ManagerState.RUNNING);
+            subscription.request(Long.MAX_VALUE);
+          }).subscribe(
 
               this::processTick,
 
               exception -> logger.error("Error in Tick Manager", exception),
 
-              () -> getStatus().changeState(ManagerState.SHUTDOWN),
-
-              subscription -> {
-                getStatus().changeState(ManagerState.RUNNING);
-                subscription.request(Long.MAX_VALUE);
-              });
+              () -> getStatus().changeState(ManagerState.SHUTDOWN));
 
       tickManagerDisposables.add(tickSubscriberDisposable);
     });
@@ -96,7 +111,8 @@ public class TickManager implements TickMonitor {
 
     if (!tradesToCheck.isEmpty()) {
 
-      logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(), tradesToCheck);
+      logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(),
+          tradesToCheck);
 
       final List<Theta> thetasToReverse = tradesToCheck.stream()
           .filter(theta -> tickProcessor.processTick(tick, DefaultPriceLevel.of(theta)))
@@ -105,33 +121,31 @@ public class TickManager implements TickMonitor {
       // FIXME: This doesn't correctly calculate limit price
       for (final Stock stock : StockUtil.consolidateStock(thetasToReverse)) {
 
-        final Disposable disposableTrade = executor
-            .reverseTrade(stock, tickProcessor.getExecutionType(), tickProcessor.getLimitPrice(stock.getTicker()))
-            .subscribe(
+        final Disposable disposableTrade =
+            executor.reverseTrade(stock, tickProcessor.getExecutionType(),
+                tickProcessor.getLimitPrice(stock.getTicker())).subscribe(
 
-                () -> {
-                  logger.info("Trade complete for {}", stock);
+                    () -> {
+                      logger.info("Trade complete for {}", stock);
 
-                  thetasToReverse.stream()
-                      .filter(theta -> theta.getStock().getId().equals(stock.getId()))
-                      .map(DefaultPriceLevel::of)
-                      .distinct()
-                      .forEach(
+                      thetasToReverse.stream()
+                          .filter(theta -> theta.getStock().getId().equals(stock.getId()))
+                          .map(DefaultPriceLevel::of).distinct().forEach(
 
-                          this::deleteMonitor);
-                },
+                              this::deleteMonitor);
+                    },
 
-                exception -> logger.error("Error with Trade of {}", stock)
+                    exception -> logger.error("Error with Trade of {}", stock)
 
             );
 
         tickManagerDisposables.add(disposableTrade);
       }
-    }
-    // If we are still getting ticks, but there are no positions provided, assume partial order fill and
-    // convert rest to market order
-    else {
-      logger.warn("Received Tick, but no positions were provided. Attempting to convert to MARKET order.");
+    } else {
+      // If we are still getting ticks, but there are no positions provided, assume partial order
+      // fill and convert rest to market order
+      logger.warn(
+          "Received Tick, but no positions were provided. Attempting to convert to MARKET order.");
       executor.convertToMarketOrderIfExists(tick.getTicker());
     }
   }
@@ -140,20 +154,11 @@ public class TickManager implements TickMonitor {
     return managerStatus;
   }
 
+  @Override
   public void shutdown() {
     getStatus().changeState(ManagerState.STOPPING);
     tickSubscriber.unsubscribeAll();
     tickManagerDisposables.dispose();
-  }
-
-  public void registerExecutor(Executor executor) {
-    logger.info("Registering Executor with Tick Manager");
-    this.executor = Objects.requireNonNull(executor, "Executor must not be null.");
-  }
-
-  public void registerPositionProvider(PositionProvider positionProvider) {
-    logger.info("Registering Position Provider with Tick Manager");
-    this.positionProvider = Objects.requireNonNull(positionProvider, "Position Provider must not be null.");
   }
 
 }

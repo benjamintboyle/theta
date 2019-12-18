@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import theta.domain.stock.Stock;
@@ -43,13 +44,15 @@ public class DefaultOrderStatusTest {
     final String toString = sut.toString();
 
     assertThat("toString() should not be empty.", toString, is(not(emptyString())));
-    assertThat("Found '@' which likely indicates an unexpanded reference.", toString, not(containsString("@")));
+    assertThat("Found '@' which likely indicates an unexpanded reference.", toString,
+        not(containsString("@")));
   }
 
   private static DefaultOrderStatus buildDefaultOrderStatus() {
     final Stock stock = Stock.of(DefaultTicker.from("ABC"), -100L, 123.45);
 
-    final ExecutableOrder order = new DefaultStockOrder(stock, 200L, ExecutionAction.BUY, ExecutionType.LIMIT, 123.5);
+    final ExecutableOrder order =
+        new DefaultStockOrder(stock, 200L, ExecutionAction.BUY, ExecutionType.LIMIT, 123.5);
 
     return new DefaultOrderStatus(order, OrderState.FILLED, 1.23, 123, 0L, 123.51);
   }

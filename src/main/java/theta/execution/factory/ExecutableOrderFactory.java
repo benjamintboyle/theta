@@ -4,32 +4,35 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import theta.domain.composed.Theta;
 import theta.domain.stock.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 
 public class ExecutableOrderFactory {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ExecutableOrderFactory() {}
+  private ExecutableOrderFactory() {
 
-  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock, ExecutionType executionType,
-      Optional<Double> limitPrice) {
-    logger.debug("Reversing Position: {}", stock); //$NON-NLS-1$
-
-    final ExecutableOrder order = ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
-
-    return Optional.ofNullable(order);
   }
 
-  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Theta trade,
-      ExecutionType executionType) {
-    logger.info("Reversing Theta Trade: {}", trade); //$NON-NLS-1$
+  /**
+   * Create Order that will reverse position. Validate order is not obviously invalid.
+   *
+   * @param stock Stock position to reverse
+   * @param executionType Execution Type of Order
+   * @param limitPrice Limit Price of Order
+   * @return Validated Order to reverse Stock position
+   */
+  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock,
+      ExecutionType executionType, Optional<Double> limitPrice) {
+    logger.debug("Reversing Position: {}", stock);
 
-    return ExecutableOrderFactory.reverseAndValidateStockPositionOrder(trade.getStock(), executionType,
-        Optional.of(trade.getCall().getStrikePrice()));
+    final ExecutableOrder order =
+        ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
+
+    return Optional.ofNullable(order);
   }
 
 }

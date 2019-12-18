@@ -10,6 +10,10 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,15 +21,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.observers.TestObserver;
 import theta.api.PositionHandler;
 import theta.domain.composed.Theta;
 import theta.domain.manager.ManagerState;
 import theta.domain.pricelevel.DefaultPriceLevel;
 import theta.domain.stock.Stock;
-import theta.domain.testutil.ThetaDomainFactory;
+import theta.domain.testutil.ThetaDomainTestUtil;
 import theta.tick.api.TickMonitor;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,7 +34,6 @@ class PortfolioManagerTest {
 
   @Mock
   private PositionHandler positionHandler;
-
   @Mock
   private TickMonitor monitor;
 
@@ -41,16 +41,15 @@ class PortfolioManagerTest {
 
   @BeforeEach
   void setup() {
-    sut = new PortfolioManager(positionHandler);
+    sut = new PortfolioManager(positionHandler, monitor);
   }
 
   @Test
   void testStartPositionProcessing() throws Exception {
 
-    final Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainTestUtil.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
-    sut.registerTickMonitor(monitor);
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
@@ -62,11 +61,10 @@ class PortfolioManagerTest {
   @Test
   void testZeroQuantityPosition() throws Exception {
 
-    final Theta theta = ThetaDomainFactory.buildTestTheta();
-    when(positionHandler.requestPositionsFromBrokerage())
-        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut(),
-            Stock.of(theta.getStock().getId(), theta.getStock().getTicker(), 0L, theta.getStock().getPrice())));
-    sut.registerTickMonitor(monitor);
+    final Theta theta = ThetaDomainTestUtil.buildTestTheta();
+    when(positionHandler.requestPositionsFromBrokerage()).thenReturn(Flowable.just(theta.getStock(),
+        theta.getCall(), theta.getPut(), Stock.of(theta.getStock().getId(),
+            theta.getStock().getTicker(), 0L, theta.getStock().getPrice())));
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
@@ -86,10 +84,9 @@ class PortfolioManagerTest {
   @Test
   void testProvidePositions() throws Exception {
 
-    final Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainTestUtil.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
-    sut.registerTickMonitor(monitor);
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
@@ -116,10 +113,9 @@ class PortfolioManagerTest {
   @Test
   void testRegisterTickMonitor() throws Exception {
 
-    final Theta theta = ThetaDomainFactory.buildTestTheta();
+    final Theta theta = ThetaDomainTestUtil.buildTestTheta();
     when(positionHandler.requestPositionsFromBrokerage())
         .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
-    sut.registerTickMonitor(monitor);
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 

@@ -4,7 +4,9 @@ import java.util.function.Supplier;
 
 public class LazyEvaluation {
 
-  private LazyEvaluation() {}
+  private LazyEvaluation() {
+
+  }
 
   public static Supplier<Object> lazy(Supplier<Object> eagerSupplier) {
     return new LazyEvaluationWrapper(eagerSupplier);

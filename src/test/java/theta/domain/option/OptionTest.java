@@ -1,74 +1,45 @@
 package theta.domain.option;
 
-import java.time.LocalDate;
-import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import theta.domain.SecurityType;
-import theta.domain.ticker.DefaultTicker;
+import theta.domain.testutil.OptionTestUtil;
 
 public class OptionTest {
 
-  private static final LocalDate expiration = LocalDate.now().plusDays(30);
-
-  public static Option buildTestCallOption() {
-    return new Option(UUID.randomUUID(), SecurityType.CALL, DefaultTicker.from("CHK"), 1L, 15.0, OptionTest.expiration,
-        0.7);
-  }
-
-  public static Option buildTestShortCallOption() {
-    return new Option(UUID.randomUUID(), SecurityType.CALL, DefaultTicker.from("CHK"), -1L, 15.0, OptionTest.expiration,
-        0.7);
-  }
-
-  public static Option buildTestPutOption() {
-    return new Option(UUID.randomUUID(), SecurityType.PUT, DefaultTicker.from("CHK"), 1L, 15.0, OptionTest.expiration,
-        0.7);
-  }
-
-  public static Option buildTestShortPutOption() {
-    return new Option(UUID.randomUUID(), SecurityType.PUT, DefaultTicker.from("CHK"), -1L, 15.0, OptionTest.expiration,
-        0.7);
-  }
-
-  @Disabled
   @Test
   public void quantityCallTest() {
-    final Option call = OptionTest.buildTestCallOption();
+    final Option call = OptionTestUtil.buildTestCallOption();
 
-    MatcherAssert.assertThat(call.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
+    MatcherAssert.assertThat(call.getQuantity(), Matchers.is(Matchers.equalTo(1L)));
   }
 
-  @Disabled
   @Test
   public void quantityShortCallTest() {
-    final Option shortCall = OptionTest.buildTestShortCallOption();
+    final Option shortCall = OptionTestUtil.buildTestShortCallOption();
 
-    MatcherAssert.assertThat(shortCall.getQuantity(), Matchers.is(Matchers.equalTo(-1.0)));
+    MatcherAssert.assertThat(shortCall.getQuantity(), Matchers.is(Matchers.equalTo(-1L)));
   }
 
-  @Disabled
   @Test
   public void quantityPutTest() {
-    final Option put = OptionTest.buildTestPutOption();
+    final Option put = OptionTestUtil.buildTestPutOption();
 
-    MatcherAssert.assertThat(put.getQuantity(), Matchers.is(Matchers.equalTo(1.0)));
+    MatcherAssert.assertThat(put.getQuantity(), Matchers.is(Matchers.equalTo(1L)));
   }
 
-  @Disabled
   @Test
   public void quantityShortPutTest() {
-    final Option shortPut = OptionTest.buildTestShortPutOption();
+    final Option shortPut = OptionTestUtil.buildTestShortPutOption();
 
-    MatcherAssert.assertThat(shortPut.getQuantity(), Matchers.is(Matchers.equalTo(-1.0)));
+    MatcherAssert.assertThat(shortPut.getQuantity(), Matchers.is(Matchers.equalTo(-1L)));
   }
 
   @Test
   public void strikeCallTest() {
-    final Option call = OptionTest.buildTestCallOption();
+    final Option call = OptionTestUtil.buildTestCallOption();
 
     MatcherAssert.assertThat(call.getStrikePrice(), Matchers.is(Matchers.equalTo(15.0)));
   }
+
 }

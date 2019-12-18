@@ -1,15 +1,18 @@
 package theta;
 
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.reactivex.Scheduler;
-import io.reactivex.schedulers.Schedulers;
 
 public class ThetaSchedulersFactory {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ThetaSchedulersFactory() {}
+  private ThetaSchedulersFactory() {
+
+  }
 
   public static Scheduler ioThread() {
     logger.info("Creating Asynchronous Waiting Thread...");

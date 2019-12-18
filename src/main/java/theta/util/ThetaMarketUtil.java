@@ -13,13 +13,22 @@ public class ThetaMarketUtil {
   private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
   private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 00);
 
-  private ThetaMarketUtil() {}
+  private ThetaMarketUtil() {
 
+  }
+
+  /**
+   * Checks if Instant passed in is during New York market hours.
+   *
+   * @param timeToCheck Instant to check
+   * @return True if Instant passed in is during New York market hours
+   */
   public static boolean isDuringNewYorkMarketHours(Instant timeToCheck) {
 
     final ZonedDateTime marketTimeNow = timeToCheck.atZone(MARKET_TIMEZONE);
 
-    return DayOfWeek.from(marketTimeNow) != DayOfWeek.SATURDAY && DayOfWeek.from(marketTimeNow) != DayOfWeek.SUNDAY
+    return DayOfWeek.from(marketTimeNow) != DayOfWeek.SATURDAY
+        && DayOfWeek.from(marketTimeNow) != DayOfWeek.SUNDAY
         && marketTimeNow.toLocalTime().isAfter(MARKET_OPEN_TIME)
         && marketTimeNow.toLocalTime().isBefore(MARKET_CLOSE_TIME);
   }

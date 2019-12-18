@@ -1,7 +1,5 @@
 package theta.domain;
 
-import theta.domain.Ticker;
-
 public interface PriceLevel extends Comparable<PriceLevel> {
   public Ticker getTicker();
 

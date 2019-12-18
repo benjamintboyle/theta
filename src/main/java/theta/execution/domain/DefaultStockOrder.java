@@ -15,7 +15,8 @@ import theta.execution.api.ExecutionType;
 
 public class DefaultStockOrder implements ExecutableOrder {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
 
@@ -26,26 +27,36 @@ public class DefaultStockOrder implements ExecutableOrder {
   private Optional<Double> limitPrice = Optional.empty();
   private Optional<Integer> brokerId = Optional.empty();
 
+  /**
+   * Create Stock Order.
+   */
   public DefaultStockOrder(Ticker ticker, UUID stockId, long quantity, ExecutionAction action,
       ExecutionType executionType) {
-    id = Objects.requireNonNull(stockId, "Stock Id cannot be null"); //$NON-NLS-1$
-    this.ticker = Objects.requireNonNull(ticker, "Stock Ticker cannot be null"); //$NON-NLS-1$
+    id = Objects.requireNonNull(stockId, "Stock Id cannot be null");
+    this.ticker = Objects.requireNonNull(ticker, "Stock Ticker cannot be null");
     this.quantity = quantity;
-    this.action = Objects.requireNonNull(action, "Execution Action cannot be null"); //$NON-NLS-1$
-    this.executionType = Objects.requireNonNull(executionType, "Execution Type cannot be null"); //$NON-NLS-1$
+    this.action = Objects.requireNonNull(action, "Execution Action cannot be null");
+    this.executionType = Objects.requireNonNull(executionType, "Execution Type cannot be null");
   }
 
-  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
+  /**
+   * Create Stock Order.
+   */
+  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action,
+      ExecutionType executionType) {
     this(stock.getTicker(), stock.getId(), quantity, action, executionType);
   }
 
-  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType,
-      Double limitPrice) {
+  /**
+   * Create Stock Order.
+   */
+  public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action,
+      ExecutionType executionType, Double limitPrice) {
     this(stock, quantity, action, executionType);
 
-    this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null")); //$NON-NLS-1$
+    this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
-    logger.debug("Built {}", this); //$NON-NLS-1$
+    logger.debug("Built {}", this);
   }
 
   @Override
@@ -93,7 +104,6 @@ public class DefaultStockOrder implements ExecutableOrder {
     return limitPrice;
   }
 
-  @SuppressWarnings("nls")
   @Override
   public String toString() {
 
@@ -131,8 +141,8 @@ public class DefaultStockOrder implements ExecutableOrder {
   @Override
   public int hashCode() {
 
-    return Objects.hash(getTicker(), Long.valueOf(getQuantity()), getExecutionAction(), getSecurityType(),
-        getSecurityType(), getExecutionType(), getLimitPrice());
+    return Objects.hash(getTicker(), Long.valueOf(getQuantity()), getExecutionAction(),
+        getSecurityType(), getSecurityType(), getExecutionType(), getLimitPrice());
   }
 
   @Override
@@ -146,11 +156,12 @@ public class DefaultStockOrder implements ExecutableOrder {
     if (obj instanceof DefaultStockOrder) {
       final DefaultStockOrder other = (DefaultStockOrder) obj;
 
-      isEqual = Objects.equals(getTicker(), other.getTicker()) && getQuantity() == other.getQuantity()
-          && Objects.equals(getExecutionAction(), other.getExecutionAction())
-          && Objects.equals(getSecurityType(), other.getSecurityType())
-          && Objects.equals(getExecutionType(), other.getExecutionType())
-          && Objects.equals(getLimitPrice(), other.getLimitPrice());
+      isEqual =
+          Objects.equals(getTicker(), other.getTicker()) && getQuantity() == other.getQuantity()
+              && Objects.equals(getExecutionAction(), other.getExecutionAction())
+              && Objects.equals(getSecurityType(), other.getSecurityType())
+              && Objects.equals(getExecutionType(), other.getExecutionType())
+              && Objects.equals(getLimitPrice(), other.getLimitPrice());
     }
 
     return isEqual;

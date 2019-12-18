@@ -2,57 +2,35 @@ package theta.domain.composed;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import theta.domain.composed.Theta;
-import theta.domain.option.Option;
-import theta.domain.option.OptionTest;
-import theta.domain.stock.Stock;
-import theta.domain.stock.StockTest;
+import theta.domain.testutil.OptionTestUtil;
+import theta.domain.testutil.StockTestUtil;
+import theta.domain.testutil.ThetaDomainTestUtil;
 
 public class ThetaTradeTest {
-  public static Theta buildTestThetaTrade() {
-    final Stock stock = StockTest.buildTestStock();
-    final Option call = OptionTest.buildTestShortCallOption();
-    final Option put = OptionTest.buildTestShortPutOption();
 
-    final Theta trade = Theta.of(stock, call, put).get();
-
-    return trade;
-  }
-
-  public static Theta buildTestShortThetaTrade() {
-    final Stock stock = StockTest.buildTestStockShort();
-    final Option call = OptionTest.buildTestShortCallOption();
-    final Option put = OptionTest.buildTestShortPutOption();
-
-    final Theta trade = Theta.of(stock, call, put).get();
-
-    return trade;
-  }
-
-  @Disabled
   @Test
   public void stockThetaTradeTest() {
-    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaDomainTestUtil.buildTestThetaTrade();
 
-    MatcherAssert.assertThat(thetaTrade.getStock(), Matchers.is(Matchers.equalTo(StockTest.buildTestStock())));
+    MatcherAssert.assertThat(thetaTrade.getStock(),
+        Matchers.is(Matchers.equalTo(StockTestUtil.buildTestStock())));
   }
 
-  @Disabled
   @Test
   public void callThetaTradeTest() {
-    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaDomainTestUtil.buildTestThetaTrade();
 
     MatcherAssert.assertThat(thetaTrade.getCall(),
-        Matchers.is(Matchers.equalTo(OptionTest.buildTestShortCallOption())));
+        Matchers.is(Matchers.equalTo(OptionTestUtil.buildTestShortCallOption())));
   }
 
-  @Disabled
   @Test
   public void putThetaTradeTest() {
-    final Theta thetaTrade = ThetaTradeTest.buildTestThetaTrade();
+    final Theta thetaTrade = ThetaDomainTestUtil.buildTestThetaTrade();
 
-    MatcherAssert.assertThat(thetaTrade.getPut(), Matchers.is(Matchers.equalTo(OptionTest.buildTestShortPutOption())));
+    MatcherAssert.assertThat(thetaTrade.getPut(),
+        Matchers.is(Matchers.equalTo(OptionTestUtil.buildTestShortPutOption())));
   }
+
 }

@@ -13,23 +13,37 @@ import theta.execution.api.ExecutionType;
 import theta.execution.domain.DefaultStockOrder;
 
 public class ReverseStockOrderFactory {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ReverseStockOrderFactory() {}
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static ExecutableOrder reverse(Stock stock, ExecutionType executionType, Optional<Double> limitPrice) {
+  private ReverseStockOrderFactory() {
+
+  }
+
+  /**
+   * Helper method to create order to reverse stock position.
+   *
+   * @param stock Stock position to reverse
+   * @param executionType ExcutionType for Order
+   * @param limitPrice Limit price for order
+   * @return ExecutableOrder to reverse position
+   */
+  public static ExecutableOrder reverse(Stock stock, ExecutionType executionType,
+      Optional<Double> limitPrice) {
 
     ExecutionAction action = ExecutionAction.BUY;
     if (stock.getQuantity() > 0) {
       action = ExecutionAction.SELL;
     }
 
-    long reversedQuantity = 2 * Math.abs(stock.getQuantity());
+    final long reversedQuantity = 2 * Math.abs(stock.getQuantity());
 
     DefaultStockOrder executableOrder;
 
     if (executionType == ExecutionType.LIMIT && limitPrice.isPresent()) {
-      executableOrder = new DefaultStockOrder(stock, reversedQuantity, action, executionType, limitPrice.get());
+      executableOrder =
+          new DefaultStockOrder(stock, reversedQuantity, action, executionType, limitPrice.get());
     } else {
       executableOrder = new DefaultStockOrder(stock, reversedQuantity, action, executionType);
     }
@@ -49,8 +63,8 @@ public class ReverseStockOrderFactory {
     boolean isValid = true;
 
     if (!isValidSecurityType(security.getSecurityType(), order)) {
-      logger.error("Security Types do not match: {} != {}, {}, {}", order.getSecurityType(), security.getSecurityType(),
-          order, security);
+      logger.error("Security Types do not match: {} != {}, {}, {}", order.getSecurityType(),
+          security.getSecurityType(), order, security);
       isValid = false;
     }
 

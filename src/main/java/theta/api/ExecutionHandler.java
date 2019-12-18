@@ -1,13 +1,13 @@
 package theta.api;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
 
 public interface ExecutionHandler {
-  public Flowable<OrderStatus> executeOrder(ExecutableOrder order);
+  Flowable<OrderStatus> executeOrder(ExecutableOrder order);
 
-  public boolean modifyOrder(ExecutableOrder order);
+  boolean modifyOrder(ExecutableOrder order);
 
-  public Flowable<OrderStatus> cancelOrder(ExecutableOrder order);
+  Flowable<OrderStatus> cancelOrder(ExecutableOrder order);
 }

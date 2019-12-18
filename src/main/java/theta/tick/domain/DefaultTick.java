@@ -13,8 +13,18 @@ public class DefaultTick implements Tick {
   private final Double askPrice;
   private final Instant timestamp;
 
-  public DefaultTick(final Ticker ticker, final TickType type, final Double lastPrice, final Double bidPrice,
-      final Double askPrice, final Instant timestamp) {
+  /**
+   * Create Tick via DefaultTick.
+   *
+   * @param ticker Ticker symbol for Tick
+   * @param type TickType for Tick
+   * @param lastPrice Last Price of Tick
+   * @param bidPrice Bid Price of Tick
+   * @param askPrice Ask Price of Tick
+   * @param timestamp Timestamp of Tick
+   */
+  public DefaultTick(final Ticker ticker, final TickType type, final Double lastPrice,
+      final Double bidPrice, final Double askPrice, final Instant timestamp) {
     this.ticker = ticker;
     this.type = type;
     this.lastPrice = lastPrice;

@@ -1,0 +1,92 @@
+package brokers.interactivebrokers.connection;
+
+import brokers.interactivebrokers.IbController;
+import brokers.interactivebrokers.IbLogger;
+import com.ib.controller.ApiController;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import java.lang.invoke.MethodHandles;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import theta.api.ConnectionHandler;
+import theta.connection.domain.BrokerageAccount;
+import theta.connection.domain.ConnectionState;
+import theta.util.ThetaStartupUtil;
+
+@Component
+public class IbConnectionHandler implements IbController, ConnectionHandler {
+
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final String INPUT_LOG_NAME = "Input";
+  private static final String OUTPUT_LOG_NAME = "Output";
+  private static final int CLIENT_ID = 0;
+  private static final long CONNECTION_TIMEOUT_SECONDS = 3;
+
+  private static final IbConnectionHandlerCallback CALLBACK =
+      new IbConnectionHandlerCallback(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS));
+  private final ApiController ibController =
+      new ApiController(CALLBACK, new IbLogger(INPUT_LOG_NAME), new IbLogger(OUTPUT_LOG_NAME));
+
+  private final CompositeDisposable handlerDisposables = new CompositeDisposable();
+
+  private final InetSocketAddress brokerGatewayAddress;
+
+  @Autowired
+  public IbConnectionHandler() throws UnknownHostException {
+    brokerGatewayAddress = ThetaStartupUtil.getGatewayAddress();
+    logger.info("Starting Interactive Brokers Connection Handler: {}", brokerGatewayAddress);
+  }
+
+  @Override
+  public ApiController getController() {
+    return ibController;
+  }
+
+  @Override
+  public Single<Instant> connect() {
+
+    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
+        brokerGatewayAddress.getAddress().getHostAddress(),
+        Integer.valueOf(brokerGatewayAddress.getPort()), Integer.valueOf(CLIENT_ID));
+
+    getController().connect(brokerGatewayAddress.getAddress().getHostAddress(),
+        brokerGatewayAddress.getPort(), CLIENT_ID, null);
+
+    return waitUntil(ConnectionState.CONNECTED);
+  }
+
+  @Override
+  public Single<Instant> disconnect() {
+
+    logger.info("Disconnecting...");
+
+    getController().disconnect();
+
+    shutdown();
+
+    return waitUntil(ConnectionState.DISCONNECTED);
+  }
+
+  public static Single<List<BrokerageAccount>> getAccountList() {
+    return CALLBACK.getAccountList();
+  }
+
+  public void shutdown() {
+    CALLBACK.shutdown();
+    handlerDisposables.dispose();
+  }
+
+  private Single<Instant> waitUntil(ConnectionState waitUntilState) {
+    return CALLBACK.waitUntil(waitUntilState);
+  }
+
+}

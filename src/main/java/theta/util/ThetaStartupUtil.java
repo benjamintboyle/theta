@@ -10,7 +10,8 @@ import theta.tick.api.TickProcessor;
 import theta.tick.processor.BidAskSpreadTickProcessor;
 
 public class ThetaStartupUtil {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Connection Manager Configuration
   private static final String GATEWAY_IP_ADDRESS_DOCKER = "172.17.0.2";
@@ -24,8 +25,17 @@ public class ThetaStartupUtil {
   // Thread Configuration
   private static final String NAME_PREFIX = "Thread-";
 
-  private ThetaStartupUtil() {}
+  private ThetaStartupUtil() {
 
+  }
+
+  // TODO: Reconfigure to use Spring Profile so this method is not necessary.
+  /**
+   * Returns correct Gateway address based on where it is running.
+   *
+   * @return Gateway address based on what machine is being run.
+   * @throws UnknownHostException Re-throw exception, if thrown by getLocalHost()
+   */
   public static InetSocketAddress getGatewayAddress() throws UnknownHostException {
 
     InetAddress gatewayAddress;
@@ -54,6 +64,11 @@ public class ThetaStartupUtil {
     return TICK_PROCESSOR;
   }
 
+  /**
+   * Helper method to changes thread name.
+   *
+   * @param newName Name thread should be changed to
+   */
   public static void updateThreadName(String newName) {
     final String newNameWithSuffix = NAME_PREFIX + newName;
     final String oldName = Thread.currentThread().getName();

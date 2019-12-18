@@ -2,47 +2,36 @@ package theta.domain.stock;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import theta.domain.ticker.DefaultTicker;
+import theta.domain.testutil.StockTestUtil;
 
 public class StockTest {
-  public static Stock buildTestStock() {
-    return Stock.of(DefaultTicker.from("CHK"), 100L, 15.0);
-  }
 
-  public static Stock buildTestStockShort() {
-    return Stock.of(DefaultTicker.from("CHK"), -100L, 15.0);
-  }
-
-  @Disabled
   @Test
   public void quantityTest() {
-    final Stock stock = StockTest.buildTestStock();
+    final Stock stock = StockTestUtil.buildTestStock();
 
-    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(100.0)));
+    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(100L)));
   }
 
-  @Disabled
   @Test
   public void quantityShortTest() {
-    final Stock stock = StockTest.buildTestStockShort();
+    final Stock stock = StockTestUtil.buildTestStockShort();
 
-    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(-100.0)));
+    MatcherAssert.assertThat(stock.getQuantity(), Matchers.is(Matchers.equalTo(-100L)));
   }
 
   @Test
   public void tradePriceTest() {
-    final Stock stock = StockTest.buildTestStockShort();
+    final Stock stock = StockTestUtil.buildTestStockShort();
 
     MatcherAssert.assertThat(stock.getPrice(), Matchers.is(Matchers.equalTo(15.0)));
   }
 
-  @Disabled
   @Test
   public void tickerTest() {
-    final Stock stock = StockTest.buildTestStock();
+    final Stock stock = StockTestUtil.buildTestStock();
 
-    MatcherAssert.assertThat(stock.getTicker(), Matchers.is(Matchers.equalTo("CHK")));
+    MatcherAssert.assertThat(stock.getTicker().getSymbol(), Matchers.is(Matchers.equalTo("CHK")));
   }
 }

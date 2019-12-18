@@ -5,13 +5,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
+
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import theta.domain.SecurityType;
 import theta.domain.option.Option;
-import theta.domain.option.OptionTest;
+import theta.domain.testutil.OptionTestUtil;
 import theta.domain.ticker.DefaultTicker;
 
 class ShortStraddleTest {
@@ -28,8 +29,8 @@ class ShortStraddleTest {
 
   @Test
   void testOf() {
-    final Option call = OptionTest.buildTestShortCallOption();
-    final Option put = OptionTest.buildTestShortPutOption();
+    final Option call = OptionTestUtil.buildTestShortCallOption();
+    final Option put = OptionTestUtil.buildTestShortPutOption();
 
     final ShortStraddle straddle = ShortStraddle.of(call, put);
 
@@ -77,14 +78,14 @@ class ShortStraddleTest {
 
   @Test
   void testGetCall() {
-    final Option expectedCall = OptionTest.buildTestShortCallOption();
+    final Option expectedCall = OptionTestUtil.buildTestShortCallOption();
 
     assertThat(sut.getCall(), is(expectedCall));
   }
 
   @Test
   void testGetPut() {
-    final Option expectedPut = OptionTest.buildTestShortPutOption();
+    final Option expectedPut = OptionTestUtil.buildTestShortPutOption();
 
     assertThat(sut.getPut(), is(expectedPut));
   }
@@ -102,8 +103,8 @@ class ShortStraddleTest {
   }
 
   public static ShortStraddle buildShortStradle() {
-    final Option call = OptionTest.buildTestShortCallOption();
-    final Option put = OptionTest.buildTestShortPutOption();
+    final Option call = OptionTestUtil.buildTestShortCallOption();
+    final Option put = OptionTestUtil.buildTestShortPutOption();
 
     return ShortStraddle.of(call, put);
   }

@@ -6,7 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ManagerStatus {
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger logger =
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final String className;
   private ManagerState state;
@@ -30,6 +31,11 @@ public class ManagerStatus {
     return time;
   }
 
+  /**
+   * Changes the state to input value.
+   *
+   * @param newState State to be changed to.
+   */
   public void changeState(ManagerState newState) {
     logger.info("{} is transitioning from {} to {}", getClassName(), getState(), newState);
     state = newState;
