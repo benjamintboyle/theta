@@ -1,7 +1,6 @@
 package theta.portfolio.manager;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -15,7 +14,6 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.observers.TestObserver;
 import java.time.Instant;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import theta.api.PositionHandler;
 import theta.domain.composed.Theta;
 import theta.domain.manager.ManagerState;
-import theta.domain.pricelevel.DefaultPriceLevel;
 import theta.domain.stock.Stock;
 import theta.domain.testutil.ThetaDomainTestUtil;
 import theta.tick.api.TickMonitor;
@@ -53,8 +50,7 @@ class PortfolioManagerTest {
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
-    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
-    assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
+    verify(monitor).addMonitor(theta);
     testObserver.onComplete();
   }
 
@@ -68,8 +64,7 @@ class PortfolioManagerTest {
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
-    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
-    assertThat(sut.providePositions(theta.getTicker()), is(emptyCollectionOf(Theta.class)));
+    verify(monitor).addMonitor(theta);
     testObserver.onComplete();
   }
 
@@ -79,19 +74,6 @@ class PortfolioManagerTest {
     when(positionHandler.getPositionEnd()).thenReturn(Completable.complete());
 
     assertThat(sut.getPositionEnd(), is(Completable.complete()));
-  }
-
-  @Test
-  void testProvidePositions() throws Exception {
-
-    final Theta theta = ThetaDomainTestUtil.buildTestTheta();
-    when(positionHandler.requestPositionsFromBrokerage())
-        .thenReturn(Flowable.just(theta.getStock(), theta.getCall(), theta.getPut()));
-
-    final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
-
-    assertThat(sut.providePositions(theta.getTicker()), is(equalTo(List.of(theta))));
-    testObserver.onComplete();
   }
 
   @Test
@@ -119,7 +101,7 @@ class PortfolioManagerTest {
 
     final TestObserver<Void> testObserver = sut.startPositionProcessing().test();
 
-    verify(monitor).addMonitor(DefaultPriceLevel.of(theta));
+    verify(monitor).addMonitor(theta);
     testObserver.onComplete();
   }
 
