@@ -1,11 +1,11 @@
 package theta.tick.api;
 
 import theta.api.ManagerShutdown;
-import theta.domain.PriceLevel;
+import theta.domain.composed.Theta;
 
 public interface TickMonitor extends ManagerShutdown {
 
-  void addMonitor(PriceLevel theta);
+  void addMonitor(Theta theta);
 
-  Integer deleteMonitor(PriceLevel theta);
+  Integer deleteMonitor(Theta theta);
 }

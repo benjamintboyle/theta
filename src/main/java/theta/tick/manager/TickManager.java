@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import theta.api.TickSubscriber;
-import theta.domain.PriceLevel;
 import theta.domain.composed.Theta;
 import theta.domain.manager.ManagerState;
 import theta.domain.manager.ManagerStatus;
@@ -20,7 +20,6 @@ import theta.domain.pricelevel.DefaultPriceLevel;
 import theta.domain.stock.Stock;
 import theta.domain.util.StockUtil;
 import theta.execution.api.Executor;
-import theta.portfolio.api.PositionProvider;
 import theta.tick.api.Tick;
 import theta.tick.api.TickMonitor;
 import theta.tick.api.TickProcessor;
@@ -34,8 +33,9 @@ public class TickManager implements TickMonitor {
 
   private final TickSubscriber tickSubscriber;
   private final TickProcessor tickProcessor;
-  private final PositionProvider positionProvider;
   private final Executor executor;
+
+  private final List<Theta> monitoredThetas = new ArrayList<>();
 
   private final ManagerStatus managerStatus =
       ManagerStatus.of(MethodHandles.lookup().lookupClass(), ManagerState.SHUTDOWN);
@@ -49,12 +49,10 @@ public class TickManager implements TickMonitor {
    * @param tickProcessor TickProcessor to use for TickManager
    */
   public TickManager(TickSubscriber tickSubscriber, TickProcessor tickProcessor,
-      PositionProvider positionProvider, Executor executor) {
+      Executor executor) {
     getStatus().changeState(ManagerState.STARTING);
     this.tickSubscriber = Objects.requireNonNull(tickSubscriber, "Tick Subscriber cannot be null.");
     this.tickProcessor = Objects.requireNonNull(tickProcessor, "Tick Processor cannot be null.");
-    this.positionProvider =
-        Objects.requireNonNull(positionProvider, "Position Provider cannot be null.");
     this.executor = Objects.requireNonNull(executor, "Executor cannot be null.");
   }
 
@@ -88,15 +86,15 @@ public class TickManager implements TickMonitor {
   }
 
   @Override
-  public void addMonitor(PriceLevel priceLevel) {
-
-    tickSubscriber.addPriceLevelMonitor(priceLevel, tickProcessor);
+  public void addMonitor(Theta theta) {
+    monitoredThetas.add(theta);
+    tickSubscriber.addPriceLevelMonitor(DefaultPriceLevel.of(theta), tickProcessor);
   }
 
   @Override
-  public Integer deleteMonitor(PriceLevel priceLevel) {
-
-    return tickSubscriber.removePriceLevelMonitor(priceLevel);
+  public Integer deleteMonitor(Theta theta) {
+    monitoredThetas.remove(theta);
+    return tickSubscriber.removePriceLevelMonitor(DefaultPriceLevel.of(theta));
   }
 
   private void processTick(Tick tick) {
@@ -107,7 +105,8 @@ public class TickManager implements TickMonitor {
       logger.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);
     }
 
-    final List<Theta> tradesToCheck = positionProvider.providePositions(tick.getTicker());
+    final List<Theta> tradesToCheck = monitoredThetas.stream()
+        .filter(theta -> theta.getTicker().equals(tick.getTicker())).collect(Collectors.toList());
 
     if (!tradesToCheck.isEmpty()) {
 
@@ -130,7 +129,7 @@ public class TickManager implements TickMonitor {
 
                       thetasToReverse.stream()
                           .filter(theta -> theta.getStock().getId().equals(stock.getId()))
-                          .map(DefaultPriceLevel::of).distinct().forEach(
+                          .distinct().forEach(
 
                               this::deleteMonitor);
                     },

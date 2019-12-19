@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import theta.ThetaSchedulersFactory;
+import theta.api.ManagerShutdown;
 import theta.api.PositionHandler;
 import theta.domain.PriceLevel;
 import theta.domain.Security;
@@ -30,12 +31,11 @@ import theta.domain.option.Option;
 import theta.domain.pricelevel.DefaultPriceLevel;
 import theta.domain.stock.Stock;
 import theta.domain.util.SecurityUtil;
-import theta.portfolio.api.PositionProvider;
 import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
 @Component
-public class PortfolioManager implements PositionProvider {
+public class PortfolioManager implements ManagerShutdown {
 
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -110,16 +110,6 @@ public class PortfolioManager implements PositionProvider {
     return positionHandler.getPositionEnd();
   }
 
-  @Override
-  public List<Theta> providePositions(Ticker ticker) {
-
-    final List<Theta> positionsToProvide = getThetaIdMap().values().stream()
-        .filter(position -> position.getTicker().equals(ticker)).collect(Collectors.toList());
-
-    logger.info("Providing Positions for {}: {}", ticker, positionsToProvide);
-    return positionsToProvide;
-  }
-
   private Security processSecurity(Security security) {
 
     logger.info("Processing Position: {}", security);
@@ -179,7 +169,7 @@ public class PortfolioManager implements PositionProvider {
     if (!unallocatedStocks.isEmpty() && !unallocatedCalls.isEmpty() && !unallocatedPuts.isEmpty()) {
       ThetaTradeFactory.processThetaTrade(unallocatedStocks, unallocatedCalls, unallocatedPuts)
           .stream().map(this::updateSecurityMaps).distinct()
-          .forEach(priceLevel -> monitor.addMonitor(priceLevel));
+          .forEach(theta -> monitor.addMonitor(theta));
     }
 
   }
@@ -216,7 +206,7 @@ public class PortfolioManager implements PositionProvider {
     return unallocatedSecurities;
   }
 
-  private PriceLevel updateSecurityMaps(Theta theta) {
+  private Theta updateSecurityMaps(Theta theta) {
 
     getThetaIdMap().put(theta.getId(), theta);
 
@@ -235,7 +225,7 @@ public class PortfolioManager implements PositionProvider {
     putThetaIds.add(theta.getId());
     getSecurityThetaLink().put(theta.getPut().getId(), putThetaIds);
 
-    return DefaultPriceLevel.of(theta);
+    return theta;
   }
 
   public ManagerStatus getStatus() {
