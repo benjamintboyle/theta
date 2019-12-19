@@ -11,17 +11,13 @@ import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
 import io.reactivex.rxjava3.subjects.Subject;
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.domain.DefaultOrderStatus;
 
+@Slf4j
 public class DefaultIbOrderHandler implements IbOrderHandler {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ExecutableOrder order;
 
@@ -65,7 +61,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
   @Override
   public void orderState(OrderState orderState) {
 
-    logger.debug("Received OrderState: Order Id: {}, Ticker: {}, {}",
+    log.debug("Received OrderState: Order Id: {}, Ticker: {}, {}",
         getExecutableOrder().getBrokerId().orElse(null), getExecutableOrder().getTicker(),
         lazy(() -> IbStringUtil.toStringOrderState(orderState)));
 
@@ -83,7 +79,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
             .withParentId(parentId).withLastFillPrice(lastFillPrice).withClientId(clientId)
             .withHeldReason(whyHeld).build();
 
-    logger.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}",
+    log.debug("Received OrderStatus: Order Id: {}, Ticker: {}, {}",
         getExecutableOrder().getBrokerId().orElse(null), getExecutableOrder().getTicker(),
         ibOrderStatusBuilder);
 
@@ -97,7 +93,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   @Override
   public void handle(int errorCode, final String errorMsg) {
-    logger.error("Order Handler Error, Error Code: {}, Message: {} for Order: {}",
+    log.error("Order Handler Error, Error Code: {}, Message: {} for Order: {}",
         Integer.valueOf(errorCode), errorMsg, getExecutableOrder());
   }
 
@@ -109,7 +105,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
     if (orderStatus.getState() == theta.execution.api.OrderState.FILLED
         || orderStatus.getState() == theta.execution.api.OrderState.CANCELLED) {
-      logger.debug("Sending complete for order: {}", orderStatus);
+      log.debug("Sending complete for order: {}", orderStatus);
       orderStatusSubject.onComplete();
     }
   }
@@ -138,7 +134,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
       case Inactive:
       case Unknown:
       default:
-        logger.warn("Unknown order status from brokerage: {}. Setting Order State to PENDING.",
+        log.warn("Unknown order status from brokerage: {}. Setting Order State to PENDING.",
             ibOrderStatus);
         orderState = theta.execution.api.OrderState.PENDING;
     }
@@ -149,12 +145,12 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
 
   private void sendInitialOrderStatus() {
 
-    logger.debug("Sending initial Order Status");
+    log.debug("Sending initial Order Status");
 
     if (ibOrderStatus != OrderStatus.Filled) {
       orderStatus(OrderStatus.ApiPending, filled, remaining, avgFillPrice, 0L, 0, 0.0, 0, null);
     } else {
-      logger.warn("Not sending Initial OrderStatus as state already indicates Filled");
+      log.warn("Not sending Initial OrderStatus as state already indicates Filled");
     }
   }
 

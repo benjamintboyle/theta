@@ -1,17 +1,14 @@
 package theta.util;
 
-import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.tick.api.TickProcessor;
 import theta.tick.processor.BidAskSpreadTickProcessor;
 
+@Slf4j
 public class ThetaStartupUtil {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Connection Manager Configuration
   private static final String GATEWAY_IP_ADDRESS_DOCKER = "172.17.0.2";
@@ -46,16 +43,16 @@ public class ThetaStartupUtil {
       gatewayAddress = InetAddress.getByName(GATEWAY_IP_ADDRESS_DOCKER);
       gatewayPort = GATEWAY_PORT;
 
-      logger.info("Deteched Docker container.");
+      log.info("Deteched Docker container.");
     } else {
       // If not running in a Docker container assume using TWS on local host
       gatewayAddress = InetAddress.getLoopbackAddress();
       gatewayPort = TWS_PORT;
 
-      logger.info("Detected local loopback gateway.");
+      log.info("Detected local loopback gateway.");
     }
 
-    logger.info("Attempting to use Gateway at: {}:{}", gatewayAddress, gatewayPort);
+    log.info("Attempting to use Gateway at: {}:{}", gatewayAddress, gatewayPort);
 
     return new InetSocketAddress(gatewayAddress, gatewayPort);
   }
@@ -74,7 +71,7 @@ public class ThetaStartupUtil {
     final String oldName = Thread.currentThread().getName();
 
     if (!oldName.equals(newNameWithSuffix)) {
-      logger.info("Renaming Thread: '{}' to '{}'", oldName, newNameWithSuffix);
+      log.info("Renaming Thread: '{}' to '{}'", oldName, newNameWithSuffix);
 
       Thread.currentThread().setName(newNameWithSuffix);
     }

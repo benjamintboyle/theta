@@ -1,13 +1,10 @@
 package brokers.interactivebrokers;
 
 import com.ib.controller.ApiConnection.ILogger;
-import java.lang.invoke.MethodHandles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class IbLogger implements ILogger {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final String loggerName;
 
@@ -17,6 +14,6 @@ public class IbLogger implements ILogger {
 
   @Override
   public void log(String valueOf) {
-    logger.info("{}: {}", loggerName, valueOf);
+    log.info("{}: {}", loggerName, valueOf);
   }
 }

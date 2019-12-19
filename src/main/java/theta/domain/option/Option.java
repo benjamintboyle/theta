@@ -1,19 +1,15 @@
 package theta.domain.option;
 
-import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
+@Slf4j
 public class Option implements Security {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
   private final SecurityType type;
@@ -50,7 +46,7 @@ public class Option implements Security {
     this.expiration = Objects.requireNonNull(expiration, "Expiration Date must not be null");
     this.averageTradePrice = averageTradePrice;
 
-    logger.debug("Built {}", this);
+    log.debug("Built {}", this);
   }
 
   @Override

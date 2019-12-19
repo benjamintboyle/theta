@@ -1,9 +1,7 @@
 package theta.execution.factory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.stock.Stock;
@@ -12,10 +10,8 @@ import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 import theta.execution.domain.DefaultStockOrder;
 
+@Slf4j
 public class ReverseStockOrderFactory {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private ReverseStockOrderFactory() {
 
@@ -49,7 +45,7 @@ public class ReverseStockOrderFactory {
     }
 
     if (!ReverseStockOrderFactory.isValid(stock, executableOrder)) {
-      logger.error("Invalid order for Reverse Trade of: {}, for {}", executableOrder, stock);
+      log.error("Invalid order for Reverse Trade of: {}, for {}", executableOrder, stock);
       executableOrder = null;
     }
 
@@ -58,25 +54,25 @@ public class ReverseStockOrderFactory {
 
   private static boolean isValid(Security security, ExecutableOrder order) {
 
-    logger.debug("Validating Reverse Stock Theta Trade Order: {}", order);
+    log.debug("Validating Reverse Stock Theta Trade Order: {}", order);
 
     boolean isValid = true;
 
     if (!isValidSecurityType(security.getSecurityType(), order)) {
-      logger.error("Security Types do not match: {} != {}, {}, {}", order.getSecurityType(),
+      log.error("Security Types do not match: {} != {}, {}, {}", order.getSecurityType(),
           security.getSecurityType(), order, security);
       isValid = false;
     }
 
 
     if (!isAbsoluteQuantityDouble(security.getQuantity(), order)) {
-      logger.error("Security Order Quantity is not double: {} != {}, {}, {}", order.getQuantity(),
+      log.error("Security Order Quantity is not double: {} != {}, {}, {}", order.getQuantity(),
           security.getQuantity(), order, security);
       isValid = false;
     }
 
     if (!isValidAction(security.getQuantity(), order)) {
-      logger.error("Execution Action is incorrect based on Security quantity: {} != {}, {}, {}",
+      log.error("Execution Action is incorrect based on Security quantity: {} != {}, {}, {}",
           order.getExecutionAction(), security.getQuantity(), order, security);
       isValid = false;
     }
@@ -107,7 +103,7 @@ public class ReverseStockOrderFactory {
         }
         break;
       default:
-        logger.error("Invalid execution action: {}", order.getExecutionAction());
+        log.error("Invalid execution action: {}", order.getExecutionAction());
     }
 
     return isValidAction;

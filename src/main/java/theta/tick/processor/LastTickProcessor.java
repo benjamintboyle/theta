@@ -1,10 +1,8 @@
 package theta.tick.processor;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import theta.domain.PriceLevel;
 import theta.domain.PriceLevelDirection;
@@ -15,10 +13,9 @@ import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
+@Slf4j
 @Component
 public class LastTickProcessor implements TickProcessor {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final Set<TickType> applicableTickTypes = Set.of(TickType.LAST);
   private static final ExecutionType EXECUTION_TYPE = ExecutionType.MARKET;
@@ -35,7 +32,7 @@ public class LastTickProcessor implements TickProcessor {
 
     if (isApplicable(tick.getTickType()) && tick.getLastPrice() > 0) {
 
-      logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
+      log.debug("Checking {} against Price Level: {}", tick, priceLevel);
 
       if (priceLevel.getTicker().equals(tick.getTicker())) {
         if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
@@ -47,7 +44,7 @@ public class LastTickProcessor implements TickProcessor {
             shouldReverse = true;
           }
         } else {
-          logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
+          log.error("Invalid Price Level: {}", priceLevel.tradeIf());
         }
       }
     }

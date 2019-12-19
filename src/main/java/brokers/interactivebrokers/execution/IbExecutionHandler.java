@@ -7,24 +7,20 @@ import com.ib.client.Contract;
 import com.ib.client.Order;
 import com.ib.contracts.StkContract;
 import io.reactivex.rxjava3.core.Flowable;
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import theta.api.ExecutionHandler;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
 
+@Slf4j
 @Component
 public class IbExecutionHandler implements ExecutionHandler {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final IbController ibController;
 
@@ -33,7 +29,7 @@ public class IbExecutionHandler implements ExecutionHandler {
 
   @Autowired
   public IbExecutionHandler(IbController ibController) {
-    logger.info("Starting Interactive Brokers Execution Handler");
+    log.info("Starting Interactive Brokers Execution Handler");
     this.ibController = Objects.requireNonNull(ibController, "Controller cannot be null");
   }
 
@@ -52,11 +48,11 @@ public class IbExecutionHandler implements ExecutionHandler {
       case PUT:
       case SHORT_STRADDLE:
       case THETA:
-        logger.warn("ExecuteOrder not implemented for Security Type: {}."
+        log.warn("ExecuteOrder not implemented for Security Type: {}."
             + "Order will not be executed for order: {}", order.getSecurityType(), order);
         break;
       default:
-        logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}",
+        log.warn("Unknown Security Type: {}. Order will not be executed for order: {}",
             order.getSecurityType(), order);
     }
 
@@ -65,14 +61,14 @@ public class IbExecutionHandler implements ExecutionHandler {
         () -> {
           final IbOrderHandler removedOrderHandler =
               orderHandlerMapper.remove(order.getBrokerId().get());
-          logger.debug("Removed Order Handler: {}", removedOrderHandler);
+          log.debug("Removed Order Handler: {}", removedOrderHandler);
         });
   }
 
   @Override
   public boolean modifyOrder(ExecutableOrder order) {
 
-    logger.debug("Modifying order: {}", order);
+    log.debug("Modifying order: {}", order);
 
     boolean isOrderExecuted = false;
 
@@ -88,11 +84,11 @@ public class IbExecutionHandler implements ExecutionHandler {
         isOrderExecuted = true;
 
       } else {
-        logger.error("Order will not be executed. No Order Handler available for order: {}", order);
+        log.error("Order will not be executed. No Order Handler available for order: {}", order);
       }
 
     } else {
-      logger.error(
+      log.error(
           "Order will not be executed. Attempting to modify an order without a brokerage Id: {}",
           order);
     }
@@ -107,7 +103,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     if (optionalBrokerId.isPresent()) {
       ibController.getController().cancelOrder(optionalBrokerId.get().intValue());
     } else {
-      logger.warn("Can not cancel stock order with empty broker id for: {}", order);
+      log.warn("Can not cancel stock order with empty broker id for: {}", order);
     }
 
     return Flowable.empty();
@@ -125,7 +121,7 @@ public class IbExecutionHandler implements ExecutionHandler {
     if (ibOrder.orderId() > 0) {
       ibOrderHandler.getExecutableOrder().setBrokerId(Integer.valueOf(ibOrder.orderId()));
 
-      logger.debug("Order #{} sent to Broker Servers for: {}", Integer.valueOf(ibOrder.orderId()),
+      log.debug("Order #{} sent to Broker Servers for: {}", Integer.valueOf(ibOrder.orderId()),
           ibOrderHandler.getExecutableOrder());
 
       orderHandlerMapper.put(Integer.valueOf(ibOrder.orderId()), ibOrderHandler);
@@ -138,7 +134,7 @@ public class IbExecutionHandler implements ExecutionHandler {
               + IbStringUtil.toStringContract(ibContract) + ", IB Order: "
               + IbStringUtil.toStringOrder(ibOrder));
 
-      logger.warn("Id not set for Order", noOrderIdException);
+      log.warn("Id not set for Order", noOrderIdException);
 
       throw noOrderIdException;
     }

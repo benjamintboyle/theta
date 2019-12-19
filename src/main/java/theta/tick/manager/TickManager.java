@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import theta.api.TickSubscriber;
 import theta.domain.composed.Theta;
@@ -25,11 +24,9 @@ import theta.tick.api.TickMonitor;
 import theta.tick.api.TickProcessor;
 import theta.util.ThetaMarketUtil;
 
+@Slf4j
 @Component
 public class TickManager implements TickMonitor {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final TickSubscriber tickSubscriber;
   private final TickProcessor tickProcessor;
@@ -63,7 +60,7 @@ public class TickManager implements TickMonitor {
    */
   public Completable startTickProcessing() {
 
-    logger.debug("Starting Tick Processing");
+    log.debug("Starting Tick Processing");
 
     return Completable.create(emitter -> {
 
@@ -77,7 +74,7 @@ public class TickManager implements TickMonitor {
 
               this::processTick,
 
-              exception -> logger.error("Error in Tick Manager", exception),
+              exception -> log.error("Error in Tick Manager", exception),
 
               () -> getStatus().changeState(ManagerState.SHUTDOWN));
 
@@ -99,10 +96,10 @@ public class TickManager implements TickMonitor {
 
   private void processTick(Tick tick) {
 
-    logger.debug("Processing: {}", tick);
+    log.debug("Processing: {}", tick);
 
     if (tick.getTimestamp().isBefore(Instant.now().minusSeconds(2))) {
-      logger.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);
+      log.warn("Tick timestamp indicates tick is significantly delayed: {}", tick);
     }
 
     final List<Theta> tradesToCheck = monitoredThetas.stream()
@@ -110,7 +107,7 @@ public class TickManager implements TickMonitor {
 
     if (!tradesToCheck.isEmpty()) {
 
-      logger.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(),
+      log.info("Received {} Positions from Position Provider: {}", tradesToCheck.size(),
           tradesToCheck);
 
       final List<Theta> thetasToReverse = tradesToCheck.stream()
@@ -125,7 +122,7 @@ public class TickManager implements TickMonitor {
                 tickProcessor.getLimitPrice(stock.getTicker())).subscribe(
 
                     () -> {
-                      logger.info("Trade complete for {}", stock);
+                      log.info("Trade complete for {}", stock);
 
                       thetasToReverse.stream()
                           .filter(theta -> theta.getStock().getId().equals(stock.getId()))
@@ -134,7 +131,7 @@ public class TickManager implements TickMonitor {
                               this::deleteMonitor);
                     },
 
-                    exception -> logger.error("Error with Trade of {}", stock)
+                    exception -> log.error("Error with Trade of {}", stock)
 
             );
 
@@ -143,7 +140,7 @@ public class TickManager implements TickMonitor {
     } else {
       // If we are still getting ticks, but there are no positions provided, assume partial order
       // fill and convert rest to market order
-      logger.warn(
+      log.warn(
           "Received Tick, but no positions were provided. Attempting to convert to MARKET order.");
       executor.convertToMarketOrderIfExists(tick.getTicker());
     }

@@ -1,17 +1,14 @@
 package theta.domain.stock;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
+@Slf4j
 public class Stock implements Security {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
   private final Ticker ticker;
@@ -29,7 +26,7 @@ public class Stock implements Security {
     this.averageTradePrice =
         Objects.requireNonNull(averageTradePrice, "Stock 'Average Price' must not be null.");
 
-    logger.debug("Built {}", this);
+    log.debug("Built {}", this);
   }
 
   public static Stock of(final UUID id, final Ticker ticker, final long quantity,
@@ -67,7 +64,7 @@ public class Stock implements Security {
   }
 
   public Stock reversePosition() {
-    logger.info("Building Reverse of Stock: {}", this);
+    log.info("Building Reverse of Stock: {}", this);
     return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
   }
 

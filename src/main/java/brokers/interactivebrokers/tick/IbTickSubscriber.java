@@ -11,15 +11,13 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
-import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import theta.api.TickHandler;
@@ -29,11 +27,9 @@ import theta.domain.Ticker;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 
+@Slf4j
 @Component
 public class IbTickSubscriber implements TickSubscriber {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Subject<Tick> tickSubject = PublishSubject.create();
 
@@ -44,7 +40,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
   @Autowired
   public IbTickSubscriber(IbController ibController) {
-    logger.info("Starting Interactive Brokers Tick Subscriber");
+    log.info("Starting Interactive Brokers Tick Subscriber");
     this.ibController = ibController;
   }
 
@@ -75,10 +71,10 @@ public class IbTickSubscriber implements TickSubscriber {
 
           tickSubject::onNext,
 
-          exception -> logger.error("Error with Tick Handler {}", handler, exception),
+          exception -> log.error("Error with Tick Handler {}", handler, exception),
 
           () -> {
-            logger.info("Tick Handler cancelled for {}", priceLevel.getTicker());
+            log.info("Tick Handler cancelled for {}", priceLevel.getTicker());
             unsubscribeTick(priceLevel.getTicker());
           });
 
@@ -102,7 +98,7 @@ public class IbTickSubscriber implements TickSubscriber {
       remainingPriceLevels = ibLastTickHandler.get().removePriceLevelMonitor(priceLevel);
 
     } else {
-      logger.warn("IB Last Tick Handler does not exist for {}", priceLevel.getTicker());
+      log.warn("IB Last Tick Handler does not exist for {}", priceLevel.getTicker());
     }
 
     logHandlers();
@@ -117,7 +113,7 @@ public class IbTickSubscriber implements TickSubscriber {
         getHandler(ticker).map(TickHandler::getPriceLevelsMonitored).orElse(Set.of());
 
     if (priceLevels.isEmpty()) {
-      logger.warn("No Tick Handler or Price Levels for {}", ticker);
+      log.warn("No Tick Handler or Price Levels for {}", ticker);
     }
 
     return priceLevels;
@@ -125,14 +121,14 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private TickHandler subscribeTick(Ticker ticker, TickProcessor tickProcessor) {
 
-    logger.info("Subscribing to Ticks for: {}", ticker);
+    log.info("Subscribing to Ticks for: {}", ticker);
     final StkContract contract = new StkContract(ticker.getSymbol());
 
     final IbTickHandler ibTickHandler =
         ibTickHandlers.getOrDefault(ticker, new IbTickHandler(ticker, tickProcessor));
     ibTickHandlers.put(ticker, ibTickHandler);
 
-    logger.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
+    log.info("Sending Tick Request to Interactive Brokers server for Contract: {}",
         lazy(() -> IbStringUtil.toStringContract(contract)));
     ibController.getController().reqTopMktData(contract, "", false, ibTickHandler);
 
@@ -145,12 +141,12 @@ public class IbTickSubscriber implements TickSubscriber {
 
     if (ibTickHandler != null) {
 
-      logger.info("Unsubscribing from Tick Handler: {}", ibTickHandler);
+      log.info("Unsubscribing from Tick Handler: {}", ibTickHandler);
 
       ibController.getController().cancelTopMktData(ibTickHandler);
       ibTickHandler.cancel();
     } else {
-      logger.warn("IB Last Tick Handler does not exist for {}", ticker);
+      log.warn("IB Last Tick Handler does not exist for {}", ticker);
     }
   }
 
@@ -161,7 +157,7 @@ public class IbTickSubscriber implements TickSubscriber {
 
   private void logHandlers() {
 
-    logger.info("Current Handlers: {}", ibTickHandlers.values().stream()
+    log.info("Current Handlers: {}", ibTickHandlers.values().stream()
         .sorted(Comparator.comparing(TickHandler::getTicker)).collect(Collectors.toList()));
   }
 

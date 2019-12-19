@@ -14,15 +14,13 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
 import io.reactivex.rxjava3.subjects.Subject;
-import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import theta.api.PositionHandler;
@@ -32,11 +30,9 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 import theta.domain.ticker.DefaultTicker;
 
+@Slf4j
 @Component
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // Map IB Id to Internal Id
   private final Map<Integer, UUID> contractIdMap = new HashMap<>();
@@ -53,14 +49,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Autowired
   public IbPositionHandler(IbController controller) {
-    logger.info("Starting Interactive Brokers Position Handler");
+    log.info("Starting Interactive Brokers Position Handler");
     this.controller = controller;
   }
 
   @Override
   public Flowable<Security> requestPositionsFromBrokerage() {
 
-    logger.info("Requesting Positions from Interactive Brokers");
+    log.info("Requesting Positions from Interactive Brokers");
 
     controller.getController().reqPositions(this);
 
@@ -82,7 +78,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   @Override
   public void position(String account, Contract contract, double position, double avgCost) {
 
-    logger.debug(
+    log.debug(
         "Received position from Brokers servers: Quantity: {}, "
             + "Contract: [{}], Account: {}, Average Cost: {}",
         Double.valueOf(position), lazy(() -> IbStringUtil.toStringContract(contract)), account,
@@ -93,7 +89,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
   @Override
   public void positionEnd() {
-    logger.info("Received Position End notification");
+    log.info("Received Position End notification");
     subjectPositionEndTime.onNext(Instant.now());
   }
 
@@ -103,13 +99,13 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     if (!subjectPositions.hasComplete()) {
       subjectPositions.onComplete();
     } else {
-      logger.warn("Tried to complete Subject Positions when it is already completed.");
+      log.warn("Tried to complete Subject Positions when it is already completed.");
     }
 
     if (positionHandlerDisposables.isDisposed()) {
       positionHandlerDisposables.dispose();
     } else {
-      logger.warn("Tried to dispose of already disposed Position Handler Disposables");
+      log.warn("Tried to dispose of already disposed Position Handler Disposables");
     }
   }
 
@@ -128,7 +124,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
           subjectPositions.onNext(option);
         } else {
 
-          logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
+          log.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
               lazy(() -> IbStringUtil.toStringContract(contract)), Double.valueOf(position),
               Double.valueOf(avgCost));
         }
@@ -156,7 +152,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
       case WAR:
       default:
 
-        logger.error("Can not determine Position Type: {}",
+        log.error("Can not determine Position Type: {}",
             lazy(() -> IbStringUtil.toStringContract(contract)));
         break;
     }
@@ -182,7 +178,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
       case None:
       default:
 
-        logger.error("Could not identify Contract Right: {}",
+        log.error("Could not identify Contract Right: {}",
             lazy(() -> IbStringUtil.toStringContract(contract)));
         break;
     }
@@ -210,7 +206,7 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     if (Math.abs(quantity - wholeQuantity) > Math.ulp(quantity)) {
       wholeQuantity = (long) quantity;
 
-      logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity,
+      log.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity,
           wholeQuantity, lazy(() -> IbStringUtil.toStringContract(contract)));
     }
 

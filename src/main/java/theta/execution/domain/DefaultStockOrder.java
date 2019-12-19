@@ -1,11 +1,9 @@
 package theta.execution.domain;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 import theta.domain.stock.Stock;
@@ -13,10 +11,8 @@ import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 
+@Slf4j
 public class DefaultStockOrder implements ExecutableOrder {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id;
 
@@ -56,7 +52,7 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
 
-    logger.debug("Built {}", this);
+    log.debug("Built {}", this);
   }
 
   @Override

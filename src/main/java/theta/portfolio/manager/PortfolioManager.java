@@ -14,8 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import theta.ThetaSchedulersFactory;
 import theta.api.ManagerShutdown;
@@ -34,11 +33,9 @@ import theta.domain.util.SecurityUtil;
 import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
+@Slf4j
 @Component
 public class PortfolioManager implements ManagerShutdown {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final PositionHandler positionHandler;
   private final TickMonitor monitor;
@@ -76,7 +73,7 @@ public class PortfolioManager implements ManagerShutdown {
    */
   public Completable startPositionProcessing() {
 
-    logger.debug("Starting Position Processing");
+    log.debug("Starting Position Processing");
 
     return Completable.create(emitter -> {
 
@@ -92,7 +89,7 @@ public class PortfolioManager implements ManagerShutdown {
                       getSecurityIdMap()),
 
                   exception -> {
-                    logger.error("Issue with Received Positions from Brokerage", exception);
+                    log.error("Issue with Received Positions from Brokerage", exception);
                     emitter.onError(exception);
                   },
 
@@ -112,7 +109,7 @@ public class PortfolioManager implements ManagerShutdown {
 
   private Security processSecurity(Security security) {
 
-    logger.info("Processing Position: {}", security);
+    log.info("Processing Position: {}", security);
 
     removePositionIfExists(security);
 
@@ -121,7 +118,7 @@ public class PortfolioManager implements ManagerShutdown {
       processPosition(security.getTicker());
     } else {
       getSecurityIdMap().remove(security.getId());
-      logger.info("Security not processed due to 0 quantity: {}", security);
+      log.info("Security not processed due to 0 quantity: {}", security);
     }
 
     return security;
@@ -149,7 +146,7 @@ public class PortfolioManager implements ManagerShutdown {
         removedPriceLevels.addAll(removePositionIfExists(theta.getCall()));
         removedPriceLevels.addAll(removePositionIfExists(theta.getPut()));
 
-        logger.info("Removed theta trade: {}, based on security: {}", theta, security);
+        log.info("Removed theta trade: {}, based on security: {}", theta, security);
       });
     }
 
@@ -193,7 +190,7 @@ public class PortfolioManager implements ManagerShutdown {
 
       final long unallocatedQuantity =
           Math.abs(security.getQuantity() - allocatedCountMap.getOrDefault(security.getId(), 0L));
-      logger.debug("Calculated {} unallocated securities for {}", unallocatedQuantity, security);
+      log.debug("Calculated {} unallocated securities for {}", unallocatedQuantity, security);
 
       final Optional<Security> securityWithAdjustedQuantity =
           SecurityUtil.getSecurityWithQuantity(security, unallocatedQuantity);

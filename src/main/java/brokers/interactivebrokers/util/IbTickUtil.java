@@ -1,13 +1,9 @@
 package brokers.interactivebrokers.util;
 
-import java.lang.invoke.MethodHandles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class IbTickUtil {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private IbTickUtil() {
 
@@ -35,7 +31,7 @@ public class IbTickUtil {
         engineTickType = theta.tick.domain.TickType.LAST;
         break;
       default:
-        logger.error("Could not convert IB Tick Type enum {} to Engine Tick Type enum", ibTickType);
+        log.error("Could not convert IB Tick Type enum {} to Engine Tick Type enum", ibTickType);
     }
 
     return engineTickType;

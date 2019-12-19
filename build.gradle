@@ -2,6 +2,7 @@ plugins {
     id 'com.github.spotbugs' version '3.0.0'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'io.freefair.lombok' version '4.1.6'
     id 'checkstyle'
     id 'eclipse'
     id 'java'
@@ -24,6 +25,8 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-web')
     implementation('org.springframework.boot:spring-boot-starter-actuator')
     implementation('io.reactivex.rxjava3:rxjava:3.0.0-RC5')
+    // implementation('org.projectlombok:lombok')
+    // annotationProcessor('org.projectlombok:lombok')
 
     implementation files('libs/interactive-brokers-api-9.72.18.jar')
 

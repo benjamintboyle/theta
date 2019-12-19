@@ -1,17 +1,13 @@
 package theta.execution.factory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.stock.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 
+@Slf4j
 public class ExecutableOrderFactory {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private ExecutableOrderFactory() {
 
@@ -27,7 +23,7 @@ public class ExecutableOrderFactory {
    */
   public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock,
       ExecutionType executionType, Optional<Double> limitPrice) {
-    logger.debug("Reversing Position: {}", stock);
+    log.debug("Reversing Position: {}", stock);
 
     final ExecutableOrder order =
         ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);

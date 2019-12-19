@@ -5,14 +5,12 @@ import brokers.interactivebrokers.IbLogger;
 import com.ib.controller.ApiController;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import theta.api.ConnectionHandler;
@@ -20,11 +18,9 @@ import theta.connection.domain.BrokerageAccount;
 import theta.connection.domain.ConnectionState;
 import theta.util.ThetaStartupUtil;
 
+@Slf4j
 @Component
 public class IbConnectionHandler implements IbController, ConnectionHandler {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String INPUT_LOG_NAME = "Input";
   private static final String OUTPUT_LOG_NAME = "Output";
@@ -43,7 +39,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Autowired
   public IbConnectionHandler() throws UnknownHostException {
     brokerGatewayAddress = ThetaStartupUtil.getGatewayAddress();
-    logger.info("Starting Interactive Brokers Connection Handler: {}", brokerGatewayAddress);
+    log.info("Starting Interactive Brokers Connection Handler: {}", brokerGatewayAddress);
   }
 
   @Override
@@ -54,7 +50,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Override
   public Single<Instant> connect() {
 
-    logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
+    log.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
         brokerGatewayAddress.getAddress().getHostAddress(),
         Integer.valueOf(brokerGatewayAddress.getPort()), Integer.valueOf(CLIENT_ID));
 
@@ -67,7 +63,7 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   @Override
   public Single<Instant> disconnect() {
 
-    logger.info("Disconnecting...");
+    log.info("Disconnecting...");
 
     getController().disconnect();
 

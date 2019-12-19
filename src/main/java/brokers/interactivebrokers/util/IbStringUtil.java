@@ -6,16 +6,12 @@ import com.ib.client.DeltaNeutralContract;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.Types.SecType;
-import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class IbStringUtil {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static final String DELIMITTER = ", ";
   private static final String CONTRACT_LABEL = "Contract Id: ";
@@ -377,7 +373,7 @@ public class IbStringUtil {
       stringBuilder.append(Objects.toString(order.scaleTable()));
     } else {
       stringBuilder.append("null");
-      logger.warn("Attempted to display String for null Order");
+      log.warn("Attempted to display String for null Order");
     }
 
     return stringBuilder.toString();
@@ -502,7 +498,7 @@ public class IbStringUtil {
 
     } else {
       stringBuilder.append("null");
-      logger.warn("Attempted to display String for null Contract");
+      log.warn("Attempted to display String for null Contract");
     }
 
     return stringBuilder.toString();

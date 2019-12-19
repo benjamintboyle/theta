@@ -1,6 +1,5 @@
 package theta.portfolio.manager;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -8,16 +7,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.composed.Theta;
 import theta.domain.option.Option;
 
+@Slf4j
 public class PositionLogger {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static Comparator<Security> byTicker = Comparator.comparing(Security::getTicker);
 
@@ -75,7 +72,7 @@ public class PositionLogger {
   public static void logPositions(Map<UUID, Theta> thetaIdMap,
       Map<UUID, Set<UUID>> securityThetaLink, Map<UUID, Security> securityIdMap) {
 
-    logger.info("Position Logging Start");
+    log.info("Position Logging Start");
 
     logThetaPositions(thetaIdMap.values());
 
@@ -83,7 +80,7 @@ public class PositionLogger {
 
     logAllSecurities(securityIdMap.values());
 
-    logger.info("Position Logging Complete");
+    log.info("Position Logging Complete");
   }
 
   private static void logThetaPositions(Collection<Theta> thetas) {
@@ -92,11 +89,11 @@ public class PositionLogger {
         thetas.stream().sorted(Comparator.comparing(Theta::getTicker)).collect(Collectors.toList());
 
     for (final Theta position : thetasSorted) {
-      logger.info("Current position: {}", position);
+      log.info("Current position: {}", position);
     }
 
     if (thetasSorted.isEmpty()) {
-      logger.info("No Thetas");
+      log.info("No Thetas");
     }
   }
 
@@ -111,11 +108,11 @@ public class PositionLogger {
             .collect(Collectors.toList());
 
     for (final Security security : unmatched) {
-      logger.warn("Unmatched security: {}", security);
+      log.warn("Unmatched security: {}", security);
     }
 
     if (unmatched.isEmpty()) {
-      logger.info("No Unmatched Positions");
+      log.info("No Unmatched Positions");
     }
   }
 
@@ -125,7 +122,7 @@ public class PositionLogger {
             byTicker.thenComparing(byStockIsGreaterThanOptions).thenComparing(byOptionExpiration)
                 .thenComparing(byPrice).thenComparing(byCallIsGreaterThanPut))
         .collect(Collectors.toList())) {
-      logger.debug("List of all securities: {}", security);
+      log.debug("List of all securities: {}", security);
     }
   }
 

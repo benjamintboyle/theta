@@ -1,20 +1,17 @@
 package theta.domain.composed;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 
+@Slf4j
 public class Theta implements Security {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final UUID id = UUID.randomUUID();
   private final Stock stock;
@@ -24,7 +21,7 @@ public class Theta implements Security {
     this.stock = Objects.requireNonNull(stock, "Stock must not be null");
     this.straddle = Objects.requireNonNull(straddle, "Straddle must not be null");
 
-    logger.debug("Built Theta: {}", this);
+    log.debug("Built Theta: {}", this);
   }
 
   public static Optional<Theta> of(Stock stock, Option call, Option put) {
@@ -118,7 +115,7 @@ public class Theta implements Security {
       default:
         final IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
             securityType + " is an invalid security type for this object.");
-        logger.error("Unknown Security Type: {}", securityType, illegalArgumentException);
+        log.error("Unknown Security Type: {}", securityType, illegalArgumentException);
         throw illegalArgumentException;
     }
 
@@ -195,11 +192,11 @@ public class Theta implements Security {
       if (Math.abs(stock.getQuantity()) == Math.abs(straddle.getQuantity() * 100)) {
         isValid = true;
       } else {
-        logger.error("Stock is not 100 times quantity of option quantity: {}, {}",
+        log.error("Stock is not 100 times quantity of option quantity: {}, {}",
             Long.valueOf(stock.getQuantity()), Long.valueOf(straddle.getQuantity()));
       }
     } else {
-      logger.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);
+      log.error("Tickers do not match between stock and straddle: {}, {}", stock, straddle);
     }
 
     return isValid;

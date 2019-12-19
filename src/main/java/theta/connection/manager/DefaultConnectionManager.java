@@ -4,18 +4,15 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import theta.api.ConnectionHandler;
 import theta.domain.manager.ManagerState;
 import theta.domain.manager.ManagerStatus;
 
+@Slf4j
 @Component
 public class DefaultConnectionManager implements ConnectionManager {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ConnectionHandler connectionHandler;
 
@@ -31,14 +28,14 @@ public class DefaultConnectionManager implements ConnectionManager {
 
   @Override
   public Single<Instant> connect() {
-    logger.info("Connecting to Broker servers...");
+    log.info("Connecting to Broker servers...");
 
     return connectionHandler.connect();
   }
 
   @Override
   public void shutdown() {
-    logger.info("Shutting down 'Connection Manager' subsystem");
+    log.info("Shutting down 'Connection Manager' subsystem");
     getManagerStatus().changeState(ManagerState.STOPPING);
     connectionHandler.disconnect();
     connectionDisposables.dispose();

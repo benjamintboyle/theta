@@ -1,13 +1,10 @@
 package theta.domain.manager;
 
-import java.lang.invoke.MethodHandles;
 import java.time.Instant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ManagerStatus {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final String className;
   private ManagerState state;
@@ -37,7 +34,7 @@ public class ManagerStatus {
    * @param newState State to be changed to.
    */
   public void changeState(ManagerState newState) {
-    logger.info("{} is transitioning from {} to {}", getClassName(), getState(), newState);
+    log.info("{} is transitioning from {} to {}", getClassName(), getState(), newState);
     state = newState;
     time = Instant.now();
   }

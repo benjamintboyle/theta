@@ -3,9 +3,7 @@ package theta;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import java.lang.invoke.MethodHandles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -18,12 +16,10 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 // curl -i -X POST http://localhost:8080/actuator/shutdown
+@Slf4j
 @ComponentScan({"theta", "brokers.interactivebrokers"})
 @SpringBootApplication
 public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
-
-  private static final Class<?> CURRENT_CLASS = MethodHandles.lookup().lookupClass();
-  private static final Logger logger = LoggerFactory.getLogger(CURRENT_CLASS);
 
   @Value("${application.name}")
   private String appName;
@@ -37,7 +33,7 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
   private final ExecutionManager executionManager;
 
   public static void main(String[] args) {
-    SpringApplication.run(CURRENT_CLASS, args);
+    SpringApplication.run(ThetaEngine.class, args);
   }
 
   /**
@@ -73,10 +69,10 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
     return connectionManager.connect().ignoreElement()
         .andThen(portfolioManager.startPositionProcessing()).subscribe(
 
-            () -> logger.info("Portfolio Manager has Shutdown"),
+            () -> log.info("Portfolio Manager has Shutdown"),
 
             error -> {
-              logger.error("Portfolio Manager Error", error);
+              log.error("Portfolio Manager Error", error);
               shutdown();
             });
   }
@@ -85,10 +81,10 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
 
     return portfolioManager.getPositionEnd().andThen(tickManager.startTickProcessing()).subscribe(
 
-        () -> logger.info("Tick Manager has Shutdown"),
+        () -> log.info("Tick Manager has Shutdown"),
 
         error -> {
-          logger.error("Tick Manager Error", error);
+          log.error("Tick Manager Error", error);
           shutdown();
         });
   }
@@ -96,7 +92,7 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
   @Override
   public void shutdown() {
 
-    logger.info("Calling shutdown for all managers.");
+    log.info("Calling shutdown for all managers.");
 
     if (!THETA_DISPOSABLES.isDisposed()) {
 
@@ -105,15 +101,14 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
       portfolioManager.shutdown();
       connectionManager.shutdown();
 
-      logger.info("Disposing of {} Managers", Integer.valueOf(THETA_DISPOSABLES.size()));
+      log.info("Disposing of {} Managers", Integer.valueOf(THETA_DISPOSABLES.size()));
       THETA_DISPOSABLES.dispose();
 
-      logger.info("Shutting down Schedulers.");
+      log.info("Shutting down Schedulers.");
       Schedulers.shutdown();
 
     } else {
-      logger.warn("Tried to dispose of already disposed of {} Composite Manager Disposable",
-          appName);
+      log.warn("Tried to dispose of already disposed of {} Composite Manager Disposable", appName);
     }
   }
 

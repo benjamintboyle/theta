@@ -1,7 +1,6 @@
 package theta.portfolio.manager;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,8 +12,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
@@ -22,9 +20,8 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 import theta.domain.ticker.DefaultTicker;
 
+@Slf4j
 public class PortfolioTestUtil {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Read file containing test data of securities (stocks).
@@ -61,40 +58,41 @@ public class PortfolioTestUtil {
     final Pattern splitPattern = Pattern.compile("\\s*,\\s*");
 
     for (final String trade : stringListOfSecurities) {
-      logger.debug("Trade: {}", trade);
+      log.debug("Trade: {}", trade);
 
       final String[] security = splitPattern.split(trade);
       final String securityType = security[0];
       final Ticker ticker = DefaultTicker.from(security[1]);
       final long quantity = Long.parseLong(security[2]);
       final Double price = Double.valueOf(security[3]);
-      logger.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity,
+      log.debug("Type: {}, Ticker: {}, Quantity: {}, Price: {}", securityType, ticker, quantity,
           price);
 
       switch (securityType) {
         case "STOCK":
           final Stock stock = Stock.of(ticker, quantity, price);
-          logger.debug("Sending Stock: {}", stock);
+          log.debug("Sending Stock: {}", stock);
           securityList.add(stock);
           break;
         case "CALL":
           final Option call = new Option(UUID.randomUUID(), SecurityType.CALL, ticker, quantity,
               price, LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-          logger.debug("Sending Call: {}", call);
+          log.debug("Sending Call: {}", call);
 
           securityList.add(call);
           break;
         case "PUT":
           final Option put = new Option(UUID.randomUUID(), SecurityType.PUT, ticker, quantity,
               price, LocalDate.now().plusDays(Long.parseLong(security[4])), 0.0);
-          logger.debug("Sending Put: {}", put);
+          log.debug("Sending Put: {}", put);
           securityList.add(put);
           break;
         default:
-          logger.error("Could not determine SecurityType: {}", securityType);
+          log.error("Could not determine SecurityType: {}", securityType);
       }
     }
 
     return securityList;
   }
+
 }

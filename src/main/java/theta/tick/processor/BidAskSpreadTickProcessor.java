@@ -1,12 +1,10 @@
 package theta.tick.processor;
 
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.PriceLevel;
 import theta.domain.PriceLevelDirection;
 import theta.domain.Ticker;
@@ -15,10 +13,8 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
+@Slf4j
 public class BidAskSpreadTickProcessor implements TickProcessor {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Map<Ticker, Double> limitPriceByTicker = new HashMap<>();
 
@@ -53,7 +49,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
             // TODO: Probably just want MARKET order at this point
             if (tick.getAskPrice() < priceLevel.getPrice()) {
-              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}",
+              log.warn("May have been a gap across strike price, Price Level: {}, Tick: {}",
                   priceLevel, tick);
               limitPrice = tick.getBidPrice() + (bidAskSpread * DEVIATION);
             }
@@ -63,13 +59,13 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
             shouldReverse = true;
 
             if (tick.getBidPrice() > priceLevel.getPrice()) {
-              logger.warn("May have been a gap across strike price, Price Level: {}, Tick: {}",
+              log.warn("May have been a gap across strike price, Price Level: {}, Tick: {}",
                   priceLevel, tick);
               limitPrice = tick.getAskPrice() - (bidAskSpread * DEVIATION);
             }
           }
         } else {
-          logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
+          log.error("Invalid Price Level: {}", priceLevel.tradeIf());
         }
       }
 
@@ -79,7 +75,7 @@ public class BidAskSpreadTickProcessor implements TickProcessor {
 
       if (previousLimit != null
           && Double.compare(previousLimit, limitPriceByTicker.get(priceLevel.getTicker())) != 0) {
-        logger.warn("Processing ticks found different Price Levels: {} and {} for Price Level: {}",
+        log.warn("Processing ticks found different Price Levels: {} and {} for Price Level: {}",
             limitPriceByTicker.get(priceLevel.getTicker()), previousLimit, priceLevel);
       }
     }

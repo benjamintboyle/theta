@@ -1,22 +1,18 @@
 package theta.domain.util;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import theta.domain.Security;
 import theta.domain.composed.Theta;
 import theta.domain.stock.Stock;
 
+@Slf4j
 public class StockUtil {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private StockUtil() {
 
@@ -62,7 +58,7 @@ public class StockUtil {
         if (combinedStock.isPresent()) {
           stocksToReverse.put(theta.getStock().getId(), combinedStock.get());
         } else {
-          logger.error("Stock with same Id cannot be combined: {} {}", theta.getStock(),
+          log.error("Stock with same Id cannot be combined: {} {}", theta.getStock(),
               stocksToReverse.get(theta.getId()));
         }
       } else {
@@ -83,10 +79,10 @@ public class StockUtil {
             stock1.getQuantity() + stock2.getQuantity(),
             (stock1.getPrice() + stock2.getPrice()) / 2));
       } else {
-        logger.warn("Stock Tickers do not match: {} {}", stock1, stock2);
+        log.warn("Stock Tickers do not match: {} {}", stock1, stock2);
       }
     } else {
-      logger.warn("Stock Ids do not match: {} {}", stock1, stock2);
+      log.warn("Stock Ids do not match: {} {}", stock1, stock2);
     }
 
     return stock;
