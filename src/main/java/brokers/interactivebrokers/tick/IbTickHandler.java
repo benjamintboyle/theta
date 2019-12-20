@@ -287,11 +287,17 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
   public void cancel() {
 
     if (!tickSubject.hasComplete()) {
+      log.debug("Completing Tick Subject");
       tickSubject.onComplete();
+    } else {
+      log.warn("Tried to complete Tick Subject when it is already completed.");
     }
 
     if (!tickHandlerDisposables.isDisposed()) {
+      log.debug("Disposing IbTickHandler Disposable");
       tickHandlerDisposables.dispose();
+    } else {
+      log.warn("Tried to dispose of already disposed of IbTickHandler Disposable");
     }
 
   }

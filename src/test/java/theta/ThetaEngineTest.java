@@ -67,9 +67,8 @@ public class ThetaEngineTest {
 
     final String args = "";
     sut.run(args);
-    System.out.println("After run");
-    sut.shutdown();
-    System.out.println("After shutdown");
+
+    // sut.shutdown();
 
     verify(mockConnectionManager).shutdown();
     verify(mockPortfolioManager).shutdown();

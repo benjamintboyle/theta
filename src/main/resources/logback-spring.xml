@@ -2,45 +2,84 @@
 <!DOCTYPE configuration>
 <configuration>
 
-	<property name="LOGS" value="./logs" />
+	<property name="LOG_NAME" value="theta" />
+	<property name="LOG_DIR" value="./logs" />
+	<property name="LOG_ARCHIVE" value="${LOG_DIR}/archive" />
 
 	<appender name="Console"
 		class="ch.qos.logback.core.ConsoleAppender">
 		<layout class="ch.qos.logback.classic.PatternLayout">
-			<Pattern>
-				%black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)]
-				%yellow(%C{1.}): %msg%n%throwable
-			</Pattern>
+			<Pattern>%date %highlight(%-5level) %logger{0} [%thread] - %message%n</Pattern>
 		</layout>
 	</appender>
 
 	<appender name="RollingFile"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOGS}/theta.log</file>
+		<file>${LOG_DIR}/${LOG_NAME}.log</file>
 		<encoder
 			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+			<Pattern>%date %-5level %logger{0} [%thread] - %message%n
+			</Pattern>
 		</encoder>
 
 		<rollingPolicy
-			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<!-- rollover daily and when the file reaches 10 MegaBytes -->
-			<fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log
-			</fileNamePattern>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>10MB</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_ARCHIVE}/${LOG_NAME}_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>25MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>1GB</totalSizeCap>
 		</rollingPolicy>
 	</appender>
 
-	<!-- LOG everything at TRACE level -->
-	<root level="trace">
+	<appender name="SpringRollingFile"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_DIR}/org.springframework.log</file>
+		<encoder
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%date %-5level %logger{0} [%thread] - %message%n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_ARCHIVE}/org.springframework_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>25MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>1GB</totalSizeCap>
+		</rollingPolicy>
+	</appender>
+
+	<appender name="PositionRollingFile"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_DIR}/position.log</file>
+		<encoder
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%date %-5level %logger{0} [%thread] - %message%n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_ARCHIVE}/position_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>25MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>1GB</totalSizeCap>
+		</rollingPolicy>
+	</appender>
+
+	<root level="debug">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</root>
 
-	<!-- LOG "com.baeldung*" at TRACE level -->
-	<!-- <logger name="com.baeldung" level="trace" additivity="false"> <appender-ref 
-		ref="RollingFile" /> <appender-ref ref="Console" /> </logger> -->
+	<logger name="org.springframework" level="info"
+		additivity="false">
+		<appender-ref ref="SpringRollingFile" />
+	</logger>
+
+	<logger name="theta.portfolio.manager.PositionLogger"
+		level="debug" additivity="true">
+		<appender-ref ref="PositionRollingFile" />
+	</logger>
+
 </configuration>

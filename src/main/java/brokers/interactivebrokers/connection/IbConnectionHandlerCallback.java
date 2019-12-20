@@ -50,7 +50,13 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
   }
 
   public void shutdown() {
-    callbackDisposables.dispose();
+
+    if (!callbackDisposables.isDisposed()) {
+      log.debug("Disposing IbConnectionHandlerCallback Disposable");
+      callbackDisposables.dispose();
+    } else {
+      log.warn("Tried to dispose of already disposed of IbConnectionHandlerCallback Disposable");
+    }
   }
 
   @Override

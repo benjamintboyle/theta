@@ -168,7 +168,12 @@ public class IbTickSubscriber implements TickSubscriber {
       unsubscribeTick(ticker);
     }
 
-    tickSubscriberDisposables.dispose();
+    if (!tickSubscriberDisposables.isDisposed()) {
+      log.debug("Disposing IbTickSubscriber Disposable");
+      tickSubscriberDisposables.dispose();
+    } else {
+      log.warn("Tried to dispose of already disposed of IbTickSubscriber Disposable");
+    }
   }
 
 }

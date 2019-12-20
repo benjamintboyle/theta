@@ -14,3 +14,7 @@ logs/
 ### Gradle.gitignore
 .gradle
 build/
+
+### Lombok.gitignore
+lombok.config
+

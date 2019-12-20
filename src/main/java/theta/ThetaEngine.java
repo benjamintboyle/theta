@@ -3,6 +3,7 @@ package theta;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -89,6 +90,7 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
         });
   }
 
+  @PreDestroy
   @Override
   public void shutdown() {
 
@@ -106,6 +108,8 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
 
       log.info("Shutting down Schedulers.");
       Schedulers.shutdown();
+
+      log.info("ThetaEngine shutdown complete.");
 
     } else {
       log.warn("Tried to dispose of already disposed of {} Composite Manager Disposable", appName);

@@ -97,12 +97,14 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
   public void shutdown() {
 
     if (!subjectPositions.hasComplete()) {
+      log.debug("Completing Position Subject");
       subjectPositions.onComplete();
     } else {
-      log.warn("Tried to complete Subject Positions when it is already completed.");
+      log.warn("Tried to complete Position Subject when it is already completed.");
     }
 
-    if (positionHandlerDisposables.isDisposed()) {
+    if (!positionHandlerDisposables.isDisposed()) {
+      log.debug("Disposing IbPositionHandler Disposable");
       positionHandlerDisposables.dispose();
     } else {
       log.warn("Tried to dispose of already disposed Position Handler Disposables");
