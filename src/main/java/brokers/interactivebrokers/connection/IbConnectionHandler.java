@@ -79,7 +79,6 @@ public class IbConnectionHandler implements IbController, ConnectionHandler {
   }
 
   private void shutdown() {
-    CALLBACK.shutdown();
 
     if (!handlerDisposables.isDisposed()) {
       log.debug("Disposing IbConnectionHandler Disposable");

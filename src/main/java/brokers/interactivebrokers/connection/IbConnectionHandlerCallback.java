@@ -2,7 +2,6 @@ package brokers.interactivebrokers.connection;
 
 import com.ib.controller.ApiController.IConnectionHandler;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import java.time.Duration;
@@ -25,8 +24,6 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
 
   private final Duration timeout;
 
-  private final CompositeDisposable callbackDisposables = new CompositeDisposable();
-
   public IbConnectionHandlerCallback(Duration timeout) {
     this.timeout = timeout;
   }
@@ -47,16 +44,6 @@ public class IbConnectionHandlerCallback implements IConnectionHandler {
     return connectionStatus.filter(status -> status.getState().equals(waitUntilState))
         .map(ConnectionStatus::getTime).firstOrError()
         .timeout(timeout.getSeconds(), TimeUnit.SECONDS);
-  }
-
-  public void shutdown() {
-
-    if (!callbackDisposables.isDisposed()) {
-      log.debug("Disposing IbConnectionHandlerCallback Disposable");
-      callbackDisposables.dispose();
-    } else {
-      log.warn("Tried to dispose of already disposed of IbConnectionHandlerCallback Disposable");
-    }
   }
 
   @Override
