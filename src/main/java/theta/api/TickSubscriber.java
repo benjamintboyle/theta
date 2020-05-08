@@ -1,7 +1,7 @@
 package theta.api;
 
-import io.reactivex.rxjava3.core.Flowable;
 import java.util.Set;
+import reactor.core.publisher.Flux;
 import theta.domain.PriceLevel;
 import theta.domain.Ticker;
 import theta.tick.api.Tick;
@@ -9,7 +9,7 @@ import theta.tick.api.TickProcessor;
 
 public interface TickSubscriber {
 
-  public Flowable<Tick> getTicksAcrossStrikePrices();
+  public Flux<Tick> getTicksAcrossStrikePrices();
 
   public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor);
 

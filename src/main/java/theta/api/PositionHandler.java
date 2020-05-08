@@ -1,12 +1,11 @@
 package theta.api;
 
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
+import reactor.core.publisher.Flux;
 import theta.domain.Security;
 
+import java.time.Instant;
+
 public interface PositionHandler extends ManagerShutdown {
-
-  Flowable<Security> requestPositionsFromBrokerage();
-
-  Completable getPositionEnd();
+  Flux<Security> requestPositionsFromBrokerage();
+  Flux<Instant> getPositionEnd();
 }

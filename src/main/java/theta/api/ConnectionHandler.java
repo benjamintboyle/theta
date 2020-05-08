@@ -1,10 +1,10 @@
 package theta.api;
 
-import io.reactivex.rxjava3.core.Single;
-import java.time.Instant;
+import reactor.core.publisher.Mono;
+import theta.connection.domain.ConnectionStatus;
 
 public interface ConnectionHandler {
-  Single<Instant> connect();
+    Mono<ConnectionStatus> connect();
 
-  Single<Instant> disconnect();
+    Mono<ConnectionStatus> disconnect();
 }

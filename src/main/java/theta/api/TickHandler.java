@@ -1,14 +1,14 @@
 package theta.api;
 
-import io.reactivex.rxjava3.core.Flowable;
 import java.util.Set;
+import reactor.core.publisher.Flux;
 import theta.domain.PriceLevel;
 import theta.domain.Ticker;
 import theta.tick.api.Tick;
 
 public interface TickHandler {
 
-  public Flowable<Tick> getTicks();
+  public Flux<Tick> getTicks();
 
   public Ticker getTicker();
 
@@ -19,5 +19,4 @@ public interface TickHandler {
   public Set<PriceLevel> getPriceLevelsMonitored();
 
   public void cancel();
-
 }

@@ -24,7 +24,7 @@
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_ARCHIVE}/${LOG_NAME}_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<fileNamePattern>${LOG_ARCHIVE}/${LOG_NAME}_%d{yyyy-MM-dd}.%i.logger.gz</fileNamePattern>
 			<maxFileSize>25MB</maxFileSize>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>1GB</totalSizeCap>
@@ -42,7 +42,7 @@
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_ARCHIVE}/org.springframework_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<fileNamePattern>${LOG_ARCHIVE}/org.springframework_%d{yyyy-MM-dd}.%i.logger.gz</fileNamePattern>
 			<maxFileSize>25MB</maxFileSize>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>1GB</totalSizeCap>
@@ -60,7 +60,7 @@
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_ARCHIVE}/position_%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<fileNamePattern>${LOG_ARCHIVE}/position_%d{yyyy-MM-dd}.%i.logger.gz</fileNamePattern>
 			<maxFileSize>25MB</maxFileSize>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>1GB</totalSizeCap>

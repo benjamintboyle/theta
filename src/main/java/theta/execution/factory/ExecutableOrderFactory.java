@@ -1,34 +1,40 @@
 package theta.execution.factory;
 
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import theta.domain.stock.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 
-@Slf4j
+import java.util.Optional;
+
 public class ExecutableOrderFactory {
+    private static final Logger logger = LoggerFactory.getLogger(ExecutableOrderFactory.class);
 
-  private ExecutableOrderFactory() {
+    private ExecutableOrderFactory() {
 
-  }
+    }
 
-  /**
-   * Create Order that will reverse position. Validate order is not obviously invalid.
-   *
-   * @param stock Stock position to reverse
-   * @param executionType Execution Type of Order
-   * @param limitPrice Limit Price of Order
-   * @return Validated Order to reverse Stock position
-   */
-  public static Optional<ExecutableOrder> reverseAndValidateStockPositionOrder(Stock stock,
-      ExecutionType executionType, Optional<Double> limitPrice) {
-    log.debug("Reversing Position: {}", stock);
+    /**
+     * Create Order that will reverse position. Validate order is not obviously invalid.
+     *
+     * @param stock         Stock position to reverse
+     * @param executionType Execution Type of Order
+     * @param limitPrice    Limit Price of Order
+     * @return Validated Order to reverse Stock position
+     */
+    public static ExecutableOrder reverseAndValidateStockPositionOrder(Stock stock,
+                                                                       ExecutionType executionType, Optional<Double> limitPrice) {
+        logger.debug("Reversing Position: {}", stock);
 
-    final ExecutableOrder order =
-        ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
+        final ExecutableOrder order =
+                ReverseStockOrderFactory.reverse(stock, executionType, limitPrice);
 
-    return Optional.ofNullable(order);
-  }
+        if (order == null) {
+            throw new IllegalArgumentException("Invalid order built for " + stock);
+        }
+
+        return order;
+    }
 
 }

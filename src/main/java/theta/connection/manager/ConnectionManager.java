@@ -1,10 +1,10 @@
 package theta.connection.manager;
 
-import io.reactivex.rxjava3.core.Single;
-import java.time.Instant;
+import reactor.core.publisher.Mono;
 import theta.api.ManagerShutdown;
+import theta.connection.domain.ConnectionStatus;
 
 public interface ConnectionManager extends ManagerShutdown {
 
-  Single<Instant> connect();
+  Mono<ConnectionStatus> connect();
 }

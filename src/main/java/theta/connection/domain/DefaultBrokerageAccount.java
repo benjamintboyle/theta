@@ -12,4 +12,9 @@ public class DefaultBrokerageAccount implements BrokerageAccount {
     return brokerageAccountId;
   }
 
+  @Override
+  public String toString() {
+    return "DefaultBrokerageAccount [brokerageAccountId=" + brokerageAccountId + "]";
+  }
+
 }

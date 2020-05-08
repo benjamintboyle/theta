@@ -11,6 +11,9 @@ logs/
 .classpath
 .project
 
+### Intellij.gitignore
+.idea
+
 ### Gradle.gitignore
 .gradle
 build/
