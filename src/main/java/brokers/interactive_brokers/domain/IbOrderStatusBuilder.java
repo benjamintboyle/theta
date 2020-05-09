@@ -1,26 +1,21 @@
 package brokers.interactive_brokers.domain;
 
-import com.ib.client.OrderStatus;
-
 public interface IbOrderStatusBuilder {
+    IbOrderStatusBuilder numberFilled(double filledBuilder);
 
-  IbOrderStatusBuilder withStatus(OrderStatus status);
+    IbOrderStatusBuilder numberRemaining(double remainingBuilder);
 
-  IbOrderStatusBuilder numberFilled(double filledBuilder);
+    IbOrderStatusBuilder withAverageFillPrice(double avgFillPriceBuilder);
 
-  IbOrderStatusBuilder numberRemaining(double remainingBuilder);
+    IbOrderStatusBuilder withPermId(long permIdBuilder);
 
-  IbOrderStatusBuilder withAverageFillPrice(double avgFillPriceBuilder);
+    IbOrderStatusBuilder withParentId(int parentIdBuilder);
 
-  IbOrderStatusBuilder withPermId(long permIdBuilder);
+    IbOrderStatusBuilder withLastFillPrice(double lastFillPriceBuilder);
 
-  IbOrderStatusBuilder withParentId(int parentIdBuilder);
+    IbOrderStatusBuilder withClientId(int clientIdBuilder);
 
-  IbOrderStatusBuilder withLastFillPrice(double lastFillPriceBuilder);
+    IbOrderStatusBuilder withHeldReason(String whyHeldBuilder);
 
-  IbOrderStatusBuilder withClientId(int clientIdBuilder);
-
-  IbOrderStatusBuilder withHeldReason(String whyHeldBuilder);
-
-  IbOrderStatus build();
+    IbOrderStatus build();
 }
