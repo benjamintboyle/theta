@@ -1,3 +1,5 @@
+import com.github.spotbugs.SpotBugsTask
+
 plugins {
     id 'java'
     id 'checkstyle'
@@ -13,9 +15,15 @@ repositories {
 sourceCompatibility = 13
 targetCompatibility = 13
 
-bootJar {
-    archiveBaseName = 'theta'
-    archiveVersion = '0.4'
+springBoot {
+    buildInfo {
+        properties {
+            artifact = 'theta-artifact'
+            group = 'theta-group'
+            name = 'theta-project'
+            version = '0.4'
+        }
+    }
 }
 
 dependencies {
@@ -29,6 +37,7 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+    testImplementation('io.projectreactor:reactor-test')
 }
 
 test {
@@ -57,7 +66,7 @@ spotbugs {
 }
 
 // To generate an HTML report instead of XML
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
+tasks.withType(SpotBugsTask) {
     reports.xml.enabled = false
     reports.html.enabled = true
 }

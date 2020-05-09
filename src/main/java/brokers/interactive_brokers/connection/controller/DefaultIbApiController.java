@@ -14,12 +14,11 @@ public class DefaultIbApiController implements IbApiController {
 
     private final IbConnectionHandlerCallback callback;
 
-    private static DefaultIbApiController INSTANCE = null;
-    private static ApiController CONTROLLER = null;
+    private final ApiController apiController;
 
     public DefaultIbApiController(IbConnectionHandlerCallback callback) {
         this.callback = callback;
-        CONTROLLER = new ApiController(callback, new IbLogger(INPUT_LOG_NAME),
+        apiController = new ApiController(callback, new IbLogger(INPUT_LOG_NAME),
                 new IbLogger(OUTPUT_LOG_NAME));
     }
 
@@ -30,6 +29,6 @@ public class DefaultIbApiController implements IbApiController {
 
     @Override
     public ApiController getController() {
-        return CONTROLLER;
+        return apiController;
     }
 }
