@@ -12,8 +12,8 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 13
-targetCompatibility = 13
+sourceCompatibility = 14
+targetCompatibility = 14
 
 springBoot {
     buildInfo {
@@ -43,7 +43,7 @@ dependencies {
 test {
     useJUnitPlatform {
         // includeTags 'integration', 'feature-168'
-        excludeTags 'integration'
+        // excludeTags 'integration'
     }
 
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: Runtime.runtime.availableProcessors()

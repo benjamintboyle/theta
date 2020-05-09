@@ -17,15 +17,15 @@ import theta.util.ThetaStartupUtil;
 import java.net.InetSocketAddress;
 
 @Component
-public class IbConnectionHandler implements IbController, ConnectionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(IbConnectionHandler.class);
+public class DefaultIbConnectionHandler implements IbController, ConnectionHandler {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultIbConnectionHandler.class);
     private static final int CLIENT_ID = 0;
 
     private final IbApiController controller;
     private final Composite DISPOSABLES = Disposables.composite();
     private final InetSocketAddress brokerGatewayAddress;
 
-    public IbConnectionHandler(IbApiController ibApiController) {
+    public DefaultIbConnectionHandler(IbApiController ibApiController) {
         controller = ibApiController;
         brokerGatewayAddress = ThetaStartupUtil.getGatewayAddress();
         logger.info("Starting Interactive Brokers Connection Handler: {}", brokerGatewayAddress);

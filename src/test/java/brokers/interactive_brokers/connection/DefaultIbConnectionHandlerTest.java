@@ -19,19 +19,19 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class IbConnectionHandlerTest {
+class DefaultIbConnectionHandlerTest {
 
     @Mock
     private ApiController apiController;
     @Mock
     private IbApiController ibApiController;
 
-    private IbConnectionHandler ibConnectionHandler;
+    private DefaultIbConnectionHandler ibConnectionHandler;
 
     @BeforeEach
     void setup() {
         when(ibApiController.getController()).thenReturn(apiController);
-        ibConnectionHandler = new IbConnectionHandler(ibApiController);
+        ibConnectionHandler = new DefaultIbConnectionHandler(ibApiController);
     }
 
     @Test
