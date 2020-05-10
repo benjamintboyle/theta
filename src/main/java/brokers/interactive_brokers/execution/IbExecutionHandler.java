@@ -1,6 +1,8 @@
 package brokers.interactive_brokers.execution;
 
 import brokers.interactive_brokers.IbController;
+import brokers.interactive_brokers.execution.order.DefaultIbOrderHandler;
+import brokers.interactive_brokers.execution.order.IbOrderHandler;
 import brokers.interactive_brokers.util.IbOrderUtil;
 import brokers.interactive_brokers.util.IbStringUtil;
 import com.ib.client.Contract;
@@ -39,28 +41,16 @@ public class IbExecutionHandler implements ExecutionHandler {
         Flux<OrderStatus> orderStatus = Flux.empty();
 
         switch (order.getSecurityType()) {
-            case STOCK:
-                orderStatus = executeStockOrder(order);
-                break;
-            case CALL:
-            case PUT:
-            case SHORT_STRADDLE:
-            case THETA:
-                logger.warn("ExecuteOrder not implemented for Security Type: {}."
-                        + "Order will not be executed for order: {}", order.getSecurityType(), order);
-                break;
-            default:
-                logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}",
-                        order.getSecurityType(), order);
+            case STOCK -> orderStatus.concatWith(executeStockOrder(order));
+            case CALL, PUT, SHORT_STRADDLE, THETA -> logger.warn("ExecuteOrder not implemented for Security Type: {}."
+                    + "Order will not be executed for order: {}", order.getSecurityType(), order);
+            default -> logger.warn("Unknown Security Type: {}. Order will not be executed for order: {}",
+                    order.getSecurityType(), order);
         }
 
         return orderStatus.doOnComplete(
-
-                () -> {
-                    final IbOrderHandler removedOrderHandler =
-                            orderHandlerMapper.remove(order.getBrokerId().get());
-                    logger.debug("Removed Order Handler: {}", removedOrderHandler);
-                });
+                () -> order.getBrokerId().ifPresent(id ->
+                        logger.debug("Removed Order Handler: {}", orderHandlerMapper.remove(id))));
     }
 
     @Override
@@ -89,12 +79,9 @@ public class IbExecutionHandler implements ExecutionHandler {
     @Override
     public Flux<OrderStatus> cancelOrder(ExecutableOrder order) {
 
-        final Optional<Integer> optionalBrokerId = order.getBrokerId();
-        if (optionalBrokerId.isPresent()) {
-            ibController.getController().cancelOrder(optionalBrokerId.get().intValue());
-        } else {
-            logger.warn("Can not cancel stock order with empty broker id for: {}", order);
-        }
+        order.getBrokerId().ifPresentOrElse(
+                id -> ibController.getController().cancelOrder(id),
+                () -> logger.warn("Can not cancel stock order with empty broker id for: {}", order));
 
         return Flux.empty();
     }
@@ -102,36 +89,30 @@ public class IbExecutionHandler implements ExecutionHandler {
     private Flux<OrderStatus> executeStockOrder(ExecutableOrder order) {
 
         final Order ibOrder = IbOrderUtil.buildIbOrder(order);
+        final int orderId = ibOrder.orderId();
 
         final Contract ibContract = new StkContract(order.getTicker().getSymbol());
 
-        Flux<theta.execution.api.OrderStatus> orderStatus = Flux.create(sink -> {
+        IbOrderHandler orderHandler = new DefaultIbOrderHandler(order);
+        orderHandlerMapper.put(orderId, orderHandler);
+        ibController.getController().placeOrModifyOrder(ibContract, ibOrder, orderHandler);
 
-            IbOrderHandler orderHandler = DefaultIbOrderHandler.of(order, sink);
-            orderHandlerMapper.put(Integer.valueOf(ibOrder.orderId()), orderHandler);
-            ibController.getController().placeOrModifyOrder(ibContract, ibOrder, orderHandler);
-
-        });
-
-        if (ibOrder.orderId() > 0) {
-            order.setBrokerId(Integer.valueOf(ibOrder.orderId()));
-
-            logger.debug("Order #{} sent to Broker Servers for: {}", Integer.valueOf(ibOrder.orderId()),
-                    order);
-
+        if (orderId > 0) {
+            order.setBrokerId(orderId);
+            logger.debug("Order: {} sent to Broker Servers for: {}", orderId, order);
         } else {
-
-            final IllegalStateException noOrderIdException = new IllegalStateException(
-                    "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order
-                            + ", IB Contract: " + IbStringUtil.toStringContract(ibContract) + ", IB Order: "
-                            + IbStringUtil.toStringOrder(ibOrder));
-
-            logger.warn("Id not set for Order", noOrderIdException);
-
-            throw noOrderIdException;
+            throw illegalStateException(order);
         }
 
-        return orderStatus;
+        return orderHandler.getOrderStatus();
     }
 
+    private IllegalStateException illegalStateException(ExecutableOrder order) {
+        final IllegalStateException noOrderIdException = new IllegalStateException(
+                "Order Id not set for Order. May indicate an internal error. ExecutableOrder: " + order
+                        + ", IB Order: " + IbStringUtil.toStringOrder(IbOrderUtil.buildIbOrder(order)));
+        logger.warn("Id not set for Order", noOrderIdException);
+
+        return noOrderIdException;
+    }
 }
