@@ -107,14 +107,12 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     private void processIbPosition(Contract contract, double position, double avgCost) {
 
         switch (contract.secType()) {
-            case STK:
+            case STK -> {
                 final Stock stock = generateStock(contract, position, avgCost);
                 subjectPositions.onNext(stock);
-
-                break;
-            case OPT:
+            }
+            case OPT -> {
                 final Option option = generateOption(contract, position, avgCost);
-
                 if (option != null) {
                     subjectPositions.onNext(option);
                 } else {
@@ -122,32 +120,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
                     logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
                             IbStringUtil.toStringContract(contract), position, avgCost);
                 }
-
-                break;
-            case BAG:
-            case BILL:
-            case BOND:
-            case BSK:
-            case CASH:
-            case CFD:
-            case CMDTY:
-            case FIXED:
-            case FOP:
-            case FUND:
-            case FUT:
-            case FWD:
-            case ICS:
-            case ICU:
-            case IND:
-            case IOPT:
-            case NEWS:
-            case None:
-            case SLB:
-            case WAR:
-            default:
-
-                logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
-                break;
+            }
+            default -> logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
         }
     }
 
@@ -162,17 +136,9 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     private Option generateOption(Contract contract, double position, double avgCost) {
         SecurityType securityType = null;
         switch (contract.right()) {
-            case Call:
-                securityType = SecurityType.CALL;
-                break;
-            case Put:
-                securityType = SecurityType.PUT;
-                break;
-            case None:
-            default:
-
-                logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
-                break;
+            case Call -> securityType = SecurityType.CALL;
+            case Put -> securityType = SecurityType.PUT;
+            default -> logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
         }
 
         final LocalDate expirationDate =

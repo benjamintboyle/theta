@@ -64,16 +64,14 @@ public class TickManager implements TickMonitor {
     public Mono<Void> startTickProcessing() {
 
         logger.debug("Starting Tick Processing");
+        getStatus().changeState(ManagerState.RUNNING);
 
         return Mono.create(emitter -> {
 
             final Disposable tickSubscriberDisposable = tickSubscriber.getTicksAcrossStrikePrices()
                     // Determine if time now is during market hours
                     .filter(tickFilter -> ThetaMarketUtil.isDuringNewYorkMarketHours(Instant.now()))
-                    .doOnSubscribe(subscription -> {
-                        getStatus().changeState(ManagerState.RUNNING);
-                        subscription.request(Long.MAX_VALUE);
-                    }).subscribe(
+                    .subscribe(
 
                             this::processTick,
 

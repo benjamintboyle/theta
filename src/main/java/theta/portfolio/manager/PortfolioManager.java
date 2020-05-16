@@ -75,10 +75,9 @@ public class PortfolioManager implements ManagerShutdown {
         return Mono.create(emitter -> {
 
             final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
-                    .map(this::processSecurity).doOnSubscribe(subscription -> {
-                        getStatus().changeState(ManagerState.RUNNING);
-                        subscription.request(Long.MAX_VALUE);
-                    }).subscribe(
+                    .map(this::processSecurity).doOnSubscribe(
+                            subscription -> getStatus().changeState(ManagerState.RUNNING))
+                    .subscribe(
 
                             security -> PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(),
                                     getSecurityIdMap()),
