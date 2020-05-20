@@ -42,7 +42,7 @@ public class DefaultIbExecutionHandler implements ExecutionHandler {
         if (order.getSecurityType() == SecurityType.STOCK) {
             orderStatus.concatWith(executeStockOrder(order));
         } else {
-            logger.warn("ExecuteOrder not implemented for Security Type: {}. Order will not be executed for order: {}",
+            logger.error("ExecuteOrder not implemented for Security Type: {}. Order will not be executed for order: {}",
                     order.getSecurityType(), order);
         }
 
