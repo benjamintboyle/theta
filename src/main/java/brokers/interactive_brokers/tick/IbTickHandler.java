@@ -18,6 +18,7 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
-    private static final Logger logger = LoggerFactory.getLogger(IbTickHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ReplayProcessor<TickType> tickSubject = ReplayProcessor.createSizeAndTimeout(1, Duration.ofSeconds(1L));
 

@@ -6,10 +6,11 @@ import theta.domain.stock.Stock;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionType;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 public class ExecutableOrderFactory {
-    private static final Logger logger = LoggerFactory.getLogger(ExecutableOrderFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ExecutableOrderFactory() {
 

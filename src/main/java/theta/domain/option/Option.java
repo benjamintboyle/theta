@@ -6,12 +6,13 @@ import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
 public class Option implements Security {
-    private static final Logger logger = LoggerFactory.getLogger(Option.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final UUID id;
     private final SecurityType type;
@@ -86,27 +87,22 @@ public class Option implements Security {
     @Override
     public String toString() {
 
-        final StringBuilder builder = new StringBuilder();
-
-        builder.append(getSecurityType());
-        builder.append(" [");
-
-        builder.append("Ticker: ");
-        builder.append(getTicker());
-        builder.append(", Quantity: ");
-        builder.append(getQuantity());
-        builder.append(", Strike Price: ");
-        builder.append(getPrice());
-        builder.append(", Expiration: ");
-        builder.append(getExpiration());
-        builder.append(", Average Price: ");
-        builder.append(getAverageTradePrice());
-        builder.append(", Id: ");
-        builder.append(getId());
-
-        builder.append("]");
-
-        return builder.toString();
+        String builder = getSecurityType() +
+                " [" +
+                "Ticker: " +
+                getTicker() +
+                ", Quantity: " +
+                getQuantity() +
+                ", Strike Price: " +
+                getPrice() +
+                ", Expiration: " +
+                getExpiration() +
+                ", Average Price: " +
+                getAverageTradePrice() +
+                ", Id: " +
+                getId() +
+                "]";
+        return builder;
     }
 
     @Override

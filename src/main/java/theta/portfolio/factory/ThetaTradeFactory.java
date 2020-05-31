@@ -1,5 +1,6 @@
 package theta.portfolio.factory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,7 @@ import theta.domain.util.StockUtil;
 
 public class ThetaTradeFactory {
 
-  private static final Logger logger = LoggerFactory.getLogger(ThetaTradeFactory.class);
+  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private ThetaTradeFactory() {
 

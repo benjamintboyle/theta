@@ -7,11 +7,12 @@ import theta.domain.SecurityType;
 import theta.domain.composed.Theta;
 import theta.domain.option.Option;
 
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class PositionLogger {
-    private static final Logger logger = LoggerFactory.getLogger(PositionLogger.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final Comparator<Security> byTicker = Comparator.comparing(Security::getTicker);
 

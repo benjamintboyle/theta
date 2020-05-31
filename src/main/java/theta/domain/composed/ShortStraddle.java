@@ -7,11 +7,12 @@ import theta.domain.SecurityType;
 import theta.domain.Ticker;
 import theta.domain.option.Option;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.UUID;
 
 public class ShortStraddle implements Security {
-    private static final Logger logger = LoggerFactory.getLogger(ShortStraddle.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Option call;
     private final Option put;

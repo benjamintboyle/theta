@@ -11,13 +11,14 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.Set;
 
 // TODO: This whole class needs to be fixed to process more straightforwardly
 @Component
 public class LastTickProcessor implements TickProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(LastTickProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final Set<TickType> applicableTickTypes = Set.of(TickType.LAST);
     private static final ExecutionType EXECUTION_TYPE = ExecutionType.MARKET;

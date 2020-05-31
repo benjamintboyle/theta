@@ -14,11 +14,12 @@ import theta.connection.domain.ConnectionState;
 import theta.connection.domain.ConnectionStatus;
 import theta.util.ThetaStartupUtil;
 
+import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 
 @Component
 public class DefaultIbConnectionHandler implements IbController, ConnectionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultIbConnectionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int CLIENT_ID = 0;
 
     private final IbApiController controller;

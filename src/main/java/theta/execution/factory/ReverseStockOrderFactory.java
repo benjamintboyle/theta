@@ -10,10 +10,11 @@ import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 import theta.execution.domain.DefaultStockOrder;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 public class ReverseStockOrderFactory {
-    private static final Logger logger = LoggerFactory.getLogger(ReverseStockOrderFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ReverseStockOrderFactory() {
 

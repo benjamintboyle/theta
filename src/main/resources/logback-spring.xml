@@ -3,7 +3,7 @@
 <configuration>
 
 	<property name="LOG_NAME" value="theta" />
-	<property name="LOG_DIR" value="./logs" />
+	<property name="LOG_DIR" value="logs" />
 	<property name="LOG_ARCHIVE" value="${LOG_DIR}/archive" />
 
 	<appender name="Console"

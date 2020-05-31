@@ -12,10 +12,11 @@ import reactor.core.publisher.ReplayProcessor;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.domain.DefaultOrderStatus;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
 public class DefaultIbOrderHandler implements IbOrderHandler {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultIbOrderHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ExecutableOrder order;
 

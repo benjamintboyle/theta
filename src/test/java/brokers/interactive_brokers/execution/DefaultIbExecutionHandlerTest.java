@@ -24,8 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultIbExecutionHandlerTest {
@@ -49,6 +48,7 @@ class DefaultIbExecutionHandlerTest {
     @Test
     void executeOrder() {
         when(mockOrder.getSecurityType()).thenReturn(SecurityType.STOCK);
+        when(mockOrder.getBrokerId()).thenReturn(Optional.of(1));
         when(mockOrder.getExecutionAction()).thenReturn(ExecutionAction.BUY);
         when(mockOrder.getExecutionType()).thenReturn(ExecutionType.MARKET);
         when(mockOrder.getTicker()).thenReturn(mockTicker);
@@ -57,6 +57,17 @@ class DefaultIbExecutionHandlerTest {
         Flux<OrderStatus> orderStatusFlux = sut.executeOrder(mockOrder);
 
         verify(mockApiController).placeOrModifyOrder(isA(Contract.class), isA(Order.class), isA(IbOrderHandler.class));
+        StepVerifier.create(orderStatusFlux).expectComplete().verify();
+    }
+
+    @Test
+    void executeOrder_Nonstock() {
+        when(mockOrder.getSecurityType()).thenReturn(SecurityType.CALL);
+        when(mockOrder.getBrokerId()).thenReturn(Optional.of(1));
+
+        Flux<OrderStatus> orderStatusFlux = sut.executeOrder(mockOrder);
+
+        verify(mockApiController, never()).placeOrModifyOrder(isA(Contract.class), isA(Order.class), isA(IbOrderHandler.class));
         StepVerifier.create(orderStatusFlux).expectComplete().verify();
     }
 
@@ -75,6 +86,16 @@ class DefaultIbExecutionHandlerTest {
     }
 
     @Test
+    void modifyOrder_noId() {
+        when(mockOrder.getBrokerId()).thenReturn(Optional.empty());
+
+        boolean orderStatusFlux = sut.modifyOrder(mockOrder);
+
+        verify(mockApiController, never()).placeOrModifyOrder(isA(Contract.class), isA(Order.class), isA(IbOrderHandler.class));
+        assertThat(orderStatusFlux).as("Modify order was failure").isFalse();
+    }
+
+    @Test
     void cancelOrder_successful() {
         when(mockOrder.getBrokerId()).thenReturn(Optional.of(100));
         when(mockIbController.getController()).thenReturn(mockApiController);
@@ -82,6 +103,16 @@ class DefaultIbExecutionHandlerTest {
         Flux<OrderStatus> cancelOrderStatusFlux = sut.cancelOrder(mockOrder);
 
         verify(mockApiController).cancelOrder(eq(100));
+        assertThat(cancelOrderStatusFlux).isEqualTo(Flux.empty());
+    }
+
+    @Test
+    void cancelOrder_noId() {
+        when(mockOrder.getBrokerId()).thenReturn(Optional.empty());
+
+        Flux<OrderStatus> cancelOrderStatusFlux = sut.cancelOrder(mockOrder);
+
+        verify(mockApiController, never()).cancelOrder(isA(Integer.class));
         assertThat(cancelOrderStatusFlux).isEqualTo(Flux.empty());
     }
 }

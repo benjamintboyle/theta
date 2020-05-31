@@ -18,13 +18,14 @@ import theta.portfolio.manager.PortfolioManager;
 import theta.tick.manager.TickManager;
 
 import javax.annotation.PreDestroy;
+import java.lang.invoke.MethodHandles;
 
 // curl -i -X POST http://localhost:8080/actuator/shutdown
 
 @ComponentScan({"theta", "brokers.interactive_brokers"})
 @SpringBootApplication
 public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
-    private static final Logger logger = LoggerFactory.getLogger(ThetaEngine.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Value("${application.name}")
     private String appName;
@@ -84,11 +85,8 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
     }
 
     private Disposable startTickManager() {
-
-        return portfolioManager.getPositionEnd().then(tickManager.startTickProcessing()).subscribe(
-
+        return tickManager.startTickProcessing().subscribe(
                 (Void) -> logger.info("Tick Manager has Shutdown"),
-
                 error -> {
                     logger.error("Tick Manager Error: ", error);
                     shutdown();

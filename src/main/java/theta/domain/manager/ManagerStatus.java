@@ -3,10 +3,11 @@ package theta.domain.manager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 
 public class ManagerStatus {
-    private static final Logger logger = LoggerFactory.getLogger(ManagerStatus.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final String className;
     private ManagerState state;

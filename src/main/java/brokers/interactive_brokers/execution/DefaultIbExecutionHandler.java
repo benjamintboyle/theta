@@ -16,13 +16,14 @@ import theta.domain.SecurityType;
 import theta.execution.api.ExecutableOrder;
 import theta.execution.api.OrderStatus;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class DefaultIbExecutionHandler implements ExecutionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultIbExecutionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final IbController ibController;
 
@@ -69,7 +70,6 @@ public class DefaultIbExecutionHandler implements ExecutionHandler {
 
     @Override
     public Flux<OrderStatus> cancelOrder(ExecutableOrder order) {
-
         order.getBrokerId().ifPresentOrElse(
                 id -> ibController.getController().cancelOrder(id),
                 () -> logger.warn("Can not cancel stock order with empty broker id for: {}", order));
@@ -78,7 +78,6 @@ public class DefaultIbExecutionHandler implements ExecutionHandler {
     }
 
     private Flux<OrderStatus> executeStockOrder(ExecutableOrder order) {
-
         Contract ibContract = new StkContract(order.getTicker().getSymbol());
         Order ibOrder = IbOrderUtil.buildIbOrder(order);
         IbOrderHandler orderHandler = new DefaultIbOrderHandler(order);

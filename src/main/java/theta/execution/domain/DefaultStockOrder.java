@@ -9,12 +9,13 @@ import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 public class DefaultStockOrder implements ExecutableOrder {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultStockOrder.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final UUID id;
 

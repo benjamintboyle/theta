@@ -18,6 +18,7 @@ import theta.domain.Ticker;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class IbTickSubscriber implements TickSubscriber {
-    private static final Logger logger = LoggerFactory.getLogger(IbTickSubscriber.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EmitterProcessor<Tick> tickSubject = EmitterProcessor.create();
 

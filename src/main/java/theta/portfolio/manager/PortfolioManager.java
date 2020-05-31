@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
 import reactor.core.Disposable.Composite;
 import reactor.core.Disposables;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import theta.api.ManagerShutdown;
 import theta.api.PositionHandler;
@@ -25,14 +24,13 @@ import theta.portfolio.factory.ThetaTradeFactory;
 import theta.tick.api.TickMonitor;
 
 import java.lang.invoke.MethodHandles;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
 public class PortfolioManager implements ManagerShutdown {
-    private static final Logger logger = LoggerFactory.getLogger(PortfolioManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final PositionHandler positionHandler;
     private final TickMonitor monitor;
@@ -95,10 +93,6 @@ public class PortfolioManager implements ManagerShutdown {
             portfolioDisposables.add(positionLoggerDisposable);
         });
 
-    }
-
-    public Flux<Instant> getPositionEnd() {
-        return positionHandler.getPositionEnd();
     }
 
     private Security processSecurity(Security security) {

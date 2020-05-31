@@ -5,11 +5,12 @@ import com.ib.client.Types.SecType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Objects;
 
 public class IbStringUtil {
-    private static final Logger logger = LoggerFactory.getLogger(IbStringUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final String DELIMITTER = ", ";
     private static final String CONTRACT_LABEL = "Contract Id: ";

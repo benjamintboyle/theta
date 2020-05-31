@@ -6,10 +6,11 @@ import theta.domain.Security;
 import theta.domain.composed.Theta;
 import theta.domain.stock.Stock;
 
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 public class StockUtil {
-    private static final Logger logger = LoggerFactory.getLogger(StockUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private StockUtil() {
 

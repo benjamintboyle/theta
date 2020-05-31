@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class TickManager implements TickMonitor {
-    private static final Logger logger = LoggerFactory.getLogger(TickManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TickSubscriber tickSubscriber;
     private final TickProcessor tickProcessor;

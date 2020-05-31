@@ -8,11 +8,12 @@ import reactor.core.publisher.Flux;
 import theta.connection.domain.ConnectionState;
 import theta.connection.domain.ConnectionStatus;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 @Component
 public class DefaultConnectionHandlerCallback implements IbConnectionHandlerCallback {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultConnectionHandlerCallback.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String MESSAGE_TEMPLATE = "Interactive Brokers Message - Id: '{}', Code: '{}', Message: '{}'";
     private final EmitterProcessor<ConnectionStatus> connectionStatusProcessor = EmitterProcessor.create();

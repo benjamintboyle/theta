@@ -15,7 +15,7 @@ import java.lang.invoke.MethodHandles;
 
 @Component
 public class DefaultConnectionManager implements ConnectionManager {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultConnectionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ConnectionHandler connectionHandler;
 

@@ -6,11 +6,12 @@ import theta.domain.Security;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.UUID;
 
 public class Stock implements Security {
-    private static final Logger logger = LoggerFactory.getLogger(Stock.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final UUID id;
     private final Ticker ticker;

@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class ExecutionManager implements Executor {
-    private static final Logger logger = LoggerFactory.getLogger(ExecutionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ExecutionHandler executionHandler;
 

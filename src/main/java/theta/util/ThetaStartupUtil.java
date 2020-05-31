@@ -3,12 +3,13 @@ package theta.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public class ThetaStartupUtil {
-    private static final Logger logger = LoggerFactory.getLogger(ThetaStartupUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // Connection Manager Configuration
     private static final String GATEWAY_IP_ADDRESS_DOCKER = "172.17.0.2";

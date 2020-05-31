@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.execution.api.ExecutableOrder;
 
+import java.lang.invoke.MethodHandles;
+
 public class IbOrderUtil {
-    private static final Logger logger = LoggerFactory.getLogger(IbOrderUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private IbOrderUtil() {
     }
@@ -41,12 +43,7 @@ public class IbOrderUtil {
                 order.getLimitPrice().ifPresentOrElse(ibOrder::lmtPrice,
                         () -> logger.warn("Execution Type is LIMIT, but no Limit Price is set for Order: {}", order));
             }
-            case STOP -> ibOrder.orderType(OrderType.STP);
-            case STOP_LIMIT -> ibOrder.orderType(OrderType.STP_LMT);
-            case TRAILING_STOP -> ibOrder.orderType(OrderType.TRAIL);
-            default -> logger.error(
-                    "Expected MARKET, LIMIT, STOP, STOP_LIMIT, or TRAILING_STOP for ExecutionType: {}",
-                    order);
+            default -> logger.error("Expected MARKET or LIMIT for ExecutionType: {}", order);
         }
 
         logger.debug("Built Interactive Brokers Order: {}", IbStringUtil.toStringOrder(ibOrder));

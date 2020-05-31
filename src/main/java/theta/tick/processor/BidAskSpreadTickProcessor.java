@@ -10,13 +10,14 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public class BidAskSpreadTickProcessor implements TickProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(BidAskSpreadTickProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Map<Ticker, Double> limitPriceByTicker = new HashMap<>();
 

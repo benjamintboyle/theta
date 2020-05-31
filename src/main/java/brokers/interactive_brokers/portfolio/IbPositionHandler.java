@@ -8,8 +8,6 @@ import com.ib.controller.ApiController.IPositionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.Disposable.Composite;
-import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.ReplayProcessor;
 import theta.api.PositionHandler;
@@ -19,7 +17,7 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 import theta.domain.ticker.DefaultTicker;
 
-import java.time.Duration;
+import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -28,20 +26,14 @@ import java.util.UUID;
 
 @Component
 public class IbPositionHandler implements IPositionHandler, PositionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(IbPositionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // Map IB Id to Internal Id
     private final Map<Integer, UUID> contractIdMap = new HashMap<>();
 
     private final IbController controller;
 
-    private final ReplayProcessor<Security> subjectPositions = ReplayProcessor.create();
-    private final ReplayProcessor<Instant> subjectPositionEndTime = ReplayProcessor.create(1);
-
-    private final Composite positionHandlerDisposables = Disposables.composite();
-
-    // TODO: Move to properties file
-    private static final Duration TIMEOUT_DURATION = Duration.ofSeconds(3);
+    private ReplayProcessor<Security> subjectPositions = ReplayProcessor.create();
 
     public IbPositionHandler(IbController controller) {
         logger.info("Starting Interactive Brokers Position Handler");
@@ -50,31 +42,16 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     @Override
     public Flux<Security> requestPositionsFromBrokerage() {
-
+        subjectPositions = ReplayProcessor.create();
         logger.info("Requesting Positions from Interactive Brokers");
-
         controller.getController().reqPositions(this);
-
-        return getPositionEnd().next().ignoreElement().thenMany(subjectPositions.onBackpressureBuffer());
-        // Don't let IB threads out of brokers.interactive_brokers package (TEMPORARILY disabled to
-        // determine thread performance)
-        // .observeOn(ThetaSchedulersFactory.computeThread())
-    }
-
-    @Override
-    public Flux<Instant> getPositionEnd() {
-        return subjectPositionEndTime.timeout(TIMEOUT_DURATION);
-        // Don't let IB threads out of brokers.interactive_brokers package (TEMPORARILY disabled to
-        // determine thread performance)
-        // .observeOn(ThetaSchedulersFactory.ioThread())
+        return subjectPositions.onBackpressureBuffer();
     }
 
     @Override
     public void position(String account, Contract contract, double position, double avgCost) {
-
-        logger.debug(
-                "Received position from Brokers servers: Quantity: {}, "
-                        + "Contract: [{}], Account: {}, Average Cost: {}",
+        logger.debug("Received position from Brokers servers: " +
+                        "Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
                 position, IbStringUtil.toStringContract(contract), account, avgCost);
 
         processIbPosition(contract, position, avgCost);
@@ -82,51 +59,29 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
     @Override
     public void positionEnd() {
-        logger.info("Received Position End notification");
-        subjectPositionEndTime.onNext(Instant.now());
+        logger.info("Received Position End notification at {}", Instant.now());
+        subjectPositions.onComplete();
     }
 
     @Override
     public void shutdown() {
-
         if (!subjectPositions.hasCompleted()) {
             logger.debug("Completing Position Subject");
             subjectPositions.onComplete();
         } else {
             logger.warn("Tried to complete Position Subject when it is already completed.");
         }
-
-        if (!positionHandlerDisposables.isDisposed()) {
-            logger.debug("Disposing IbPositionHandler Disposable");
-            positionHandlerDisposables.dispose();
-        } else {
-            logger.warn("Tried to dispose of already disposed Position Handler Disposables");
-        }
     }
 
     private void processIbPosition(Contract contract, double position, double avgCost) {
-
         switch (contract.secType()) {
-            case STK -> {
-                final Stock stock = generateStock(contract, position, avgCost);
-                subjectPositions.onNext(stock);
-            }
-            case OPT -> {
-                final Option option = generateOption(contract, position, avgCost);
-                if (option != null) {
-                    subjectPositions.onNext(option);
-                } else {
-
-                    logger.error("Option not processed for Contract: {}, Position: {}, Average Cost: {}",
-                            IbStringUtil.toStringContract(contract), position, avgCost);
-                }
-            }
+            case STK -> subjectPositions.onNext(generateStock(contract, position, avgCost));
+            case OPT -> subjectPositions.onNext(generateOption(contract, position, avgCost));
             default -> logger.error("Can not determine Position Type: {}", IbStringUtil.toStringContract(contract));
         }
     }
 
     private Stock generateStock(Contract contract, double position, double avgCost) {
-
         final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
         return Stock.of(generateId(contract.conid()), DefaultTicker.from(contract.symbol()), quantity,
@@ -143,18 +98,10 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
         final LocalDate expirationDate =
                 IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
-
         final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
-        Option option = null;
-
-        if (securityType != null) {
-            option = new Option(generateId(contract.conid()), securityType,
-                    DefaultTicker.from(contract.symbol()), quantity, contract.strike(), expirationDate,
-                    avgCost);
-        }
-
-        return option;
+        return new Option(generateId(contract.conid()), securityType, DefaultTicker.from(contract.symbol()), quantity,
+                contract.strike(), expirationDate, avgCost);
     }
 
     private long convertQuantityToLongCheckingIfWholeValue(double quantity, Contract contract) {
@@ -164,8 +111,8 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
         if (Math.abs(quantity - wholeQuantity) > Math.ulp(quantity)) {
             wholeQuantity = (long) quantity;
 
-            logger.warn("Security quantity not whole value. Truncating from {} to {} for {}", quantity,
-                    wholeQuantity, IbStringUtil.toStringContract(contract));
+            logger.warn("Security quantity not whole value. Truncating from {} to {} for {}",
+                    quantity, wholeQuantity, IbStringUtil.toStringContract(contract));
         }
 
         return wholeQuantity;
@@ -183,5 +130,4 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
 
         return uuid;
     }
-
 }
