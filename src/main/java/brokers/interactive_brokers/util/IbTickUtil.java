@@ -9,7 +9,6 @@ public class IbTickUtil {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private IbTickUtil() {
-
     }
 
     /**
@@ -21,15 +20,14 @@ public class IbTickUtil {
     public static theta.tick.domain.TickType convertToEngineTickType(
             com.ib.client.TickType ibTickType) {
 
-        theta.tick.domain.TickType engineTickType = null;
-
-        switch (ibTickType) {
-            case BID -> engineTickType = theta.tick.domain.TickType.BID;
-            case ASK -> engineTickType = theta.tick.domain.TickType.ASK;
-            case LAST -> engineTickType = theta.tick.domain.TickType.LAST;
-            default -> logger.error("Could not convert IB Tick Type enum {} to Engine Tick Type enum", ibTickType);
-        }
-
-        return engineTickType;
+        return switch (ibTickType) {
+            case BID -> theta.tick.domain.TickType.BID;
+            case ASK -> theta.tick.domain.TickType.ASK;
+            case LAST -> theta.tick.domain.TickType.LAST;
+            default -> {
+                logger.error("Could not convert IB Tick Type enum {} to Engine Tick Type enum", ibTickType);
+                yield theta.tick.domain.TickType.UNKNOWN;
+            }
+        };
     }
 }
