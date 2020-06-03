@@ -1,5 +1,5 @@
 package theta.tick.domain;
 
 public enum TickType {
-    LAST, ASK, BID, UNKNOWN;
+    LAST, ASK, BID;
 }

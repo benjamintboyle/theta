@@ -509,7 +509,7 @@ public class IbStringUtil {
      * @param deltaNeutralContract An Interactive Brokers Delta Neutral Contract.
      * @return A String representing an IB Delta Neutral Contract.
      */
-    public static String toStringDeltaNeutralContract(DeltaNeutralContract deltaNeutralContract) {
+    private static String toStringDeltaNeutralContract(DeltaNeutralContract deltaNeutralContract) {
 
         final StringBuilder stringBuilder = new StringBuilder();
 
@@ -539,7 +539,7 @@ public class IbStringUtil {
      * @param comboLeg An Interactive Brokers Combo Leg.
      * @return A String representing an IB Combo Leg.
      */
-    public static String toStringComboLeg(ComboLeg comboLeg) {
+    private static String toStringComboLeg(ComboLeg comboLeg) {
 
         final StringBuilder stringBuilder = new StringBuilder();
 

@@ -26,7 +26,7 @@ public class IbTickUtil {
             case LAST -> theta.tick.domain.TickType.LAST;
             default -> {
                 logger.error("Could not convert IB Tick Type enum {} to Engine Tick Type enum", ibTickType);
-                yield theta.tick.domain.TickType.UNKNOWN;
+                throw new IllegalArgumentException("Unknown TickType: " + ibTickType);
             }
         };
     }

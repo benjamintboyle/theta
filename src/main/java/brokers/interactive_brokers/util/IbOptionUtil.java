@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 public class IbOptionUtil {
 
   private IbOptionUtil() {
-
   }
 
   public static LocalDate convertExpiration(String date) {
