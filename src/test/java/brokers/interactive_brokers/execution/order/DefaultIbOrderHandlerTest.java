@@ -19,6 +19,7 @@ import theta.execution.api.OrderStatus;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultIbOrderHandlerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     Appender<ILoggingEvent> appender;
@@ -66,7 +68,7 @@ class DefaultIbOrderHandlerTest {
         StepVerifier.create(orderStatusFlux)
                 .expectNextMatches(status -> status.getCommission() == 1111.0)
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -82,7 +84,7 @@ class DefaultIbOrderHandlerTest {
                 .expectNextMatches(status -> status.getState().equals(OrderState.PENDING))
                 .expectNextMatches(status -> status.getState().equals(OrderState.FILLED))
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test

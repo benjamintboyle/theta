@@ -1,4 +1,4 @@
-package brokers.interactive_brokers.tick;
+package brokers.interactive_brokers.tick.handler;
 
 import com.ib.client.TickType;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import theta.domain.PriceLevel;
 import theta.domain.Ticker;
@@ -15,17 +16,20 @@ import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.DefaultTick;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoField;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IbTickHandlerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     private TickProcessor mockTickProcessor;
@@ -61,7 +65,8 @@ class IbTickHandlerTest {
 
         StepVerifier.create(tickFlux)
                 .expectNext(expectTick)
-                .verifyComplete();
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -84,12 +89,14 @@ class IbTickHandlerTest {
         Tick expectTickAsk = new DefaultTick(TICKER, theta.tick.domain.TickType.ASK, -1.0,
                 price, price, lastTimestamp);
 
+        // Compared without timestamp
         StepVerifier.create(tickFlux)
+                .then(() -> sut.tickPrice(TickType.BID, price, 0))
                 .expectNextMatches(actual -> actual.getTicker().equals(expectTickBid.getTicker())
                         && actual.getTickType().equals(expectTickBid.getTickType())
-                        && actual.getLastPrice().equals(expectTickBid.getLastPrice())
-                        && actual.getBidPrice().equals(expectTickBid.getBidPrice())
-                        && actual.getAskPrice().equals(expectTickBid.getAskPrice())
+                        && Double.compare(actual.getLastPrice(), expectTickBid.getLastPrice()) == 0
+                        && Double.compare(actual.getBidPrice(), expectTickBid.getBidPrice()) == 0
+                        && Double.compare(actual.getAskPrice(), expectTickBid.getAskPrice()) == 0
                 )
                 .then(() -> {
                     sut.tickPrice(TickType.ASK_EFP_COMPUTATION, 11.11, 0);
@@ -98,11 +105,12 @@ class IbTickHandlerTest {
                 })
                 .expectNextMatches(actual -> actual.getTicker().equals(expectTickAsk.getTicker())
                         && actual.getTickType().equals(expectTickAsk.getTickType())
-                        && actual.getLastPrice().equals(expectTickAsk.getLastPrice())
-                        && actual.getBidPrice().equals(expectTickAsk.getBidPrice())
-                        && actual.getAskPrice().equals(expectTickAsk.getAskPrice())
+                        && Double.compare(actual.getLastPrice(), expectTickAsk.getLastPrice()) == 0
+                        && Double.compare(actual.getBidPrice(), expectTickAsk.getBidPrice()) == 0
+                        && Double.compare(actual.getAskPrice(), expectTickAsk.getAskPrice()) == 0
                 )
-                .verifyComplete();
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -122,6 +130,18 @@ class IbTickHandlerTest {
         when(mockPriceLevel.getTicker()).thenReturn(TICKER);
         sut.addPriceLevelMonitor(mockPriceLevel);
         assertThat(sut.removePriceLevelMonitor(mockPriceLevel)).isEqualTo(0);
+    }
+
+    @Test
+    void removePriceLevelMonitor_cancelFailure() {
+        when(mockPriceLevel.getTicker()).thenReturn(TICKER);
+        sut.addPriceLevelMonitor(mockPriceLevel);
+
+        // called twice, so canceled twice. results in exception
+        sut.removePriceLevelMonitor(mockPriceLevel);
+        assertThatExceptionOfType(Sinks.EmissionException.class)
+                .isThrownBy(() -> sut.removePriceLevelMonitor(mockPriceLevel))
+                .withMessage("Sink emission failed with FAIL_TERMINATED");
     }
 
     @Test

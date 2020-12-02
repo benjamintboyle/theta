@@ -12,11 +12,14 @@ import reactor.test.StepVerifier;
 import theta.connection.domain.ConnectionState;
 import theta.connection.domain.ConnectionStatus;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultIbApiControllerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     private IbConnectionHandlerCallback mockCallback;
@@ -41,7 +44,7 @@ class DefaultIbApiControllerTest {
                 .expectNextMatches(status -> status.getState().equals(ConnectionState.CONNECTED))
                 .expectNextMatches(status -> status.getState().equals(ConnectionState.DISCONNECTED))
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test

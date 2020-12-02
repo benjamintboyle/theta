@@ -12,11 +12,10 @@ import java.util.Objects;
 public class IbStringUtil {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final String DELIMITTER = ", ";
+    public static final String DELIMITER = ", ";
     private static final String CONTRACT_LABEL = "Contract Id: ";
 
     private IbStringUtil() {
-
     }
 
     /**
@@ -35,39 +34,39 @@ public class IbStringUtil {
             stringBuilder.append("Order State: ");
             stringBuilder.append(orderState.status());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Initial Margin: ");
             stringBuilder.append(orderState.initMargin());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Maintenance Margin: ");
             stringBuilder.append(orderState.maintMargin());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Equity with Loan: ");
             stringBuilder.append(orderState.equityWithLoan());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Commission: ");
             stringBuilder.append(orderState.commission());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Min Commission: ");
             stringBuilder.append(orderState.minCommission());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Max Commission: ");
             stringBuilder.append(orderState.maxCommission());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Commission Currency: ");
             stringBuilder.append(orderState.commissionCurrency());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Order Active: ");
             stringBuilder.append(orderState.status().isActive());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Warning Text: ");
             stringBuilder.append(orderState.warningText());
         }
@@ -91,283 +90,283 @@ public class IbStringUtil {
             stringBuilder.append("Action: ");
             stringBuilder.append(order.action());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Action Api String: ");
             stringBuilder.append(order.action().getApiString());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("All or None: ");
             stringBuilder.append(Objects.toString(order.allOrNone()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Block Order: ");
             stringBuilder.append(Objects.toString(order.blockOrder()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("eTrade Only: ");
             stringBuilder.append(Objects.toString(order.eTradeOnly()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Firm Quote Only: ");
             stringBuilder.append(Objects.toString(order.firmQuoteOnly()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Hidden: ");
             stringBuilder.append(Objects.toString(order.hidden()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Not Held: ");
             stringBuilder.append(Objects.toString(order.notHeld()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Opt Out Smart Routing: ");
             stringBuilder.append(Objects.toString(order.optOutSmartRouting()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Outside Rth: ");
             stringBuilder.append(Objects.toString(order.outsideRth()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Override Percentage Constraints: ");
             stringBuilder.append(Objects.toString(order.overridePercentageConstraints()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Auto Reset: ");
             stringBuilder.append(Objects.toString(order.scaleAutoReset()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Random Percent: ");
             stringBuilder.append(Objects.toString(order.scaleRandomPercent()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Sweep To Fill: ");
             stringBuilder.append(Objects.toString(order.sweepToFill()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Transmit: ");
             stringBuilder.append(Objects.toString(order.transmit()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("WhatIf: ");
             stringBuilder.append(Objects.toString(order.whatIf()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Aux Price: ");
             stringBuilder.append(Objects.toString(order.auxPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Delta: ");
             stringBuilder.append(Objects.toString(order.delta()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Delta Neutral Aux Price: ");
             stringBuilder.append(Objects.toString(order.deltaNeutralAuxPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Discretionary Amt: ");
             stringBuilder.append(Objects.toString(order.discretionaryAmt()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Limit Price: ");
             stringBuilder.append(Objects.toString(order.lmtPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("NBBO Price Cap: ");
             stringBuilder.append(Objects.toString(order.nbboPriceCap()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Percent Offset: ");
             stringBuilder.append(Objects.toString(order.percentOffset()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Price Adjust Value: ");
             stringBuilder.append(Objects.toString(order.scalePriceAdjustValue()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Price Increment: ");
             stringBuilder.append(Objects.toString(order.scalePriceIncrement()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Profile Offset: ");
             stringBuilder.append(Objects.toString(order.scaleProfitOffset()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Starting Price: ");
             stringBuilder.append(Objects.toString(order.startingPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Stock Range Lower: ");
             stringBuilder.append(Objects.toString(order.stockRangeLower()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Stock Range Upper: ");
             stringBuilder.append(Objects.toString(order.stockRangeUpper()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Stock Ref Price: ");
             stringBuilder.append(Objects.toString(order.stockRefPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Trailing Percent: ");
             stringBuilder.append(Objects.toString(order.trailingPercent()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Trailing Stop Price: ");
             stringBuilder.append(Objects.toString(order.trailStopPrice()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Volatility: ");
             stringBuilder.append(Objects.toString(order.volatility()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Client Id: ");
             stringBuilder.append(Objects.toString(order.clientId()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Continuous Update: ");
             stringBuilder.append(Objects.toString(order.continuousUpdate()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Delta Neutral Con Id: ");
             stringBuilder.append(Objects.toString(order.deltaNeutralConId()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Display Size: ");
             stringBuilder.append(Objects.toString(order.displaySize()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Min Quantity: ");
             stringBuilder.append(Objects.toString(order.minQty()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Order Id: ");
             stringBuilder.append(Objects.toString(order.orderId()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Parent Id: ");
             stringBuilder.append(Objects.toString(order.parentId()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Init Fill Quantity: ");
             stringBuilder.append(Objects.toString(order.scaleInitFillQty()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Init Level Size: ");
             stringBuilder.append(Objects.toString(order.scaleInitLevelSize()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Init Position: ");
             stringBuilder.append(Objects.toString(order.scaleInitPosition()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Price Adjust Interval: ");
             stringBuilder.append(Objects.toString(order.scalePriceAdjustInterval()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Subs Level Size: ");
             stringBuilder.append(Objects.toString(order.scaleSubsLevelSize()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Total Quantity: ");
             stringBuilder.append(Objects.toString(order.totalQuantity()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Perm Id: ");
             stringBuilder.append(Objects.toString(order.permId()));
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("FA Method: ");
             stringBuilder.append(order.faMethod());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("OCA Type: ");
             stringBuilder.append(order.ocaType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Delta Neutral Order Type: ");
             stringBuilder.append(order.deltaNeutralOrderType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Order Type: ");
             stringBuilder.append(order.orderType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Reference Price Type: ");
             stringBuilder.append(order.referencePriceType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Rule SOA: ");
             stringBuilder.append(order.rule80A());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Account: ");
             stringBuilder.append(order.account());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Algo Strategy: ");
             stringBuilder.append(order.algoStrategy());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Algo Id: ");
             stringBuilder.append(order.algoId());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("FA Group: ");
             stringBuilder.append(order.faGroup());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("FA Percentage: ");
             stringBuilder.append(order.faPercentage());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("FA Profile: ");
             stringBuilder.append(order.faProfile());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Good After Time: ");
             stringBuilder.append(order.goodAfterTime());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Good Till Date: ");
             stringBuilder.append(order.goodTillDate());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Hedge Param: ");
             stringBuilder.append(order.hedgeParam());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("OCA Group: ");
             stringBuilder.append(order.ocaGroup());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Order Ref: ");
             stringBuilder.append(order.orderRef());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("TIF: ");
             stringBuilder.append(order.tif());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Volatility Type: ");
             stringBuilder.append(order.volatilityType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Smart Combo Routing Params: ");
             stringBuilder.append(order.smartComboRoutingParams());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Trigger Method: ");
             stringBuilder.append(order.triggerMethod());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Algo Params: ");
             stringBuilder.append(order.algoParams());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Order Combo Legs: ");
             stringBuilder.append(order.orderComboLegs());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Scale Table: ");
             stringBuilder.append(order.scaleTable());
         } else {
@@ -393,61 +392,61 @@ public class IbStringUtil {
             stringBuilder.append("Symbol: ");
             stringBuilder.append(contract.symbol());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Security Type: ");
             stringBuilder.append(contract.secType());
 
 
             if (!contract.secType().equals(SecType.STK)) {
-                stringBuilder.append(DELIMITTER);
+                stringBuilder.append(DELIMITER);
                 stringBuilder.append("Expiration Date: ");
                 stringBuilder.append(contract.lastTradeDateOrContractMonth());
 
-                stringBuilder.append(DELIMITTER);
+                stringBuilder.append(DELIMITER);
                 stringBuilder.append("Strike Price: ");
                 stringBuilder.append(contract.strike());
             }
 
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Right: ");
             stringBuilder.append(contract.right());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Multiplier: ");
             stringBuilder.append(contract.multiplier());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Primary Exchange: ");
             stringBuilder.append(contract.primaryExch());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Currency: ");
             stringBuilder.append(contract.currency());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Local Symbol: ");
             stringBuilder.append(contract.localSymbol());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Trading Class: ");
             stringBuilder.append(contract.tradingClass());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Security Id Type: ");
             stringBuilder.append(contract.secIdType());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Security Id: ");
             stringBuilder.append(contract.secId());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Include Expired: ");
             stringBuilder.append(contract.includeExpired());
 
 
             if (contract.underComp() != null) {
-                stringBuilder.append(DELIMITTER);
+                stringBuilder.append(DELIMITER);
                 stringBuilder.append("Delta Neutral Contract: ");
                 stringBuilder.append("[");
                 stringBuilder.append(IbStringUtil.toStringDeltaNeutralContract(contract.underComp()));
@@ -457,25 +456,25 @@ public class IbStringUtil {
 
             final List<ComboLeg> comboLegList = contract.comboLegs();
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Combo Legs: ");
             stringBuilder.append("[ ");
             stringBuilder.append("Count: ");
             stringBuilder.append(comboLegList.size());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Combo Legs Description: ");
             stringBuilder.append(contract.comboLegsDescrip());
 
-            stringBuilder.append(DELIMITTER);
-            stringBuilder.append("Legs: [ ");
+            stringBuilder.append(DELIMITER);
+            stringBuilder.append("[ ");
 
             if (!comboLegList.isEmpty()) {
 
                 for (int i = 0; i < comboLegList.size(); i++) {
 
                     if (i > 0) {
-                        stringBuilder.append(DELIMITTER);
+                        stringBuilder.append(DELIMITER);
                     }
 
                     stringBuilder.append("Leg ");
@@ -484,14 +483,13 @@ public class IbStringUtil {
 
                     stringBuilder.append(IbStringUtil.toStringComboLeg(comboLegList.get(i)));
 
-                    stringBuilder.append(" ] ");
+                    stringBuilder.append(" ]");
                 }
             }
 
-            stringBuilder.append(" ] ]");
+            stringBuilder.append("]]");
 
-
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append(CONTRACT_LABEL);
             stringBuilder.append(contract.conid());
 
@@ -517,17 +515,13 @@ public class IbStringUtil {
             stringBuilder.append(CONTRACT_LABEL);
             stringBuilder.append(deltaNeutralContract.conid());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Delta: ");
             stringBuilder.append(deltaNeutralContract.delta());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Price: ");
             stringBuilder.append(deltaNeutralContract.price());
-        }
-
-        if (stringBuilder.length() == 0) {
-            stringBuilder.append(deltaNeutralContract);
         }
 
         return stringBuilder.toString();
@@ -544,41 +538,36 @@ public class IbStringUtil {
         final StringBuilder stringBuilder = new StringBuilder();
 
         if (comboLeg != null) {
-            stringBuilder.append(DELIMITTER);
             stringBuilder.append(CONTRACT_LABEL);
             stringBuilder.append(comboLeg.conid());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Ratio: ");
             stringBuilder.append(comboLeg.ratio());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Action: ");
             stringBuilder.append(comboLeg.action());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Exchange: ");
             stringBuilder.append(comboLeg.exchange());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Open/Close: ");
             stringBuilder.append(comboLeg.openClose());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Short Sale Slot: ");
             stringBuilder.append(comboLeg.shortSaleSlot());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Designated Location: ");
             stringBuilder.append(comboLeg.designatedLocation());
 
-            stringBuilder.append(DELIMITTER);
+            stringBuilder.append(DELIMITER);
             stringBuilder.append("Exempt Code: ");
             stringBuilder.append(comboLeg.exemptCode());
-        }
-
-        if (stringBuilder.length() == 0) {
-            stringBuilder.append(comboLeg);
         }
 
         return stringBuilder.toString();

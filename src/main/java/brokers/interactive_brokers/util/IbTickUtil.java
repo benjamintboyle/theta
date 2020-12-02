@@ -14,7 +14,7 @@ public class IbTickUtil {
     /**
      * Converts Interactive Brokers TickType to Theta TickType.
      *
-     * @param ibTickType Interactive Brokkers TickType received from servers.
+     * @param ibTickType Interactive Brokers TickType received from servers.
      * @return Theta TickType converted from Broker type.
      */
     public static theta.tick.domain.TickType convertToEngineTickType(

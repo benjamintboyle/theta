@@ -17,6 +17,7 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 import theta.domain.ticker.DefaultTicker;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IbPositionHandlerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     private IbController mockController;
@@ -48,7 +50,9 @@ class IbPositionHandlerTest {
         sut.positionEnd();
 
         verify(mockApiController).reqPositions(isA(ApiController.IPositionHandler.class));
-        StepVerifier.create(securitiesFlux).expectComplete().verify();
+        StepVerifier.create(securitiesFlux)
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -90,7 +94,7 @@ class IbPositionHandlerTest {
         StepVerifier.create(securitiesFlux)
                 .expectNext(expectStock, expectOption)
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -98,7 +102,9 @@ class IbPositionHandlerTest {
         Flux<Security> securitiesFlux = sut.requestPositionsFromBrokerage();
         sut.positionEnd();
 
-        StepVerifier.create(securitiesFlux).expectComplete().verify();
+        StepVerifier.create(securitiesFlux)
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -110,6 +116,6 @@ class IbPositionHandlerTest {
                 .expectSubscription()
                 .then(() -> sut.shutdown())
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 }

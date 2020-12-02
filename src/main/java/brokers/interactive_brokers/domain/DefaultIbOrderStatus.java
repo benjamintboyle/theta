@@ -30,21 +30,21 @@ public class DefaultIbOrderStatus implements IbOrderStatus {
     @Override
     public String toString() {
         return "Order Status: [" +
-                "Status: " + status + IbStringUtil.DELIMITTER +
-                "Filled: " + filled + IbStringUtil.DELIMITTER +
-                "Remaining: " + remaining + IbStringUtil.DELIMITTER +
-                "Avg Price: " + avgFillPrice + IbStringUtil.DELIMITTER +
-                "Perm Id: " + permId + IbStringUtil.DELIMITTER +
-                "Parent Id: " + parentId + IbStringUtil.DELIMITTER +
-                "Last Fill Price: " + lastFillPrice + IbStringUtil.DELIMITTER +
-                "Client Id: " + clientId + IbStringUtil.DELIMITTER +
+                "Status: " + status + IbStringUtil.DELIMITER +
+                "Filled: " + filled + IbStringUtil.DELIMITER +
+                "Remaining: " + remaining + IbStringUtil.DELIMITER +
+                "Avg Price: " + avgFillPrice + IbStringUtil.DELIMITER +
+                "Perm Id: " + permId + IbStringUtil.DELIMITER +
+                "Parent Id: " + parentId + IbStringUtil.DELIMITER +
+                "Last Fill Price: " + lastFillPrice + IbStringUtil.DELIMITER +
+                "Client Id: " + clientId + IbStringUtil.DELIMITER +
                 "Why Held: " + whyHeld + "]";
     }
 
 
     public static class DefaultIbOrderStatusBuilder implements IbOrderStatusBuilder {
 
-        private OrderStatus status;
+        private final OrderStatus status;
         private double filled;
         private double remaining;
         private double avgFillPrice;

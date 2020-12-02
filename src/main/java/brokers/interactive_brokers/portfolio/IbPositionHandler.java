@@ -29,38 +29,39 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // Map IB Id to Internal Id
-    private final Map<Integer, UUID> contractIdMap = new HashMap<>();
-
+    private final Map<Integer, UUID> contractIdMap;
     private final IbController controller;
-
-    private ReplayProcessor<Security> subjectPositions = ReplayProcessor.create();
+    private ReplayProcessor<Security> subjectPositions;
 
     public IbPositionHandler(IbController controller) {
         logger.info("Starting Interactive Brokers Position Handler");
+        contractIdMap = new HashMap<>();
+        subjectPositions = ReplayProcessor.create();
         this.controller = controller;
     }
 
     @Override
     public Flux<Security> requestPositionsFromBrokerage() {
-        subjectPositions = ReplayProcessor.create();
         logger.info("Requesting Positions from Interactive Brokers");
+        subjectPositions = ReplayProcessor.create();
         controller.getController().reqPositions(this);
         return subjectPositions.onBackpressureBuffer();
     }
 
     @Override
     public void position(String account, Contract contract, double position, double avgCost) {
-        logger.debug("Received position from Brokers servers: " +
-                        "Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}",
-                position, IbStringUtil.toStringContract(contract), account, avgCost);
-
-        processIbPosition(contract, position, avgCost);
+        if (contract != null) {
+            logger.debug("Received position from Brokers servers. Quantity: {}, Contract: [{}], Account: {}, Average Cost: {}", position, IbStringUtil.toStringContract(contract), account, avgCost);
+            processIbPosition(contract, position, avgCost);
+        } else {
+            logger.warn("Received null Contract from Brokers server. Quantity: {}, Contract: null, Account: {}, Average Cost: {}", position, account, avgCost);
+        }
     }
 
     @Override
     public void positionEnd() {
         logger.info("Received Position End notification at {}", Instant.now());
-        subjectPositions.onComplete();
+        shutdown();
     }
 
     @Override
@@ -89,19 +90,19 @@ public class IbPositionHandler implements IPositionHandler, PositionHandler {
     }
 
     private Option generateOption(Contract contract, double position, double avgCost) {
-        SecurityType securityType = null;
-        switch (contract.right()) {
-            case Call -> securityType = SecurityType.CALL;
-            case Put -> securityType = SecurityType.PUT;
-            default -> logger.error("Could not identify Contract Right: {}", IbStringUtil.toStringContract(contract));
-        }
+        SecurityType securityType = switch (contract.right()) {
+            case Call -> SecurityType.CALL;
+            case Put -> SecurityType.PUT;
+            case None -> {
+                logger.warn("Contract received for Option that was not Call or Put. Contract: [{}], Position: {}, Average Cost: {}", contract, position, avgCost);
+                throw new IllegalArgumentException("Unknown Option Type: " + contract.right() + ", for Contract: " + contract);
+            }
+        };
 
-        final LocalDate expirationDate =
-                IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
+        final LocalDate expirationDate = IbOptionUtil.convertExpiration(contract.lastTradeDateOrContractMonth());
         final long quantity = convertQuantityToLongCheckingIfWholeValue(position, contract);
 
-        return new Option(generateId(contract.conid()), securityType, DefaultTicker.from(contract.symbol()), quantity,
-                contract.strike(), expirationDate, avgCost);
+        return new Option(generateId(contract.conid()), securityType, DefaultTicker.from(contract.symbol()), quantity, contract.strike(), expirationDate, avgCost);
     }
 
     private long convertQuantityToLongCheckingIfWholeValue(double quantity, Contract contract) {

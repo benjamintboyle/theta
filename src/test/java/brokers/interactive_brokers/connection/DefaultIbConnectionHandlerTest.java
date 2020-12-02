@@ -13,13 +13,14 @@ import reactor.test.StepVerifier;
 import theta.connection.domain.ConnectionState;
 import theta.connection.domain.ConnectionStatus;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultIbConnectionHandlerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     private ApiController apiController;
@@ -45,7 +46,7 @@ class DefaultIbConnectionHandlerTest {
         doNothing().when(apiController).connect(anyString(), anyInt(), anyInt(), eq(null));
         when(ibApiController.getConnectionStatus()).thenReturn(Flux.just());
 
-        ibConnectionHandler.connect();
+        ibConnectionHandler.connect("", 0);
 
         verify(apiController, times(1))
                 .connect(anyString(), anyInt(), anyInt(), eq(null));
@@ -60,12 +61,12 @@ class DefaultIbConnectionHandlerTest {
                         ConnectionStatus.of(ConnectionState.DISCONNECTED),
                         ConnectionStatus.of(ConnectionState.CONNECTED)));
 
-        Mono<ConnectionStatus> connectionStatus = ibConnectionHandler.connect();
+        Mono<ConnectionStatus> connectionStatus = ibConnectionHandler.connect("", 0);
 
         StepVerifier.create(connectionStatus)
                 .expectNextMatches(status -> status.getState().equals(ConnectionState.CONNECTED))
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
@@ -82,6 +83,6 @@ class DefaultIbConnectionHandlerTest {
         StepVerifier.create(disconnectStatus)
                 .expectNextMatches(status -> status.getState().equals(ConnectionState.DISCONNECTED))
                 .expectComplete()
-                .verify();
+                .verify(VERIFY_TIMEOUT);
     }
 }

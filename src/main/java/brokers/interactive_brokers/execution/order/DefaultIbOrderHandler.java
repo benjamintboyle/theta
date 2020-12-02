@@ -96,8 +96,7 @@ public class DefaultIbOrderHandler implements IbOrderHandler {
             }
         }
 
-        return new DefaultOrderStatus(order, orderState, commission, Math.round(filled),
-                Math.round(remaining), avgFillPrice);
+        return new DefaultOrderStatus(order, orderState, commission, Math.round(filled), Math.round(remaining), avgFillPrice);
     }
 
     @Override

@@ -12,10 +12,8 @@ import reactor.core.publisher.Mono;
 import theta.api.ConnectionHandler;
 import theta.connection.domain.ConnectionState;
 import theta.connection.domain.ConnectionStatus;
-import theta.util.ThetaStartupUtil;
 
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
 
 @Component
 public class DefaultIbConnectionHandler implements IbController, ConnectionHandler {
@@ -24,12 +22,10 @@ public class DefaultIbConnectionHandler implements IbController, ConnectionHandl
 
     private final IbApiController controller;
     private final Composite DISPOSABLES = Disposables.composite();
-    private final InetSocketAddress brokerGatewayAddress;
 
     public DefaultIbConnectionHandler(IbApiController ibApiController) {
         controller = ibApiController;
-        brokerGatewayAddress = ThetaStartupUtil.getGatewayAddress();
-        logger.info("Starting Interactive Brokers Connection Handler: {}", brokerGatewayAddress);
+        logger.info("Starting Interactive Brokers Connection Handler");
     }
 
     @Override
@@ -38,14 +34,12 @@ public class DefaultIbConnectionHandler implements IbController, ConnectionHandl
     }
 
     @Override
-    public Mono<ConnectionStatus> connect() {
+    public Mono<ConnectionStatus> connect(String connectionHost, int connectionPort) {
 
         logger.info("Connecting to Interactive Brokers Gateway at IP: {}:{} as Client {}",
-                brokerGatewayAddress.getAddress().getHostAddress(),
-                brokerGatewayAddress.getPort(), CLIENT_ID);
+                connectionHost, connectionPort, CLIENT_ID);
 
-        getController().connect(brokerGatewayAddress.getAddress().getHostAddress(),
-                brokerGatewayAddress.getPort(), CLIENT_ID, null);
+        getController().connect(connectionHost, connectionPort, CLIENT_ID, null);
 
         return controller.getConnectionStatus()
                 .filter(status -> status.getState().equals(ConnectionState.CONNECTED)).single();

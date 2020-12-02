@@ -1,4 +1,4 @@
-package brokers.interactive_brokers.tick;
+package brokers.interactive_brokers.tick.handler;
 
 import brokers.interactive_brokers.util.IbTickUtil;
 import com.ib.client.TickType;
@@ -7,8 +7,7 @@ import com.ib.controller.ApiController.ITopMktDataHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.ReplayProcessor;
+import reactor.core.publisher.Sinks;
 import theta.api.TickHandler;
 import theta.domain.PriceLevel;
 import theta.domain.Ticker;
@@ -24,7 +23,8 @@ import java.util.*;
 public class IbTickHandler implements ITopMktDataHandler, TickHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final FluxProcessor<TickType, TickType> tickSubject = ReplayProcessor.createSizeAndTimeout(1, Duration.ofSeconds(1L));
+    //    private final FluxProcessor<TickType, TickType> tickSubject = ReplayProcessor.createSizeAndTimeout(1, Duration.ofSeconds(1L));
+    private final Sinks.Many<TickType> tickSink = Sinks.many().replay().limit(1, Duration.ofSeconds(1L));
 
     private final Ticker ticker;
     private final TickProcessor tickProcessor;
@@ -53,7 +53,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     @Override
     public Flux<Tick> getTicks() {
-        return tickSubject.onBackpressureLatest()
+        return tickSink.asFlux()
                 .map(this::buildTick)
                 .filter(this::processTick);
     }
@@ -79,15 +79,14 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     @Override
     public void tickSize(TickType tickType, int size) {
-        logger.debug(
-                "Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
+        logger.debug("Received Tick Size from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Size: {}",
                 getTicker(), tickType, size);
     }
 
     @Override
     public void tickString(TickType tickType, String value) {
-        logger.debug("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, "
-                + "Value: {}", getTicker(), tickType, value);
+        logger.debug("Received Tick String from Interactive Brokers servers - Ticker: {}, Tick Type: {}, Value: {}",
+                getTicker(), tickType, value);
 
         switch (tickType) {
             case LAST_TIMESTAMP -> lastTime = Instant.ofEpochSecond(Long.parseLong(value));
@@ -131,7 +130,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     private void addTickIfApplicable(TickType tickType) {
         if (tickProcessor.isApplicable(IbTickUtil.convertToEngineTickType(tickType))) {
-            tickSubject.onNext(tickType);
+            tickSink.tryEmitNext(tickType).orThrow();
         }
     }
 
@@ -163,7 +162,7 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
                     priceLevel.tradeIf(), priceLevel.getPrice(), this);
 
             if (!priceLevels.remove(priceLevel)) {
-                logger.warn("Attempted to remove non-existant Price Level: {} from Tick Handler: {}",
+                logger.warn("Attempted to remove non-existent Price Level: {} from Tick Handler: {}",
                         priceLevel, this);
             }
 
@@ -186,23 +185,28 @@ public class IbTickHandler implements ITopMktDataHandler, TickHandler {
 
     @Override
     public void cancel() {
-        if (!tickSubject.hasCompleted()) {
-            logger.debug("Completing Tick Subject");
-            tickSubject.onComplete();
+        Sinks.EmitResult completeResult = tickSink.tryEmitComplete();
+
+        if (completeResult.isFailure()) {
+            logger.warn("Tried to complete Tick Sink but failed. Not retrying.");
+            Sinks.EmitResult errorResult = tickSink.tryEmitError(new Sinks.EmissionException(completeResult, "Cancelling Tick Sink failed"));
+            if (errorResult.isFailure()) {
+                errorResult.orThrow();
+            }
         } else {
-            logger.warn("Tried to complete Tick Subject when it is already completed.");
+            logger.debug("Completing Tick Sink");
         }
     }
 
     @Override
     public String toString() {
         return "IbTickHandler{" +
-                "tickSubject=" + tickSubject +
-                ", ticker=" + ticker +
+                "ticker=" + ticker +
                 ", tickProcessor=" + tickProcessor +
                 ", instantTick=" + instantTick +
                 ", lastTime=" + lastTime +
                 ", priceLevels=" + priceLevels +
+                ", tickSink=" + tickSink +
                 '}';
     }
 }

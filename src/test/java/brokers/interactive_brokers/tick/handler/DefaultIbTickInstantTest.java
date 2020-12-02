@@ -1,4 +1,4 @@
-package brokers.interactive_brokers.tick;
+package brokers.interactive_brokers.tick.handler;
 
 import com.ib.client.TickType;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.time.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultIbTickInstantTest {
 

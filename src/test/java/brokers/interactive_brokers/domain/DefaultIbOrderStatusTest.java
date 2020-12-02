@@ -2,6 +2,9 @@ package brokers.interactive_brokers.domain;
 
 import com.ib.client.OrderStatus;
 import org.junit.jupiter.api.Test;
+import theta.execution.api.ExecutableOrder;
+import theta.execution.api.OrderState;
+import theta.execution.domain.DefaultOrderStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

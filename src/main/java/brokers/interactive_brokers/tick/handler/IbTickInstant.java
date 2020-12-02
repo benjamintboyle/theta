@@ -1,4 +1,4 @@
-package brokers.interactive_brokers.tick;
+package brokers.interactive_brokers.tick.handler;
 
 import com.ib.client.TickType;
 

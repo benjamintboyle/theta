@@ -19,15 +19,16 @@ import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 import theta.execution.api.OrderStatus;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultIbExecutionHandlerTest {
+    private static final Duration VERIFY_TIMEOUT = Duration.ofMillis(1000L);
 
     @Mock
     private Ticker mockTicker;
@@ -57,18 +58,22 @@ class DefaultIbExecutionHandlerTest {
         Flux<OrderStatus> orderStatusFlux = sut.executeOrder(mockOrder);
 
         verify(mockApiController).placeOrModifyOrder(isA(Contract.class), isA(Order.class), isA(IbOrderHandler.class));
-        StepVerifier.create(orderStatusFlux).expectComplete().verify();
+        StepVerifier.create(orderStatusFlux)
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
-    void executeOrder_Nonstock() {
+    void executeOrder_non_stock() {
         when(mockOrder.getSecurityType()).thenReturn(SecurityType.CALL);
         when(mockOrder.getBrokerId()).thenReturn(Optional.of(1));
 
         Flux<OrderStatus> orderStatusFlux = sut.executeOrder(mockOrder);
 
         verify(mockApiController, never()).placeOrModifyOrder(isA(Contract.class), isA(Order.class), isA(IbOrderHandler.class));
-        StepVerifier.create(orderStatusFlux).expectComplete().verify();
+        StepVerifier.create(orderStatusFlux)
+                .expectComplete()
+                .verify(VERIFY_TIMEOUT);
     }
 
     @Test
