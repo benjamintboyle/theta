@@ -1,19 +1,14 @@
 package theta.tick.api;
 
-import java.util.Optional;
 import theta.domain.PriceLevel;
-import theta.domain.Ticker;
-import theta.execution.api.ExecutionType;
+import theta.domain.stock.Stock;
+import theta.execution.domain.CandidateStockOrder;
 import theta.tick.domain.TickType;
 
 public interface TickProcessor {
+    boolean isApplicable(TickType tickType);
 
-  public boolean isApplicable(TickType tickType);
+    boolean processTick(Tick tick, PriceLevel priceLevel);
 
-  public boolean processTick(Tick tick, PriceLevel priceLevel);
-
-  public ExecutionType getExecutionType();
-
-  public Optional<Double> getLimitPrice(Ticker ticker);
-
+    CandidateStockOrder getCandidateStockOrder(Stock stock);
 }

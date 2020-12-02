@@ -1,10 +1,9 @@
 package theta.domain;
 
 public interface PriceLevel extends Comparable<PriceLevel> {
+    Ticker getTicker();
 
-  public Ticker getTicker();
+    double getPrice();
 
-  public Double getPrice();
-
-  public PriceLevelDirection tradeIf();
+    PriceLevelDirection tradeIf();
 }

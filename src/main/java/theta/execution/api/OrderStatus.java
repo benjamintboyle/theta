@@ -1,17 +1,15 @@
 package theta.execution.api;
 
 public interface OrderStatus {
+    ExecutableOrder getOrder();
 
-  public ExecutableOrder getOrder();
+    OrderState getState();
 
-  public OrderState getState();
+    double getCommission();
 
-  public double getCommission();
+    long getFilled();
 
-  public long getFilled();
+    long getRemaining();
 
-  public long getRemaining();
-
-  public double getAveragePrice();
-
+    double getAveragePrice();
 }

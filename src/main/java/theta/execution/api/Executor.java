@@ -1,13 +1,12 @@
 package theta.execution.api;
 
-import java.util.Optional;
 import reactor.core.publisher.Mono;
-import theta.api.ManagerShutdown;
+import theta.api.ManagerController;
 import theta.domain.Ticker;
-import theta.domain.stock.Stock;
+import theta.execution.domain.CandidateStockOrder;
 
-public interface Executor extends ManagerShutdown {
-  Mono<Void> reverseTrade(Stock trade, ExecutionType executionType, Optional<Double> limitPrice);
+public interface Executor extends ManagerController {
+    Mono<Void> reverseTrade(CandidateStockOrder candidateOrder);
 
-  void convertToMarketOrderIfExists(Ticker ticker);
+    void convertToMarketOrderIfExists(Ticker ticker);
 }

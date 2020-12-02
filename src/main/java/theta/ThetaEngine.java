@@ -2,19 +2,20 @@ package theta;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import reactor.core.Disposable;
 import reactor.core.Disposable.Composite;
 import reactor.core.Disposables;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import theta.api.ManagerShutdown;
+import theta.api.ManagerController;
 import theta.connection.manager.ConnectionManager;
 import theta.execution.manager.ExecutionManager;
-import theta.portfolio.manager.PortfolioManager;
+import theta.portfolio.manager.PortfolioManger;
 import theta.tick.manager.TickManager;
 
 import javax.annotation.PreDestroy;
@@ -24,19 +25,17 @@ import java.lang.invoke.MethodHandles;
 
 @ComponentScan({"theta", "brokers.interactive_brokers"})
 @SpringBootApplication
-public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
+@ConfigurationPropertiesScan
+public class ThetaEngine implements CommandLineRunner, ManagerController {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    @Value("${application.name}")
-    private String appName;
-
-    private static final Composite THETA_DISPOSABLES = Disposables.composite();
 
     // Managers
     private final ConnectionManager connectionManager;
-    private final PortfolioManager portfolioManager;
+    private final PortfolioManger portfolioManager;
     private final TickManager tickManager;
     private final ExecutionManager executionManager;
+
+    private final Composite thetaDisposables = Disposables.composite();
 
     public static void main(String[] args) {
         SpringApplication.run(ThetaEngine.class, args);
@@ -50,9 +49,10 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
      * @param tickManager       A broker tick manager.
      * @param executionManager  A broker execution manager.
      */
-    public ThetaEngine(ConnectionManager connectionManager, PortfolioManager portfolioManager,
-                       TickManager tickManager, ExecutionManager executionManager) {
-
+    public ThetaEngine(ConnectionManager connectionManager,
+                       PortfolioManger portfolioManager,
+                       TickManager tickManager,
+                       ExecutionManager executionManager) {
         this.connectionManager = connectionManager;
         this.portfolioManager = portfolioManager;
         this.tickManager = tickManager;
@@ -61,62 +61,59 @@ public class ThetaEngine implements CommandLineRunner, ManagerShutdown {
 
     @Override
     public void run(String... args) {
-        logger.info("Starting {}", appName);
+        logger.info("Starting ThetaEngine");
 
-        final Disposable portfolioManagerDisposable = startPortfolioManager();
-        THETA_DISPOSABLES.add(portfolioManagerDisposable);
-
-        final Disposable tickManagerDisposable = startTickManager();
-        THETA_DISPOSABLES.add(tickManagerDisposable);
-
-    }
-
-    private Disposable startPortfolioManager() {
-
-        return connectionManager.connect().ignoreElement()
-                .then(portfolioManager.startPositionProcessing()).subscribe(
-
-                        (Void) -> logger.info("Portfolio Manager has Shutdown"),
-
+        Disposable portfolioManagerDisposable = startPortfolioManager()
+                .subscribe(
+                        null,
                         error -> {
-                            logger.error("Portfolio Manager Error: ", error);
+                            logger.error("Portfolio Manager terminated with Error", error);
                             shutdown();
-                        });
+                        },
+                        () -> logger.info("Portfolio Manager has Shutdown")
+                );
+        thetaDisposables.add(portfolioManagerDisposable);
+
+        Disposable tickManagerDisposable = startTickManager()
+                .subscribe(
+                        null,
+                        error -> {
+                            logger.error("Tick Manager terminated with Error", error);
+                            shutdown();
+                        },
+                        () -> logger.info("Tick Manager has Shutdown")
+                );
+        thetaDisposables.add(tickManagerDisposable);
     }
 
-    private Disposable startTickManager() {
-        return tickManager.startTickProcessing().subscribe(
-                (Void) -> logger.info("Tick Manager has Shutdown"),
-                error -> {
-                    logger.error("Tick Manager Error: ", error);
-                    shutdown();
-                });
+    private Mono<Void> startPortfolioManager() {
+        return connectionManager.connect()
+                .then(portfolioManager.startPositionProcessing());
+    }
+
+    private Mono<Void> startTickManager() {
+        return tickManager.startTickProcessing();
     }
 
     @PreDestroy
     @Override
     public void shutdown() {
-
-        logger.info("Calling shutdown for all {} managers.", appName);
-
-        if (!THETA_DISPOSABLES.isDisposed()) {
-
+        logger.info("Calling shutdown for all ThetaEngine managers.");
+        if (!thetaDisposables.isDisposed()) {
             executionManager.shutdown();
             tickManager.shutdown();
             portfolioManager.shutdown();
             connectionManager.shutdown();
 
-            logger.info("Disposing of {} Managers", THETA_DISPOSABLES.size());
-            THETA_DISPOSABLES.dispose();
+            logger.info("Disposing of {} Managers", thetaDisposables.size());
+            thetaDisposables.dispose();
 
             logger.info("Shutting down Schedulers.");
             Schedulers.shutdownNow();
 
             logger.info("ThetaEngine shutdown complete.");
-
         } else {
-            logger.warn("Tried to dispose of already disposed {} Disposable", appName);
+            logger.warn("Tried to dispose of already disposed ThetaEngine Disposable");
         }
     }
-
 }

@@ -1,7 +1,5 @@
 package theta.execution.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 import theta.domain.stock.Stock;
@@ -9,28 +7,24 @@ import theta.execution.api.ExecutableOrder;
 import theta.execution.api.ExecutionAction;
 import theta.execution.api.ExecutionType;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 public class DefaultStockOrder implements ExecutableOrder {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private final UUID id;
 
     private final Ticker ticker;
     private final long quantity;
     private final ExecutionAction action;
     private final ExecutionType executionType;
-    private Optional<Double> limitPrice = Optional.empty();
-    private Optional<Integer> brokerId = Optional.empty();
+    private Double limitPrice = null;
+    private Integer brokerId = null;
 
     /**
      * Create Stock Order.
      */
-    public DefaultStockOrder(Ticker ticker, UUID stockId, long quantity, ExecutionAction action,
-                             ExecutionType executionType) {
+    public DefaultStockOrder(Ticker ticker, UUID stockId, long quantity, ExecutionAction action, ExecutionType executionType) {
         id = Objects.requireNonNull(stockId, "Stock Id cannot be null");
         this.ticker = Objects.requireNonNull(ticker, "Stock Ticker cannot be null");
         this.quantity = quantity;
@@ -41,21 +35,16 @@ public class DefaultStockOrder implements ExecutableOrder {
     /**
      * Create Stock Order.
      */
-    public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action,
-                             ExecutionType executionType) {
+    public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType) {
         this(stock.getTicker(), stock.getId(), quantity, action, executionType);
     }
 
     /**
      * Create Stock Order.
      */
-    public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action,
-                             ExecutionType executionType, Double limitPrice) {
+    public DefaultStockOrder(Stock stock, long quantity, ExecutionAction action, ExecutionType executionType, Double limitPrice) {
         this(stock, quantity, action, executionType);
-
-        this.limitPrice = Optional.of(Objects.requireNonNull(limitPrice, "Limit Price cannot be null"));
-
-        logger.debug("Built {}", this);
+        this.limitPrice = Objects.requireNonNull(limitPrice, "Limit Price cannot be null");
     }
 
     @Override
@@ -65,12 +54,12 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     @Override
     public Optional<Integer> getBrokerId() {
-        return brokerId;
+        return Optional.ofNullable(brokerId);
     }
 
     @Override
-    public void setBrokerId(Integer brokerId) {
-        this.brokerId = Optional.ofNullable(brokerId);
+    public void setBrokerId(int brokerId) {
+        this.brokerId = brokerId;
     }
 
     @Override
@@ -100,12 +89,11 @@ public class DefaultStockOrder implements ExecutableOrder {
 
     @Override
     public Optional<Double> getLimitPrice() {
-        return limitPrice;
+        return Optional.ofNullable(limitPrice);
     }
 
     @Override
     public String toString() {
-
         final StringBuilder builder = new StringBuilder();
 
         builder.append("[ ");
@@ -138,32 +126,19 @@ public class DefaultStockOrder implements ExecutableOrder {
     }
 
     @Override
-    public int hashCode() {
-
-        return Objects.hash(getTicker(), getQuantity(), getExecutionAction(),
-                getSecurityType(), getSecurityType(), getExecutionType(), getLimitPrice());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DefaultStockOrder that = (DefaultStockOrder) o;
+        return quantity == that.quantity &&
+                Objects.equals(ticker, that.ticker) &&
+                action == that.action &&
+                executionType == that.executionType &&
+                Objects.equals(limitPrice, that.limitPrice);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean isEqual = false;
-
-        if (obj == this) {
-            isEqual = true;
-        }
-
-        if (obj instanceof DefaultStockOrder) {
-            final DefaultStockOrder other = (DefaultStockOrder) obj;
-
-            isEqual =
-                    Objects.equals(getTicker(), other.getTicker()) && getQuantity() == other.getQuantity()
-                            && Objects.equals(getExecutionAction(), other.getExecutionAction())
-                            && Objects.equals(getSecurityType(), other.getSecurityType())
-                            && Objects.equals(getExecutionType(), other.getExecutionType())
-                            && Objects.equals(getLimitPrice(), other.getLimitPrice());
-        }
-
-        return isEqual;
+    public int hashCode() {
+        return Objects.hash(ticker, quantity, action, executionType, limitPrice);
     }
-
 }

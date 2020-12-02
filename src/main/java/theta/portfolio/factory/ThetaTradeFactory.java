@@ -1,11 +1,5 @@
 package theta.portfolio.factory;
 
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theta.domain.composed.ShortStraddle;
@@ -14,102 +8,100 @@ import theta.domain.option.Option;
 import theta.domain.stock.Stock;
 import theta.domain.util.StockUtil;
 
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 public class ThetaTradeFactory {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ThetaTradeFactory() {
+    private ThetaTradeFactory() {
 
-  }
+    }
 
-  /**
-   * Helper static method to create all possible ThetaTrades from passed in Lists of Stocks, Calls,
-   * Puts.
-   *
-   * @param stockList List of Stocks for specific ticker.
-   * @param callList List of Calls for specific ticker.
-   * @param putList List of Puts for specific ticker.
-   * @return List of ThetaTrade possible with passed Stock, Call, Put.
-   */
-  public static List<Theta> processThetaTrade(List<Stock> stockList, List<Option> callList,
-      List<Option> putList) {
+    /**
+     * Helper static method to create all possible ThetaTrades from passed in Lists of Stocks, Calls,
+     * Puts.
+     *
+     * @param stockList List of Stocks for specific ticker.
+     * @param callList  List of Calls for specific ticker.
+     * @param putList   List of Puts for specific ticker.
+     * @return List of ThetaTrade possible with passed Stock, Call, Put.
+     */
+    public static List<Theta> processThetaTrade(List<Stock> stockList, List<Option> callList,
+                                                List<Option> putList) {
 
-    final List<Theta> thetas = new ArrayList<>();
+        final List<Theta> thetas = new ArrayList<>();
 
-    logger.debug("Processing theta with Stocks: {}, Calls: {}, Puts: {}", stockList, callList,
-        putList);
+        logger.debug("Processing theta with Stocks: {}, Calls: {}, Puts: {}", stockList, callList,
+                putList);
 
-    final List<ShortStraddle> shortStraddles = ThetaTradeFactory.buildStraddles(callList, putList);
+        final List<ShortStraddle> shortStraddles = ThetaTradeFactory.buildStraddles(callList, putList);
 
-    // For each straddle attempt to add stock portion
-    for (final ShortStraddle straddle : shortStraddles) {
+        // For each straddle attempt to add stock portion
+        for (final ShortStraddle straddle : shortStraddles) {
 
-      final Optional<Stock> coverableStock =
-          ThetaTradeFactory.getCoverableStock(stockList, straddle);
+            final Optional<Stock> coverableStock =
+                    ThetaTradeFactory.getCoverableStock(stockList, straddle);
 
-      // If a stock can cover the straddle
-      if (coverableStock.isPresent()) {
-        final Stock stock = coverableStock.get();
+            // If a stock can cover the straddle
+            if (coverableStock.isPresent()) {
+                final Stock stock = coverableStock.get();
 
-        // If stock quantity is greater than number of option contracts adjust, otherwise return
-        // full stock quantity
-        final Optional<Stock> adjustedStock =
-            StockUtil.adjustStockQuantity(stock, Math.abs(straddle.getQuantity()) * 100);
+                // If stock quantity is greater than number of option contracts adjust, otherwise return
+                // full stock quantity
+                final Optional<Stock> adjustedStock =
+                        StockUtil.adjustStockQuantity(stock, Math.abs(straddle.getQuantity()) * 100);
 
-        // Build theta
-        if (adjustedStock.isPresent()) {
-          final Optional<Theta> theta = Theta.of(adjustedStock.get(), straddle);
-
-          // Successfully created and added theta to list
-          if (theta.isPresent()) {
-            thetas.add(theta.get());
-          } else {
-            logger.warn("ThetaTrade could not be built from Stock: {}, Straddle: {}", adjustedStock,
-                straddle);
-          }
-        } else {
-          logger.warn("Not Adjusted Stock available for {} {}", stock, straddle);
+                // Build theta
+                if (adjustedStock.isPresent()) {
+                    thetas.add(Theta.of(adjustedStock.get(), straddle));
+                } else {
+                    logger.warn("Not Adjusted Stock available for {} {}", stock, straddle);
+                }
+            } else {
+                logger.warn("No coverable stock could be identified for Straddle: {}, from Stocks: {}",
+                        straddle, stockList);
+            }
         }
-      } else {
-        logger.warn("No coverable stock could be identified for Straddle: {}, from Stocks: {}",
-            straddle, stockList);
-      }
+
+        return thetas;
     }
 
-    return thetas;
-  }
+    private static List<ShortStraddle> buildStraddles(List<Option> calls, List<Option> puts) {
 
-  private static List<ShortStraddle> buildStraddles(List<Option> calls, List<Option> puts) {
+        logger.debug("Building straddles from Calls: {}, Puts: {}", calls, puts);
 
-    logger.debug("Building straddles from Calls: {}, Puts: {}", calls, puts);
+        final List<ShortStraddle> straddleList = new ArrayList<>();
 
-    final List<ShortStraddle> straddleList = new ArrayList<>();
+        for (final Option call : calls) {
+            final List<Option> straddlablePuts =
+                    puts.stream().filter(put -> put.getExpiration().equals(call.getExpiration()))
+                            .filter(put -> Double.compare(put.getStrikePrice(), call.getStrikePrice()) == 0)
+                            .collect(Collectors.toList());
 
-    for (final Option call : calls) {
-      final List<Option> straddlablePuts =
-          puts.stream().filter(put -> put.getExpiration().equals(call.getExpiration()))
-              .filter(put -> Double.compare(put.getStrikePrice(), call.getStrikePrice()) == 0)
-              .collect(Collectors.toList());
+            if (straddlablePuts.size() > 1) {
+                logger.warn("Multiple puts match single call - Call: {}, Puts: {}", call, straddlablePuts);
+            }
 
-      if (straddlablePuts.size() > 1) {
-        logger.warn("Multiple puts match single call - Call: {}, Puts: {}", call, straddlablePuts);
-      }
+            final Optional<Option> put = straddlablePuts.stream().findFirst();
 
-      final Optional<Option> put = straddlablePuts.stream().findFirst();
+            put.ifPresent(option -> straddleList.add(ShortStraddle.of(call, option)));
+        }
 
-      put.ifPresent(option -> straddleList.add(ShortStraddle.of(call, option)));
+        if (straddleList.isEmpty()) {
+            logger.warn("No Straddles generated by Calls: {}, and Puts: {}", calls, puts);
+        }
+
+        return straddleList;
     }
 
-    if (straddleList.isEmpty()) {
-      logger.warn("No Straddles generated by Calls: {}, and Puts: {}", calls, puts);
+    private static Optional<Stock> getCoverableStock(List<Stock> stockList, ShortStraddle straddle) {
+        return stockList.stream().filter(stock -> stock.getTicker().equals(straddle.getTicker()))
+                .filter(stock -> Math.abs(stock.getQuantity()) >= Math.abs(straddle.getQuantity() * 100))
+                .findFirst();
     }
-
-    return straddleList;
-  }
-
-  private static Optional<Stock> getCoverableStock(List<Stock> stockList, ShortStraddle straddle) {
-    return stockList.stream().filter(stock -> stock.getTicker().equals(straddle.getTicker()))
-        .filter(stock -> Math.abs(stock.getQuantity()) >= Math.abs(straddle.getQuantity() * 100))
-        .findFirst();
-  }
 }

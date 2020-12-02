@@ -66,11 +66,6 @@ public class Stock implements Security {
         return ticker;
     }
 
-    public Stock reversePosition() {
-        logger.info("Building Reverse of Stock: {}", this);
-        return new Stock(getId(), getTicker(), -1 * getQuantity(), getPrice());
-    }
-
     @Override
     public boolean equals(final Object obj) {
 
@@ -80,8 +75,7 @@ public class Stock implements Security {
             isEqual = true;
         }
 
-        if (obj instanceof Stock) {
-            final Stock other = (Stock) obj;
+        if (obj instanceof Stock other) {
 
             isEqual = Objects.equals(getTicker(), other.getTicker())
                     && Objects.equals(getQuantity(), other.getQuantity())
@@ -100,23 +94,12 @@ public class Stock implements Security {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-
-        builder.append(getSecurityType());
-        builder.append(" [");
-
-        builder.append("Ticker: ");
-        builder.append(getTicker());
-        builder.append(", Quantity: ");
-        builder.append(getQuantity());
-        builder.append(", Price: ");
-        builder.append(getPrice());
-        builder.append(", Id: ");
-        builder.append(getId());
-
-        builder.append("]");
-
-        return builder.toString();
+        return getSecurityType() +
+                " [" +
+                "Ticker: " + getTicker() +
+                ", Quantity: " + getQuantity() +
+                ", Price: " + getPrice() +
+                ", Id: " + getId() +
+                "]";
     }
-
 }

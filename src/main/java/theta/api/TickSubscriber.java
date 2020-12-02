@@ -1,22 +1,16 @@
 package theta.api;
 
-import java.util.Set;
 import reactor.core.publisher.Flux;
 import theta.domain.PriceLevel;
-import theta.domain.Ticker;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 
 public interface TickSubscriber {
+    Flux<Tick> getTicksAcrossStrikePrices();
 
-  public Flux<Tick> getTicksAcrossStrikePrices();
+    void addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor);
 
-  public Integer addPriceLevelMonitor(PriceLevel priceLevel, TickProcessor tickProcessor);
+    int removePriceLevelMonitor(PriceLevel priceLevel);
 
-  public Integer removePriceLevelMonitor(PriceLevel priceLevel);
-
-  public Set<PriceLevel> getPriceLevelsMonitored(Ticker ticker);
-
-  public void unsubscribeAll();
-
+    void unsubscribeAll();
 }

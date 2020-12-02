@@ -1,20 +1,20 @@
 package theta.tick.api;
 
-import java.time.Instant;
 import theta.domain.Ticker;
 import theta.tick.domain.TickType;
 
+import java.time.Instant;
+
 public interface Tick {
+    double getLastPrice();
 
-  Double getLastPrice();
+    double getBidPrice();
 
-  Double getBidPrice();
+    double getAskPrice();
 
-  Double getAskPrice();
+    Ticker getTicker();
 
-  Ticker getTicker();
+    TickType getTickType();
 
-  TickType getTickType();
-
-  Instant getTimestamp();
+    Instant getTimestamp();
 }

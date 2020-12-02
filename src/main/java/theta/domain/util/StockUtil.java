@@ -13,7 +13,6 @@ public class StockUtil {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private StockUtil() {
-
     }
 
     /**
@@ -24,8 +23,7 @@ public class StockUtil {
      * @return Stock adjusted to value requested
      */
     public static Optional<Stock> adjustStockQuantity(Stock stock, long adjustment) {
-        final Optional<Security> stockAsSecurity =
-                SecurityUtil.getSecurityWithQuantity(stock, adjustment);
+        final Optional<Security> stockAsSecurity = SecurityUtil.getSecurityWithQuantity(stock, adjustment);
 
         Optional<Stock> adjustedStock = Optional.empty();
 
@@ -50,14 +48,12 @@ public class StockUtil {
 
             if (stocksToReverse.containsKey(theta.getStock().getId())) {
 
-                final Optional<Stock> combinedStock = StockUtil
-                        .consolidateStock(stocksToReverse.get(theta.getStock().getId()), theta.getStock());
+                final Optional<Stock> combinedStock = StockUtil.consolidateStock(stocksToReverse.get(theta.getStock().getId()), theta.getStock());
 
                 if (combinedStock.isPresent()) {
                     stocksToReverse.put(theta.getStock().getId(), combinedStock.get());
                 } else {
-                    logger.error("Stock with same Id cannot be combined: {} {}", theta.getStock(),
-                            stocksToReverse.get(theta.getId()));
+                    logger.error("Stock with same Id cannot be combined: {} {}", theta.getStock(), stocksToReverse.get(theta.getId()));
                 }
             } else {
                 stocksToReverse.put(theta.getStock().getId(), theta.getStock());
@@ -85,5 +81,4 @@ public class StockUtil {
 
         return stock;
     }
-
 }

@@ -1,27 +1,27 @@
 package theta.execution.api;
 
-import java.util.Optional;
-import java.util.UUID;
 import theta.domain.SecurityType;
 import theta.domain.Ticker;
 
+import java.util.Optional;
+import java.util.UUID;
+
 public interface ExecutableOrder {
+    UUID getId();
 
-  public UUID getId();
+    Ticker getTicker();
 
-  public Ticker getTicker();
+    SecurityType getSecurityType();
 
-  public SecurityType getSecurityType();
+    ExecutionAction getExecutionAction();
 
-  public ExecutionAction getExecutionAction();
+    ExecutionType getExecutionType();
 
-  public ExecutionType getExecutionType();
+    Optional<Double> getLimitPrice();
 
-  public Optional<Double> getLimitPrice();
+    long getQuantity();
 
-  public long getQuantity();
+    Optional<Integer> getBrokerId();
 
-  public Optional<Integer> getBrokerId();
-
-  public void setBrokerId(Integer orderId);
+    void setBrokerId(int orderId);
 }

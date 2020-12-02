@@ -7,7 +7,7 @@ import theta.domain.Ticker;
 
 public class DefaultTicker implements Ticker {
 
-  private static ConcurrentMap<String, Ticker> mapOfTickers = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<String, Ticker> mapOfTickers = new ConcurrentHashMap<>();
 
   private final String tickerSymbol;
 

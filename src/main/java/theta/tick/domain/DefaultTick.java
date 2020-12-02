@@ -10,9 +10,9 @@ public class DefaultTick implements Tick {
 
     private final Ticker ticker;
     private final TickType type;
-    private final Double lastPrice;
-    private final Double bidPrice;
-    private final Double askPrice;
+    private final double lastPrice;
+    private final double bidPrice;
+    private final double askPrice;
     private final Instant timestamp;
 
     /**
@@ -25,8 +25,8 @@ public class DefaultTick implements Tick {
      * @param askPrice  Ask Price of Tick
      * @param timestamp Timestamp of Tick
      */
-    public DefaultTick(final Ticker ticker, final TickType type, final Double lastPrice,
-                       final Double bidPrice, final Double askPrice, final Instant timestamp) {
+    public DefaultTick(Ticker ticker, TickType type, double lastPrice,
+                       double bidPrice, double askPrice, Instant timestamp) {
         this.ticker = ticker;
         this.type = type;
         this.lastPrice = lastPrice;
@@ -36,17 +36,17 @@ public class DefaultTick implements Tick {
     }
 
     @Override
-    public Double getLastPrice() {
+    public double getLastPrice() {
         return lastPrice;
     }
 
     @Override
-    public Double getBidPrice() {
+    public double getBidPrice() {
         return bidPrice;
     }
 
     @Override
-    public Double getAskPrice() {
+    public double getAskPrice() {
         return askPrice;
     }
 
@@ -70,11 +70,11 @@ public class DefaultTick implements Tick {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DefaultTick that = (DefaultTick) o;
-        return ticker.equals(that.ticker) &&
+        return Double.compare(that.lastPrice, lastPrice) == 0 &&
+                Double.compare(that.bidPrice, bidPrice) == 0 &&
+                Double.compare(that.askPrice, askPrice) == 0 &&
+                ticker.equals(that.ticker) &&
                 type == that.type &&
-                lastPrice.equals(that.lastPrice) &&
-                bidPrice.equals(that.bidPrice) &&
-                askPrice.equals(that.askPrice) &&
                 timestamp.equals(that.timestamp);
     }
 

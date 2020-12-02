@@ -1,36 +1,25 @@
 package theta.util;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import org.springframework.stereotype.Component;
 
-public class ThetaMarketUtil {
+import java.time.*;
 
-  // TODO: Put into external properties file
-  private static final ZoneId MARKET_TIMEZONE = ZoneId.of("America/New_York");
-  private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
-  private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 00);
+@Component
+public class NewYorkMarketUtility implements MarketUtility {
+    // TODO: Put into external properties file
+    private static final ZoneId MARKET_TIMEZONE = ZoneId.of("America/New_York");
+    private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 30);
+    private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 0);
 
-  private ThetaMarketUtil() {
+    @Override
+    public boolean isDuringMarketHours(Instant timeToCheck) {
+        ZonedDateTime marketInstant = timeToCheck.atZone(MARKET_TIMEZONE);
+        DayOfWeek marketDayOfWeek = DayOfWeek.from(marketInstant);
+        LocalTime marketLocalTime = marketInstant.toLocalTime();
 
-  }
-
-  /**
-   * Checks if Instant passed in is during New York market hours.
-   *
-   * @param timeToCheck Instant to check
-   * @return True if Instant passed in is during New York market hours
-   */
-  public static boolean isDuringNewYorkMarketHours(Instant timeToCheck) {
-
-    final ZonedDateTime marketTimeNow = timeToCheck.atZone(MARKET_TIMEZONE);
-    final DayOfWeek marketTimeNowDayOfWeek = DayOfWeek.from(marketTimeNow);
-    final LocalTime marketLocalTime = marketTimeNow.toLocalTime();
-
-    return marketTimeNowDayOfWeek != DayOfWeek.SATURDAY
-        && marketTimeNowDayOfWeek != DayOfWeek.SUNDAY && marketLocalTime.isAfter(MARKET_OPEN_TIME)
-        && marketLocalTime.isBefore(MARKET_CLOSE_TIME);
-  }
+        return marketDayOfWeek != DayOfWeek.SATURDAY
+                && marketDayOfWeek != DayOfWeek.SUNDAY
+                && marketLocalTime.isAfter(MARKET_OPEN_TIME)
+                && marketLocalTime.isBefore(MARKET_CLOSE_TIME);
+    }
 }

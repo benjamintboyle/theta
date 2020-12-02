@@ -3,17 +3,13 @@ package theta.domain;
 import java.util.UUID;
 
 public interface Security {
+    UUID getId();
 
-  public UUID getId();
+    SecurityType getSecurityType();
 
-  public SecurityType getSecurityType();
+    Ticker getTicker();
 
-  public Ticker getTicker();
+    long getQuantity();
 
-  public long getQuantity();
-
-  public double getPrice();
-
-  @Override
-  public String toString();
+    double getPrice();
 }

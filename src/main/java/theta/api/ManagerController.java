@@ -1,5 +1,5 @@
 package theta.api;
 
-public interface ManagerShutdown {
+public interface ManagerController {
     void shutdown();
 }

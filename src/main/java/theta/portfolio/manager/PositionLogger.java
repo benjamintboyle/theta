@@ -27,10 +27,7 @@ public class PositionLogger {
     };
 
     private static final Comparator<Security> byOptionExpiration = (s1, s2) -> {
-        if (s1 instanceof Option && s2 instanceof Option) {
-            final Option o1 = (Option) s1;
-            final Option o2 = (Option) s2;
-
+        if (s1 instanceof Option o1 && s2 instanceof Option o2) {
             if (o1.getExpiration().isAfter(o2.getExpiration())) {
                 return 1;
             } else if (o2.getExpiration().isAfter(o1.getExpiration())) {

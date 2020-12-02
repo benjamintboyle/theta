@@ -86,23 +86,13 @@ public class Option implements Security {
 
     @Override
     public String toString() {
-
-        String builder = getSecurityType() +
-                " [" +
-                "Ticker: " +
-                getTicker() +
-                ", Quantity: " +
-                getQuantity() +
-                ", Strike Price: " +
-                getPrice() +
-                ", Expiration: " +
-                getExpiration() +
-                ", Average Price: " +
-                getAverageTradePrice() +
-                ", Id: " +
-                getId() +
-                "]";
-        return builder;
+        return getSecurityType() +
+                " [" + "Ticker: " + getTicker() +
+                ", Quantity: " + getQuantity() +
+                ", Strike Price: " + getPrice() +
+                ", Expiration: " + getExpiration() +
+                ", Average Price: " + getAverageTradePrice() +
+                ", Id: " + getId() + "]";
     }
 
     @Override
@@ -118,9 +108,7 @@ public class Option implements Security {
             return true;
         }
 
-        if (obj instanceof Option) {
-
-            final Option other = (Option) obj;
+        if (obj instanceof Option other) {
 
             return Objects.equals(getSecurityType(), other.getSecurityType())
                     && Objects.equals(getTicker(), other.getTicker())

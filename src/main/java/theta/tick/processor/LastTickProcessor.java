@@ -5,8 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import theta.domain.PriceLevel;
 import theta.domain.PriceLevelDirection;
-import theta.domain.Ticker;
+import theta.domain.stock.Stock;
 import theta.execution.api.ExecutionType;
+import theta.execution.domain.CandidateStockOrder;
 import theta.tick.api.Tick;
 import theta.tick.api.TickProcessor;
 import theta.tick.domain.TickType;
@@ -30,25 +31,23 @@ public class LastTickProcessor implements TickProcessor {
 
     @Override
     public boolean processTick(Tick tick, PriceLevel priceLevel) {
-
         boolean shouldReverse = false;
 
-        if (isApplicable(tick.getTickType()) && tick.getLastPrice() > 0) {
-
+        if (isApplicable(tick.getTickType())
+                && tick.getLastPrice() > 0
+                && priceLevel.getTicker().equals(tick.getTicker())) {
             logger.debug("Checking {} against Price Level: {}", tick, priceLevel);
 
-            if (priceLevel.getTicker().equals(tick.getTicker())) {
-                if (priceLevel.tradeIf().equals(PriceLevelDirection.FALLS_BELOW)) {
-                    if (tick.getLastPrice() < priceLevel.getPrice()) {
-                        shouldReverse = true;
-                    }
-                } else if (priceLevel.tradeIf().equals(PriceLevelDirection.RISES_ABOVE)) {
-                    if (tick.getLastPrice() > priceLevel.getPrice()) {
-                        shouldReverse = true;
-                    }
-                } else {
-                    logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
+            if (priceLevel.tradeIf() == PriceLevelDirection.FALLS_BELOW) {
+                if (tick.getLastPrice() < priceLevel.getPrice()) {
+                    shouldReverse = true;
                 }
+            } else if (priceLevel.tradeIf() == PriceLevelDirection.RISES_ABOVE) {
+                if (tick.getLastPrice() > priceLevel.getPrice()) {
+                    shouldReverse = true;
+                }
+            } else {
+                logger.error("Invalid Price Level: {}", priceLevel.tradeIf());
             }
         }
 
@@ -56,13 +55,7 @@ public class LastTickProcessor implements TickProcessor {
     }
 
     @Override
-    public ExecutionType getExecutionType() {
-        return EXECUTION_TYPE;
+    public CandidateStockOrder getCandidateStockOrder(Stock stock) {
+        return new CandidateStockOrder(stock, EXECUTION_TYPE, Optional.empty());
     }
-
-    @Override
-    public Optional<Double> getLimitPrice(Ticker ticker) {
-        return Optional.empty();
-    }
-
 }
