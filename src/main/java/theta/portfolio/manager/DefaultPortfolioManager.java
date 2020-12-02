@@ -67,32 +67,25 @@ public class PortfolioManager implements ManagerShutdown {
      * @return Completable to functionally process positions.
      */
     public Mono<Void> startPositionProcessing() {
-
         logger.debug("Starting Position Processing");
 
         return Mono.create(emitter -> {
-
             final Disposable positionLoggerDisposable = positionHandler.requestPositionsFromBrokerage()
                     .map(this::processSecurity).doOnSubscribe(
                             subscription -> getStatus().changeState(ManagerState.RUNNING))
                     .subscribe(
-
                             security -> PositionLogger.logPositions(getThetaIdMap(), getSecurityThetaLink(),
                                     getSecurityIdMap()),
-
                             exception -> {
                                 logger.error("Issue with Received Positions from Brokerage", exception);
                                 emitter.error(exception);
                             },
-
                             () -> {
                                 getStatus().changeState(ManagerState.SHUTDOWN);
                                 emitter.success();
                             });
-
             portfolioDisposables.add(positionLoggerDisposable);
         });
-
     }
 
     private Security processSecurity(Security security) {
@@ -156,7 +149,6 @@ public class PortfolioManager implements ManagerShutdown {
                     .stream().map(this::updateSecurityMaps).distinct()
                     .forEach(monitor::addMonitor);
         }
-
     }
 
     private List<Security> getUnallocatedSecuritiesOf(Ticker ticker, SecurityType securityType) {
@@ -233,5 +225,4 @@ public class PortfolioManager implements ManagerShutdown {
     private Map<UUID, Security> getSecurityIdMap() {
         return securityIdMap;
     }
-
 }
